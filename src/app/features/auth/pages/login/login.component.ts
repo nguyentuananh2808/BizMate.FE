@@ -8,13 +8,20 @@ import {
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../../services/auth.service';
 import { HttpClientModule } from '@angular/common/http';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'login-app',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgIf, HttpClientModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    NgIf,
+    HttpClientModule,
+    RouterModule,
+  ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })

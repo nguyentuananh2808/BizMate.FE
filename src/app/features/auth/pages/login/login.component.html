@@ -1,0 +1,66 @@
+<div class="bg-login">
+  <div class="relative z-10 flex items-center justify-center min-h-screen px-4">
+    <div
+      class="w-full max-w-sm text-center bg-white p-6 rounded-[24px] shadow-[0_10px_20px_rgba(0,0,0,0.3)]"
+    >
+      <!-- Logo -->
+      <img
+        class="mx-auto mb-2"
+        src="assets/images/logo-bizmate.png"
+        alt="logo"
+        width="200"
+      />
+
+      <!-- Form -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="text-left">
+        <!-- Email -->
+        <label class="text-sm text-gray-600">Email</label>
+        <input
+          formControlName="email"
+          type="email"
+          placeholder="admin@gmail.com"
+          class="w-full border-b border-gray-300 focus:outline-none py-2 mb-6 placeholder-gray-400 text-sm rounded-[24px] pl-4"
+        />
+
+        <!-- Password -->
+        <label class="text-sm text-gray-600">Mật khẩu</label>
+        <input
+          formControlName="password"
+          type="password"
+          placeholder="**********"
+          class="w-full border-b border-gray-300 focus:outline-none py-2 mb-3 placeholder-gray-400 text-sm rounded-[24px] pl-4"
+        />
+
+        <!-- Quên mật khẩu -->
+        <div class="text-right mb-6">
+          <a href="#" class="text-sm text-gray-500 hover:underline"
+            >Quên mật khẩu ?</a
+          >
+        </div>
+
+        <!-- Đăng nhập -->
+        <button
+          type="submit"
+          class="w-full bg-blue-500 text-white py-2 rounded-full text-sm hover:bg-blue-600 transition"
+        >
+          Đăng nhập
+        </button>
+
+        <!-- Thông báo lỗi -->
+        <div *ngIf="error()" class="text-red-500 mt-4 text-sm text-center">
+          {{ error() }}
+        </div>
+
+        <!-- Tạo tài khoản -->
+        <div class="text-center mt-8 text-sm">
+          Chưa có tài khoản ?
+          <a
+            routerLink="/register"
+            class="text-orange-500 font-medium hover:underline"
+            >Tạo tài khoản</a
+          >
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
