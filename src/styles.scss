@@ -1,0 +1,10 @@
+@import 'ngx-toastr/toastr'; 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+body {
+  font-family: 'Inter', sans-serif;
+}
+#toast-container {
+  z-index: 99999 !important;
+}
