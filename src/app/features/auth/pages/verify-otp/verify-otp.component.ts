@@ -11,10 +11,10 @@ import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../services/auth.service';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
-import { RegisterResponse } from '../../models/register-response.model';
+import { VerifyOtpResponse } from '../../models/verify-otp-response.model';
 
 @Component({
-  selector: 'register-app',
+  selector: 'verify-otp',
   standalone: true,
   imports: [
     CommonModule,
@@ -23,10 +23,10 @@ import { RegisterResponse } from '../../models/register-response.model';
     HttpClientModule,
     RouterModule,
   ],
-  templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss'],
+  templateUrl: './verify-otp.component.html',
+  styleUrls: ['./verify-otp.component.scss'],
 })
-export class RegisterComponent {
+export class VerifyOtpComponent {
   form: FormGroup;
   error = signal<string | null>(null);
 
@@ -37,29 +37,25 @@ export class RegisterComponent {
     private router: Router
   ) {
     this.form = this.fb.group({
-      fullName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      nameStore: ['', Validators.required],
-      password : ['',Validators.required]
+      otp: ['', Validators.required],
     });
   }
 
   onSubmit() {
     if (this.form.invalid) return;
 
-    const { email, fullName, nameStore ,password} = this.form.value;
+    const { otp } = this.form.value;
 
-    this.authService.register(email, fullName, nameStore,password).subscribe({
-      next: (res: RegisterResponse) => {
+    const email : string | null = localStorage.getItem('email');
+    this.authService.verifyOtp(otp, email).subscribe({
+      next: (res: VerifyOtpResponse) => {
         localStorage.setItem('otp_info', JSON.stringify(res));
-        localStorage.setItem('email', JSON.stringify(res.email));
-        console.log("regiter:",res);
-        console.log("send mail success");
-        this.router.navigate(['/verify-otp']);
+        console.log('verify otp success');
+        this.router.navigate(['/login']);
       },
-      error: (err) => {   
+      error: (err) => {
         const messages: Record<string, string> = {
-          EMAIL_ALREADY_EXISTS: 'Email đã tồn tại',
+          COMMON_ALREADY_EXIST: 'Email đã tồn tại',
           INVALID_DATA: 'Dữ liệu không hợp lệ',
         };
 

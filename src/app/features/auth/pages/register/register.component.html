@@ -12,6 +12,14 @@
       />
       <!-- Form -->
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="text-left">
+        <!-- store name -->
+        <label class="text-sm text-gray-600">Tên cửa hàng</label>
+        <input
+          formControlName="nameStore"
+          type="nameStore"
+          placeholder="Tên cửa hàng"
+          class="w-full border-b border-gray-300 focus:outline-none py-2 mb-3 placeholder-gray-400 text-sm rounded-[24px] pl-4"
+        />
         <!--Full name-->
         <label class="text-sm text-gray-600">Họ và tên</label>
         <input
@@ -30,12 +38,12 @@
           class="w-full border-b border-gray-300 focus:outline-none py-2 mb-6 placeholder-gray-400 text-sm rounded-[24px] pl-4"
         />
 
-        <!-- store name -->
-        <label class="text-sm text-gray-600">Tên cửa hàng</label>
+        <!-- Password -->
+        <label class="text-sm text-gray-600">Mật khẩu</label>
         <input
-          formControlName="nameStore"
-          type="nameStore"
-          placeholder="Tên cửa hàng"
+          formControlName="password"
+          type="password"
+          placeholder="**********"
           class="w-full border-b border-gray-300 focus:outline-none py-2 mb-3 placeholder-gray-400 text-sm rounded-[24px] pl-4"
         />
 

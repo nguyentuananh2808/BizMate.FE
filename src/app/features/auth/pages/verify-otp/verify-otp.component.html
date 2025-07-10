@@ -1,0 +1,47 @@
+<div class="bg-login">
+  <div class="relative z-10 flex items-center justify-center min-h-screen px-4">
+    <div
+      class="w-full max-w-sm text-center bg-white p-6 rounded-[24px] shadow-[0_10px_20px_rgba(0,0,0,0.3)]"
+    >
+      <!-- Logo -->
+      <img
+        class="mx-auto mb-2"
+        src="assets/images/logo-bizmate.png"
+        alt="logo"
+        width="200"
+      />
+      <!-- Form -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="text-left">
+        <!-- otp -->
+        <label class="text-sm text-gray-600">OTP</label>
+        <input
+          formControlName="otp"
+          type="otp"
+          placeholder="otp"
+          class="w-full border-b border-gray-300 focus:outline-none py-2 mb-3 placeholder-gray-400 text-sm rounded-[24px] pl-4"
+        />
+
+        <!-- Đăng ký -->
+        <button
+          type="submit"
+          class="w-full bg-blue-500 text-white py-2 rounded-full text-sm hover:bg-blue-600 transition"
+        >
+          Đăng ký
+        </button>
+
+        <!-- Thông báo lỗi -->
+        <div *ngIf="error()" class="text-red-500 mt-4 text-sm text-center">
+          {{ error() }}
+        </div>
+
+        <!-- Đăng nhập -->
+        <div class="text-center mt-8 text-sm">
+          Đã có tài khoản ?
+          <a href="#" class="text-orange-500 font-medium hover:underline"
+            >Đăng nhập</a
+          >
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
