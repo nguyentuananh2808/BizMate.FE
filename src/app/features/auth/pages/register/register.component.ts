@@ -40,31 +40,39 @@ export class RegisterComponent {
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       nameStore: ['', Validators.required],
-      password : ['',Validators.required]
+      password: ['', Validators.required],
     });
   }
+  isLoading = signal(false);
 
   onSubmit() {
     if (this.form.invalid) return;
 
-    const { email, fullName, nameStore ,password} = this.form.value;
+    const { email, fullName, nameStore, password } = this.form.value;
 
-    this.authService.register(email, fullName, nameStore,password).subscribe({
+    this.isLoading.set(true);
+
+    this.authService.register(email, fullName, nameStore, password).subscribe({
       next: (res: RegisterResponse) => {
-        localStorage.setItem('otp_info', JSON.stringify(res));
-        localStorage.setItem('email', JSON.stringify(res.email));
-        console.log("regiter:",res);
-        console.log("send mail success");
-        this.router.navigate(['/verify-otp']);
+        localStorage.setItem('email', res.Email);
+        console.log('register:', res);
+        console.log('send mail success');
+
+        setTimeout(() => {
+          this.isLoading.set(false);
+          this.router.navigate(['/verify-otp']);
+        }, 3000);
       },
-      error: (err) => {   
+      error: (err) => {
+        this.isLoading.set(false);
+
         const messages: Record<string, string> = {
           EMAIL_ALREADY_EXISTS: 'Email đã tồn tại',
           INVALID_DATA: 'Dữ liệu không hợp lệ',
         };
 
         const messageCode = err.error?.Message || 'UNKNOWN_ERROR';
-        const userMessage = messages[messageCode] || 'Đăng ký thất bại ❌';
+        const userMessage = messages[messageCode] || 'Đăng ký thất bại';
 
         this.toastr.error(userMessage);
       },

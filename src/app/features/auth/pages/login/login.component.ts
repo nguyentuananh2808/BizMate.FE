@@ -1,16 +1,17 @@
-import { Component, signal } from '@angular/core';
 import { CommonModule, NgIf } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
+import { Component, signal } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { jwtDecode } from 'jwt-decode';
 import { ToastrService } from 'ngx-toastr';
+import { JwtPayload } from '../../models/jwt-payload-response.model';
 import { AuthService } from '../../services/auth.service';
-import { HttpClientModule } from '@angular/common/http';
-import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'login-app',
@@ -48,8 +49,15 @@ export class LoginComponent {
 
     this.authService.login(email, password).subscribe({
       next: (res) => {
-        localStorage.setItem('access_token', res.token);
-        this.toastr.success('Đăng nhập thành công 🎉');
+        localStorage.setItem('access_token', res.AccessToken.Token);
+        const decoded = jwtDecode<JwtPayload>(res.AccessToken.Token);
+        localStorage.setItem('user_id', decoded.user_id);
+        localStorage.setItem('store_name', decoded.store_name);
+        localStorage.setItem('name', decoded.name);
+        localStorage.setItem('email', decoded.sub);
+        localStorage.setItem('role', decoded.role);
+
+        this.toastr.success('Đăng nhập thành công');
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
@@ -59,7 +67,7 @@ export class LoginComponent {
         };
 
         const messageCode = err.error?.Message || 'UNKNOWN_ERROR';
-        const userMessage = messages[messageCode] || 'Đăng nhập thất bại ❌';
+        const userMessage = messages[messageCode] || 'Đăng nhập thất bại';
 
         this.toastr.error(userMessage);
       },
