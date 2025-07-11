@@ -1,0 +1,71 @@
+<div class="bg-login">
+  <div class="min-h-screen pb-24 px-4 pt-6 z-10 relative">
+    <!-- Header -->
+    <header
+      class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4 md:gap-0"
+    >
+      <h1
+        class="text-3xl font-extrabold text-center md:text-left bg-gradient-to-r from-blue-500 to-indigo-600 text-transparent bg-clip-text"
+      >
+        Dashboard
+      </h1>
+
+      <!-- Menu top (tablet & desktop) -->
+      <nav
+        class="hidden md:flex gap-8 text-sm font-medium text-gray-700 md:justify-end"
+      >
+        <a class="hover:text-blue-600 transition-all duration-200" href="#"
+          >Quản lý</a
+        >
+        <a class="hover:text-blue-600 transition-all duration-200" href="#"
+          >FAB</a
+        >
+        <a class="hover:text-blue-600 transition-all duration-200" href="#"
+          >Tôi</a
+        >
+      </nav>
+    </header>
+
+    <!-- Grid Dashboard Items -->
+    <div
+      class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 max-w-5xl mx-auto"
+    >
+      <a
+        *ngFor="let item of menuItems"
+        [routerLink]="item.route"
+        class="flex flex-col items-center justify-center p-6 bg-[rgba(82,153,222,0.31)] backdrop-blur-sm text-gray-800 border border-white rounded-[24px] shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.15)] hover:-translate-y-1 transition-all duration-300 ease-in-out"
+      >
+        <div class="text-4xl mb-2">{{ item.icon }}</div>
+        <div class="text-sm font-semibold text-center">{{ item.label }}</div>
+      </a>
+    </div>
+
+    <!-- Menu bottom (mobile only) -->
+    <nav
+      class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-16 z-50"
+      style="padding-bottom: env(safe-area-inset-bottom)"
+    >
+      <a
+        href="#"
+        class="flex flex-col items-center text-xs text-blue-700 font-medium"
+      >
+        <span class="text-xl">⭐</span>
+        Quản lý
+      </a>
+      <a
+        href="#"
+        class="flex flex-col items-center text-xs text-gray-500 hover:text-blue-600"
+      >
+        <span class="text-xl">📦</span>
+        FAB
+      </a>
+      <a
+        href="#"
+        class="flex flex-col items-center text-xs text-gray-500 hover:text-blue-600"
+      >
+        <span class="text-xl">👤</span>
+        Tôi
+      </a>
+    </nav>
+  </div>
+</div>

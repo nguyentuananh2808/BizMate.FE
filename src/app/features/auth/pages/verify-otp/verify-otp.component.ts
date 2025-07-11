@@ -11,10 +11,10 @@ import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../services/auth.service';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
-import { RegisterResponse } from '../../models/register-response.model';
+import { VerifyOtpResponse } from '../../models/verify-otp-response.model';
 
 @Component({
-  selector: 'register-app',
+  selector: 'verify-otp',
   standalone: true,
   imports: [
     CommonModule,
@@ -23,10 +23,10 @@ import { RegisterResponse } from '../../models/register-response.model';
     HttpClientModule,
     RouterModule,
   ],
-  templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss'],
+  templateUrl: './verify-otp.component.html',
+  styleUrls: ['./verify-otp.component.scss'],
 })
-export class RegisterComponent {
+export class VerifyOtpComponent {
   form: FormGroup;
   error = signal<string | null>(null);
 
@@ -37,42 +37,33 @@ export class RegisterComponent {
     private router: Router
   ) {
     this.form = this.fb.group({
-      fullName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      nameStore: ['', Validators.required],
-      password: ['', Validators.required],
+      otp: ['', Validators.required],
     });
   }
-  isLoading = signal(false);
 
   onSubmit() {
     if (this.form.invalid) return;
 
-    const { email, fullName, nameStore, password } = this.form.value;
+    const { otp } = this.form.value;
 
-    this.isLoading.set(true);
-
-    this.authService.register(email, fullName, nameStore, password).subscribe({
-      next: (res: RegisterResponse) => {
-        localStorage.setItem('email', res.Email);
-        console.log('register:', res);
-        console.log('send mail success');
-
-        setTimeout(() => {
-          this.isLoading.set(false);
-          this.router.navigate(['/verify-otp']);
-        }, 3000);
+    const email : string | null = localStorage.getItem('email');
+    console.log('email',email);
+    this.authService.verifyOtp(otp, email).subscribe({
+      next: (res: VerifyOtpResponse) => {
+        localStorage.setItem('otp_info', JSON.stringify(res));
+        console.log('verify otp success');
+        this.router.navigate(['/login']);
       },
       error: (err) => {
-        this.isLoading.set(false);
-
         const messages: Record<string, string> = {
-          EMAIL_ALREADY_EXISTS: 'Email đã tồn tại',
+          COMMON_ALREADY_EXIST: 'Email đã tồn tại',
           INVALID_DATA: 'Dữ liệu không hợp lệ',
+          COMMON_NOT_EXIST_OTP : 'Mã OTP đã hết hạn hoặc không tồn tại',
+          COMMON_INVALID_OTP:'Mã OTP không đúng'
         };
 
         const messageCode = err.error?.Message || 'UNKNOWN_ERROR';
-        const userMessage = messages[messageCode] || 'Đăng ký thất bại';
+        const userMessage = messages[messageCode] || 'Đăng ký thất bại' ;
 
         this.toastr.error(userMessage);
       },

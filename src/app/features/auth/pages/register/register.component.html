@@ -12,6 +12,14 @@
       />
       <!-- Form -->
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="text-left">
+        <!-- store name -->
+        <label class="text-sm text-gray-600">Tên cửa hàng</label>
+        <input
+          formControlName="nameStore"
+          type="nameStore"
+          placeholder="Tên cửa hàng"
+          class="w-full border-b border-gray-300 focus:outline-none py-2 mb-3 placeholder-gray-400 text-sm rounded-[24px] pl-4"
+        />
         <!--Full name-->
         <label class="text-sm text-gray-600">Họ và tên</label>
         <input
@@ -30,21 +38,44 @@
           class="w-full border-b border-gray-300 focus:outline-none py-2 mb-6 placeholder-gray-400 text-sm rounded-[24px] pl-4"
         />
 
-        <!-- store name -->
-        <label class="text-sm text-gray-600">Tên cửa hàng</label>
+        <!-- Password -->
+        <label class="text-sm text-gray-600">Mật khẩu</label>
         <input
-          formControlName="nameStore"
-          type="nameStore"
-          placeholder="Tên cửa hàng"
+          formControlName="password"
+          type="password"
+          placeholder="**********"
           class="w-full border-b border-gray-300 focus:outline-none py-2 mb-3 placeholder-gray-400 text-sm rounded-[24px] pl-4"
         />
 
-        <!-- Đăng nhập -->
+        <!-- Đăng ký -->
         <button
           type="submit"
-          class="w-full bg-blue-500 text-white py-2 rounded-full text-sm hover:bg-blue-600 transition"
+          [disabled]="isLoading()"
+          class="w-full bg-blue-500 text-white py-2 rounded-full text-sm hover:bg-blue-600 transition flex items-center justify-center gap-2"
         >
-          Đăng ký
+          <svg
+            *ngIf="isLoading()"
+            class="animate-spin h-4 w-4 text-white"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 000 16z"
+            ></path>
+          </svg>
+
+          <span>{{ isLoading() ? "Đang đăng ký..." : "Đăng ký" }}</span>
         </button>
 
         <!-- Thông báo lỗi -->
