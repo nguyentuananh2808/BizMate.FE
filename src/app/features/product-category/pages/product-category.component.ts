@@ -2,11 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { FormsModule } from '@angular/forms';
 import { ChangeDetectorRef } from '@angular/core';
 import { ProductCategoryService } from '../services/product-category.service';
 import { ProductCategory } from '../models/product-category-response.model';
 import { BottomMenuComponent } from '../../shared/bottom-menu.component/bottom-menu.component';
 import { TopMenuComponent } from '../../shared/top-menu.component/top-menu.component';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { HostListener } from '@angular/core';
 
 @Component({
   selector: 'product-category',
@@ -15,19 +19,31 @@ import { TopMenuComponent } from '../../shared/top-menu.component/top-menu.compo
   styleUrls: ['./product-category.component.scss'],
   imports: [
     CommonModule,
-    BottomMenuComponent,
-    TopMenuComponent,
+    FormsModule,
     NzTableModule,
     NzCheckboxModule,
+    NzButtonModule,
+    BottomMenuComponent,
+    TopMenuComponent,
+    NzIconModule
   ],
 })
 export class ProductCategoryComponent implements OnInit {
   isLoading = false;
-  listOfData: readonly ProductCategory[] = [];
-  listOfCurrentPageData: readonly ProductCategory[] = [];
+  listOfData: ProductCategory[] = [];
+  originalData: ProductCategory[] = [];
+  listOfCurrentPageData: ProductCategory[] = [];
   setOfCheckedId = new Set<string>();
   checked = false;
   indeterminate = false;
+  searchKeyword = '';
+  isMobile = window.innerWidth < 768;
+
+@HostListener('window:resize', ['$event'])
+onResize(event: any) {
+  this.isMobile = event.target.innerWidth < 768;
+}
+
 
   constructor(
     private productService: ProductCategoryService,
@@ -42,7 +58,8 @@ export class ProductCategoryComponent implements OnInit {
     this.isLoading = true;
     this.productService.GetAll().subscribe({
       next: (res) => {
-        this.listOfData = res.ProductCategories ?? [];
+        this.originalData = res.ProductCategories ?? [];
+        this.listOfData = [...this.originalData];
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -51,6 +68,15 @@ export class ProductCategoryComponent implements OnInit {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  onSearch(): void {
+    const keyword = this.searchKeyword.trim().toLowerCase();
+    this.listOfData = this.originalData.filter(
+      (item) =>
+        item.ProductCategoryCode.toLowerCase().includes(keyword) ||
+        item.Name.toLowerCase().includes(keyword)
+    );
   }
 
   listOfSelection = [
@@ -97,7 +123,7 @@ export class ProductCategoryComponent implements OnInit {
   }
 
   onCurrentPageDataChange(data: readonly ProductCategory[]): void {
-    this.listOfCurrentPageData = data;
+    this.listOfCurrentPageData = [...data];
     this.refreshCheckedStatus();
   }
 
@@ -113,5 +139,20 @@ export class ProductCategoryComponent implements OnInit {
 
   trackById(index: number, item: ProductCategory): string {
     return item.Id;
+  }
+
+  viewDetail(item: ProductCategory): void {
+    console.log('Xem chi tiết:', item);
+    // Hoặc: this.router.navigate(['/product-category', item.Id]);
+  }
+
+  deleteItem(item: ProductCategory): void {
+    this.originalData = this.originalData.filter((x) => x.Id !== item.Id);
+    this.listOfData = this.listOfData.filter((x) => x.Id !== item.Id);
+    this.listOfCurrentPageData = this.listOfCurrentPageData.filter(
+      (x) => x.Id !== item.Id
+    );
+    this.setOfCheckedId.delete(item.Id);
+    this.refreshCheckedStatus();
   }
 }
