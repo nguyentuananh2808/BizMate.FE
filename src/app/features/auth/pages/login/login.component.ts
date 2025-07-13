@@ -1,5 +1,4 @@
-import { CommonModule, NgIf } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 import { Component, signal } from '@angular/core';
 import {
   FormBuilder,
@@ -16,13 +15,7 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'login-app',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    NgIf,
-    HttpClientModule,
-    RouterModule,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })

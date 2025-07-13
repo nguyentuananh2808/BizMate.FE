@@ -6,8 +6,7 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "serve:ssr:BizMate.FE": "node dist/BizMate.FE/server/server.mjs"
+    "test": "ng test"
   },
   "prettier": {
     "overrides": [
@@ -29,16 +28,14 @@
     "@angular/forms": "^20.1.0",
     "@angular/material": "^20.1.0",
     "@angular/platform-browser": "^20.1.0",
-    "@angular/platform-server": "^20.1.0",
     "@angular/router": "^20.1.0",
-    "@angular/ssr": "^20.1.0",
     "@fortawesome/angular-fontawesome": "^2.0.1",
     "@fortawesome/fontawesome-free": "^6.7.2",
     "@ngx-formly/core": "^7.0.0",
     "@ngx-formly/material": "^7.0.0",
     "axios": "^1.10.0",
-    "express": "^5.1.0",
     "jwt-decode": "^4.0.0",
+    "ng-zorro-antd": "^20.0.0",
     "ngx-toastr": "^19.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
@@ -59,6 +56,8 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "less": "^4.3.0",
+    "less-loader": "^12.3.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.1",
     "typescript": "~5.8.2"

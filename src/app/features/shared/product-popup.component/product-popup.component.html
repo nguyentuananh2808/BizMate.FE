@@ -1,0 +1,43 @@
+<div
+  class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[9999]"
+>
+  <div
+    class="bg-white/80 rounded-[24px] shadow-[0_10px_40px_rgba(0,0,0,0.1)] backdrop-blur-xl w-full max-w-3xl m-20 p-6 relative border border-white/40"
+  >
+    <button
+      (click)="close()"
+      class="absolute top-3 right-4 text-gray-500 hover:text-red-500 text-xl"
+    >
+      ✕
+    </button>
+
+    <h2 class="text-xl font-bold text-gray-800 mb-6 text-center">
+      Quản lý sản phẩm
+    </h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Box 1: Sản phẩm -->
+      <div
+        class="bg-gradient-to-br from-blue-100 to-blue-200 rounded-[24px] p-5 border border-white/50 shadow-md hover:shadow-lg transition duration-300 cursor-pointer"
+      >
+        <h3
+          class="font-semibold text-blue-700 text-lg flex items-center gap-2 justify-center"
+        >
+          🎣 Sản phẩm
+        </h3>
+      </div>
+
+      <!-- Box 2: Loại sản phẩm -->
+      <a
+        routerLink="/product-category"
+        class="bg-gradient-to-br from-blue-100 to-blue-200 rounded-[24px] p-5 border border-white/50 shadow-md hover:shadow-lg transition duration-300 cursor-pointer block"
+      >
+        <h3
+          class="font-semibold text-blue-700 text-lg flex items-center gap-2 justify-center"
+        >
+          🛍️ Loại sản phẩm
+        </h3>
+      </a>
+    </div>
+  </div>
+</div>
