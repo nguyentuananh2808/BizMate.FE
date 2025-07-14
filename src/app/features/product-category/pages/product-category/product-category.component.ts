@@ -14,7 +14,6 @@ import { HostListener } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { ProductCategoryDetailPopup } from '../product-category-detail-popup/product-category-detail-popup';
 
-
 @Component({
   selector: 'product-category',
   standalone: true,
@@ -57,6 +56,10 @@ export class ProductCategoryComponent implements OnInit {
 
   showPopup = false;
 
+  onUpdated(): void {
+    this.fetchData();
+  }
+
   viewDetail(item: ProductCategory) {
     this.selectedItem = item;
     console.log('detail:', item);
@@ -65,8 +68,8 @@ export class ProductCategoryComponent implements OnInit {
   closeProductCategoryDetailPopup() {
     this.showPopup = false;
     setTimeout(() => {
-    this.showPopup = false;
-  }, 300);
+      this.showPopup = false;
+    }, 300);
   }
 
   ngOnInit(): void {

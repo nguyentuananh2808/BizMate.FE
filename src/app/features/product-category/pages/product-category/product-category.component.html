@@ -189,4 +189,5 @@
   *ngIf="showPopup"
   [data]="selectedItem"
   (closePopup)="closeProductCategoryDetailPopup()"
+  (updated)="onUpdated()"
 ></product-category-detail-popup>
