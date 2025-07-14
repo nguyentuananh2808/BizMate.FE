@@ -1,3 +1,4 @@
+import { ProductCategoryPopupCreateComponent } from '../product-category-popup-create.component/product-category-popup-create.component';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NzTableModule } from 'ng-zorro-antd/table';
@@ -8,11 +9,15 @@ import { ChangeDetectorRef } from '@angular/core';
 import { ProductCategoryService } from '../../services/product-category.service';
 import { ProductCategory } from '../../models/product-category-response.model';
 import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
-import { TopMenuComponent } from '../../../shared/top-menu.component/top-menu.component';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { HostListener } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { ProductCategoryDetailPopup } from '../product-category-detail-popup/product-category-detail-popup';
+import { HeaderCommonComponent } from '../../../shared/header-common.component/header-common.component';
+import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'product-category',
@@ -26,10 +31,13 @@ import { ProductCategoryDetailPopup } from '../product-category-detail-popup/pro
     NzCheckboxModule,
     NzButtonModule,
     BottomMenuComponent,
-    TopMenuComponent,
     NzIconModule,
     RouterModule,
     ProductCategoryDetailPopup,
+    ProductCategoryPopupCreateComponent,
+    HeaderCommonComponent,
+    NzModalModule,
+    NzFloatButtonModule,
   ],
 })
 export class ProductCategoryComponent implements OnInit {
@@ -51,22 +59,34 @@ export class ProductCategoryComponent implements OnInit {
 
   constructor(
     private productService: ProductCategoryService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private modal: NzModalService,
+    private toastr: ToastrService
   ) {}
 
   showPopup = false;
-
-  onUpdated(): void {
+  showPopupCreate = false;
+  onRefetch(): void {
     this.fetchData();
+  }
+
+  createProductCategory() {
+    this.showPopupCreate = true;
   }
 
   viewDetail(item: ProductCategory) {
     this.selectedItem = item;
-    console.log('detail:', item);
     this.showPopup = true;
   }
   closeProductCategoryDetailPopup() {
     this.showPopup = false;
+    setTimeout(() => {
+      this.showPopup = false;
+    }, 300);
+  }
+
+  closeProductCategoryPopupCreate() {
+    this.showPopupCreate = false;
     setTimeout(() => {
       this.showPopup = false;
     }, 300);
@@ -109,7 +129,7 @@ export class ProductCategoryComponent implements OnInit {
       },
     },
     {
-      text: 'Chọn hàng lẻ',
+      text: 'Chọn hàng chẵn',
       onSelect: () => {
         this.listOfCurrentPageData.forEach((data, index) =>
           this.updateCheckedSet(data.Id, index % 2 !== 0)
@@ -118,7 +138,7 @@ export class ProductCategoryComponent implements OnInit {
       },
     },
     {
-      text: 'Chọn hàng chẵn',
+      text: 'Chọn hàng lẻ',
       onSelect: () => {
         this.listOfCurrentPageData.forEach((data, index) =>
           this.updateCheckedSet(data.Id, index % 2 === 0)
@@ -163,13 +183,24 @@ export class ProductCategoryComponent implements OnInit {
     return item.Id;
   }
 
+  //delete product category
   deleteItem(item: ProductCategory): void {
-    this.originalData = this.originalData.filter((x) => x.Id !== item.Id);
-    this.listOfData = this.listOfData.filter((x) => x.Id !== item.Id);
-    this.listOfCurrentPageData = this.listOfCurrentPageData.filter(
-      (x) => x.Id !== item.Id
-    );
-    this.setOfCheckedId.delete(item.Id);
-    this.refreshCheckedStatus();
+    this.modal.confirm({
+      nzTitle: `Bạn có chắc muốn xóa loại sản phẩm "<b>${item.Name}</b>" này ?`,
+     // nzContent: `<b>${item.Name}</b> sẽ bị xóa khỏi hệ thống.`,
+      nzOkText: 'Xóa',
+      nzCancelText: 'Hủy',
+      nzOnOk: () => {
+        this.productService.DeleteProductCategory(item.Id).subscribe({
+          next: () => {
+            this.fetchData();
+            this.toastr.success('Đã xóa thành công');
+          },
+          error: () => {
+            this.toastr.error('Xóa thất bại');
+          },
+        });
+      },
+    });
   }
 }
