@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { BottomMenuComponent } from '../../shared/bottom-menu.component/bottom-menu.component';
-import { TopMenuComponent } from '../../shared/top-menu.component/top-menu.component';
 import { ProductPopupComponent } from '../../shared/product-popup.component/product-popup.component';
+import { HeaderCommonComponent } from '../../shared/header-common.component/header-common.component';
 
 @Component({
   selector: 'dashboard-app',
@@ -12,8 +12,8 @@ import { ProductPopupComponent } from '../../shared/product-popup.component/prod
     CommonModule,
     RouterModule,
     BottomMenuComponent,
-    TopMenuComponent,
     ProductPopupComponent,
+    HeaderCommonComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],

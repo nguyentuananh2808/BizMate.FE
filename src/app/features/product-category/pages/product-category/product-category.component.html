@@ -1,0 +1,204 @@
+<div class="bg-login">
+  <div class="min-h-screen px-4 pt-6 z-10 relative">
+    <!-- Header -->
+    <header-common></header-common>
+
+    <!-- Search box ,button create mobile-->
+    <div *ngIf="isMobile">
+      <div class="mb-4 flex flex-row items-center justify-between gap-4">
+        <input
+          type="text"
+          class="border border-gray-300 rounded-[24px] px-3 py-2 flex-1"
+          [(ngModel)]="searchKeyword"
+          (ngModelChange)="onSearch()"
+          placeholder="Tìm kiếm..."
+        />
+        <!-- <button
+          nz-button
+          nzType="primary"
+          class="flex items-center gap-2 whitespace-nowrap rounded-[24px]"
+          (click)="createProductCategory()"
+        >
+          <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+          Tạo mới
+        </button> -->
+      </div>
+    </div>
+
+    <!-- Search box ,button create desktop-->
+    <div *ngIf="!isMobile">
+      <div class="mb-4 flex flex-row items-center justify-between gap-9">
+        <input
+          type="text"
+          class="border border-gray-300 rounded-[24px] px-3 py-2 w-96"
+          [(ngModel)]="searchKeyword"
+          (ngModelChange)="onSearch()"
+          placeholder="Tìm kiếm..."
+        />
+        <button
+          nz-button
+          nzType="primary"
+          class="flex items-center gap-2 whitespace-nowrap rounded-[24px]"
+          (click)="createProductCategory()"
+        >
+          <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+          Tạo mới
+        </button>
+      </div>
+    </div>
+
+    <!-- 📱 Mobile layout: nz-table + scroll ngang -->
+    <div *ngIf="isMobile">
+      <div
+        class="overflow-x-auto rounded-[24px] shadow-sm bg-[rgba(187,213,237,0.33)] dark:bg-gray-900 p-3 w-full"
+      >
+        <nz-table
+          [nzData]="listOfData"
+          [nzScroll]="{ x: '700px' }"
+          [nzScroll]="{ y: '460px' }"
+          [nzPageSize]="10"
+          [nzFrontPagination]="true"
+          [nzLoading]="isLoading"
+          (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
+        >
+          <thead>
+            <tr
+              class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200"
+            >
+              <th
+                [nzSelections]="listOfSelection"
+                [(nzChecked)]="checked"
+                [nzIndeterminate]="indeterminate"
+                (nzCheckedChange)="onAllChecked($event)"
+                class="w-14"
+              ></th>
+              <th class="w-32">Mã</th>
+              <th class="w-56">Tên loại</th>
+              <th class="w-8"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
+              class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-150"
+            >
+              <td class="text-center w-[24px]">
+                <label
+                  nz-checkbox
+                  [nzChecked]="setOfCheckedId.has(item.Id)"
+                  (nzCheckedChange)="onItemChecked(item.Id, $event)"
+                ></label>
+              </td>
+              <td>{{ item.ProductCategoryCode }}</td>
+              <td>{{ item.Name }}</td>
+              <td class="space-x-2 flex">
+                <button nz-button nzType="link" (click)="viewDetail(item)">
+                  <nz-icon nzType="eye" nzTheme="outline" />
+                </button>
+                <button
+                  nz-button
+                  nzType="link"
+                  class="text-red-600"
+                  (click)="deleteItem(item)"
+                >
+                  <nz-icon nzType="delete" nzTheme="outline" />
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </div>
+
+    <!-- 💻 Desktop layout -->
+    <div *ngIf="!isMobile">
+      <div
+        class="bg-[rgba(187,213,237,0.33)] dark:bg-gray-900 shadow-lg rounded-[24px] overflow-hidden p-2"
+      >
+        <nz-table
+          [nzData]="listOfData"
+          [nzScroll]="{ y: '400px' }"
+          [nzPageSize]="10"
+          [nzFrontPagination]="true"
+          [nzLoading]="isLoading"
+          (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
+        >
+          <thead>
+            <tr
+              class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200"
+            >
+              <th
+                [nzSelections]="listOfSelection"
+                [(nzChecked)]="checked"
+                [nzIndeterminate]="indeterminate"
+                (nzCheckedChange)="onAllChecked($event)"
+                class="w-9"
+              ></th>
+              <th class="w-[120px]">Mã loại</th>
+              <th class="w-[160px]">Tên loại</th>
+              <th class="w-[140px]"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
+              class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-150"
+            >
+              <td class="text-center">
+                <label
+                  nz-checkbox
+                  [nzChecked]="setOfCheckedId.has(item.Id)"
+                  (nzCheckedChange)="onItemChecked(item.Id, $event)"
+                ></label>
+              </td>
+              <td>{{ item.ProductCategoryCode }}</td>
+              <td>{{ item.Name }}</td>
+              <td class="space-x-2 flex">
+                <button nz-button nzType="link" (click)="viewDetail(item)">
+                  <nz-icon nzType="eye" nzTheme="outline" />
+                </button>
+                <button
+                  nz-button
+                  nzType="link"
+                  class="text-red-600"
+                  (click)="deleteItem(item)"
+                >
+                  <nz-icon nzType="delete" nzTheme="outline" />
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </div>
+
+    <div *ngIf="isMobile" class="type">
+      <nz-float-button
+        nzType="primary"
+        style="right: 24px"
+        [nzIcon]="icon"
+        (click)="createProductCategory()"
+      ></nz-float-button>
+      <ng-template #icon>
+        <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+      </ng-template>
+    </div>
+    <!-- Bottom menu -->
+    <bottom-menu class="mt-6"></bottom-menu>
+  </div>
+</div>
+
+<!-- popup update -->
+<product-category-detail-popup
+  *ngIf="showPopup"
+  [data]="selectedItem"
+  (closePopup)="closeProductCategoryDetailPopup()"
+  (updated)="onRefetch()"
+></product-category-detail-popup>
+
+<!-- popup create -->
+<product-category-popup-create
+  *ngIf="showPopupCreate"
+  (closePopupCreate)="closeProductCategoryPopupCreate()"
+  (create)="onRefetch()"
+></product-category-popup-create>
