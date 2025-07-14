@@ -4,23 +4,56 @@
     <header
       class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4 md:gap-0"
     >
-      <h1
-        class="text-3xl font-extrabold text-center md:text-left bg-gradient-to-r from-blue-500 to-indigo-600 text-transparent bg-clip-text"
-      >
-        VuaKong
-      </h1>
+      <a routerLink="/dashboard">
+        <h1
+          class="text-3xl font-extrabold text-center md:text-left bg-gradient-to-r from-blue-500 to-indigo-600 text-transparent bg-clip-text"
+        >
+          VuaKong
+        </h1>
+      </a>
 
       <top-menu></top-menu>
     </header>
-    <!-- Search box -->
-    <div class="mb-4">
-      <input
-        type="text"
-        [(ngModel)]="searchKeyword"
-        (ngModelChange)="onSearch()"
-        placeholder="Tìm kiếm mã hoặc tên loại sản phẩm..."
-        class="border border-gray-300 rounded px-3 py-2 w-full md:w-96"
-      />
+    <!-- Search box ,button create mobile-->
+    <div *ngIf="isMobile">
+      <div class="mb-4 flex flex-row items-center justify-between gap-4">
+        <input
+          type="text"
+          class="border border-gray-300 rounded-[24px] px-3 py-2 flex-1"
+          [(ngModel)]="searchKeyword"
+          (ngModelChange)="onSearch()"
+          placeholder="Tìm kiếm..."
+        />
+        <button
+          nz-button
+          nzType="primary"
+          class="flex items-center gap-2 whitespace-nowrap rounded-[24px]"
+        >
+          <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+          Tạo mới
+        </button>
+      </div>
+    </div>
+
+    <!-- Search box ,button create desktop-->
+    <div *ngIf="!isMobile">
+      <div class="mb-4 flex flex-row items-center justify-between gap-9">
+        <input
+          type="text"
+          class="border border-gray-300 rounded-[24px] px-3 py-2 w-96"
+          [(ngModel)]="searchKeyword"
+          (ngModelChange)="onSearch()"
+          placeholder="Tìm kiếm..."
+        />
+        <button
+          nz-button
+          nzType="primary"
+          class="flex items-center gap-2 whitespace-nowrap rounded-[24px]"
+        >
+          <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+          Tạo mới
+        </button>
+      </div>
     </div>
 
     <!-- 📱 Mobile layout: nz-table + scroll ngang -->
@@ -36,7 +69,6 @@
           [nzFrontPagination]="true"
           [nzLoading]="isLoading"
           (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
-          class="bg-[rgba(255,255,255,0.47)]"
         >
           <thead>
             <tr
@@ -90,7 +122,7 @@
     <!-- 💻 Desktop layout -->
     <div *ngIf="!isMobile">
       <div
-        class="bg-white dark:bg-gray-900 shadow-lg rounded-2xl overflow-hidden p-2"
+        class="bg-[rgba(187,213,237,0.33)] dark:bg-gray-900 shadow-lg rounded-[24px] overflow-hidden p-2"
       >
         <nz-table
           [nzData]="listOfData"
@@ -153,3 +185,8 @@
     <bottom-menu class="mt-6"></bottom-menu>
   </div>
 </div>
+<product-category-detail-popup
+  *ngIf="showPopup"
+  [data]="selectedItem"
+  (closePopup)="closeProductCategoryDetailPopup()"
+></product-category-detail-popup>

@@ -5,12 +5,15 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { FormsModule } from '@angular/forms';
 import { ChangeDetectorRef } from '@angular/core';
-import { ProductCategoryService } from '../services/product-category.service';
-import { ProductCategory } from '../models/product-category-response.model';
-import { BottomMenuComponent } from '../../shared/bottom-menu.component/bottom-menu.component';
-import { TopMenuComponent } from '../../shared/top-menu.component/top-menu.component';
+import { ProductCategoryService } from '../../services/product-category.service';
+import { ProductCategory } from '../../models/product-category-response.model';
+import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
+import { TopMenuComponent } from '../../../shared/top-menu.component/top-menu.component';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { HostListener } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { ProductCategoryDetailPopup } from '../product-category-detail-popup/product-category-detail-popup';
+
 
 @Component({
   selector: 'product-category',
@@ -25,7 +28,9 @@ import { HostListener } from '@angular/core';
     NzButtonModule,
     BottomMenuComponent,
     TopMenuComponent,
-    NzIconModule
+    NzIconModule,
+    RouterModule,
+    ProductCategoryDetailPopup,
   ],
 })
 export class ProductCategoryComponent implements OnInit {
@@ -38,17 +43,31 @@ export class ProductCategoryComponent implements OnInit {
   indeterminate = false;
   searchKeyword = '';
   isMobile = window.innerWidth < 768;
+  selectedItem!: ProductCategory;
 
-@HostListener('window:resize', ['$event'])
-onResize(event: any) {
-  this.isMobile = event.target.innerWidth < 768;
-}
-
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.isMobile = event.target.innerWidth < 768;
+  }
 
   constructor(
     private productService: ProductCategoryService,
     private cdr: ChangeDetectorRef
   ) {}
+
+  showPopup = false;
+
+  viewDetail(item: ProductCategory) {
+    this.selectedItem = item;
+    console.log('detail:', item);
+    this.showPopup = true;
+  }
+  closeProductCategoryDetailPopup() {
+    this.showPopup = false;
+    setTimeout(() => {
+    this.showPopup = false;
+  }, 300);
+  }
 
   ngOnInit(): void {
     this.fetchData();
@@ -139,11 +158,6 @@ onResize(event: any) {
 
   trackById(index: number, item: ProductCategory): string {
     return item.Id;
-  }
-
-  viewDetail(item: ProductCategory): void {
-    console.log('Xem chi tiết:', item);
-    // Hoặc: this.router.navigate(['/product-category', item.Id]);
   }
 
   deleteItem(item: ProductCategory): void {
