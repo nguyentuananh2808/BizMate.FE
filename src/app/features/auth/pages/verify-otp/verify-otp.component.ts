@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { CommonModule, NgIf } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
   FormGroup,
@@ -9,7 +9,6 @@ import {
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../services/auth.service';
-import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { VerifyOtpResponse } from '../../models/verify-otp-response.model';
 
@@ -19,8 +18,6 @@ import { VerifyOtpResponse } from '../../models/verify-otp-response.model';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    NgIf,
-    HttpClientModule,
     RouterModule,
   ],
   templateUrl: './verify-otp.component.html',

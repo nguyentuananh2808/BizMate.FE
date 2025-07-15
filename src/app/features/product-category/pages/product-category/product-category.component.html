@@ -3,49 +3,83 @@
     <!-- Header -->
     <header-common></header-common>
 
-    <!-- Search box ,button create mobile-->
-    <div *ngIf="isMobile">
-      <div class="mb-4 flex flex-row items-center justify-between gap-4">
-        <input
-          type="text"
-          class="border border-gray-300 rounded-[24px] px-3 py-2 flex-1"
-          [(ngModel)]="searchKeyword"
-          (ngModelChange)="onSearch()"
-          placeholder="Tìm kiếm..."
-        />
-        <!-- <button
-          nz-button
-          nzType="primary"
-          class="flex items-center gap-2 whitespace-nowrap rounded-[24px]"
-          (click)="createProductCategory()"
-        >
-          <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
-          Tạo mới
-        </button> -->
-      </div>
-    </div>
+<!-- Mobile header bar -->
+<div *ngIf="isMobile" class="mb-4 flex items-center justify-between gap-3">
+  <!-- Nút Quay lại -->
+  <button
+    type="button"
+    class="rounded-full bg-gray-200 text-gray-700 px-2 py-1 hover:bg-gray-300 transition flex items-center w-8 h-8"
+    (click)="goBack()"
+  >
+    <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
+  </button>
 
-    <!-- Search box ,button create desktop-->
-    <div *ngIf="!isMobile">
-      <div class="mb-4 flex flex-row items-center justify-between gap-9">
-        <input
-          type="text"
-          class="border border-gray-300 rounded-[24px] px-3 py-2 w-96"
-          [(ngModel)]="searchKeyword"
-          (ngModelChange)="onSearch()"
-          placeholder="Tìm kiếm..."
-        />
-        <button
-          nz-button
-          nzType="primary"
-          class="flex items-center gap-2 whitespace-nowrap rounded-[24px]"
-          (click)="createProductCategory()"
-        >
-          <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
-          Tạo mới
-        </button>
-      </div>
+  <!-- Ô tìm kiếm căn giữa -->
+  <input
+    type="text"
+    class="flex-1 border border-gray-300 rounded-[24px] px-3 py-2 mx-2"
+    [(ngModel)]="searchKeyword"
+    (ngModelChange)="onSearch()"
+    placeholder="Tìm kiếm..."
+  />
+
+  <!-- Nút Excel -->
+  <button
+    type="button"
+    class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
+    (click)="exportToExcel()"
+  >
+    <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
+  </button>
+</div>
+
+
+<!-- Desktop header bar -->
+<div *ngIf="!isMobile">
+  <div class="mb-4 flex items-center justify-between gap-4">
+    <!-- Nút Quay lại -->
+    <button
+      type="button"
+      class="rounded-full bg-gray-200 text-gray-700 px-4 py-2 hover:bg-gray-300 transition flex items-center gap-2"
+      (click)="goBack()"
+    >
+      <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
+      <span>Quay lại</span>
+    </button>
+
+    <!-- Ô tìm kiếm căn giữa -->
+    <input
+      type="text"
+      class="border border-gray-300 rounded-[24px] px-3 py-2 w-[58%] mx-auto"
+      [(ngModel)]="searchKeyword"
+      (ngModelChange)="onSearch()"
+      placeholder="Tìm kiếm..."
+    />
+
+    <!-- Nhóm nút -->
+    <div class="flex gap-3">
+      <button
+        nz-button
+        nzType="primary"
+        class="flex items-center gap-2 whitespace-nowrap rounded-[24px] h-10"
+        (click)="createProductCategory()"
+      >
+        <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+        Tạo mới
+      </button>
+
+      <button
+        type="button"
+        class="px-4 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-2 h-10"
+        (click)="exportToExcel()"
+      >
+        <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
+        Xuất Excel
+      </button>
     </div>
+  </div>
+</div>
+
 
     <!-- 📱 Mobile layout: nz-table + scroll ngang -->
     <div *ngIf="isMobile">
@@ -54,8 +88,7 @@
       >
         <nz-table
           [nzData]="listOfData"
-          [nzScroll]="{ x: '700px' }"
-          [nzScroll]="{ y: '460px' }"
+          [nzScroll]="{ x: '1000px', y: '460px' }"
           [nzPageSize]="10"
           [nzFrontPagination]="true"
           [nzLoading]="isLoading"
@@ -70,11 +103,15 @@
                 [(nzChecked)]="checked"
                 [nzIndeterminate]="indeterminate"
                 (nzCheckedChange)="onAllChecked($event)"
-                class="w-14"
+                class="w-4"
               ></th>
-              <th class="w-32">Mã</th>
-              <th class="w-56">Tên loại</th>
-              <th class="w-8"></th>
+              <th class="w-5">Thao tác</th>
+              <th class="min-w-[80px]">Mã</th>
+              <th class="min-w-[120px]">Tên loại</th>
+              <th class="min-w-[110px]">Ngày tạo</th>
+              <th class="min-w-[130px]">Ngày cập nhật</th>
+              <th class="min-w-[180px]">Mô tả</th>
+              <th class="min-w-[140px]">Trạng thái</th>
             </tr>
           </thead>
           <tbody>
@@ -89,11 +126,9 @@
                   (nzCheckedChange)="onItemChecked(item.Id, $event)"
                 ></label>
               </td>
-              <td>{{ item.ProductCategoryCode }}</td>
-              <td>{{ item.Name }}</td>
               <td class="space-x-2 flex">
                 <button nz-button nzType="link" (click)="viewDetail(item)">
-                  <nz-icon nzType="eye" nzTheme="outline" />
+                  <nz-icon nzType="edit" nzTheme="outline" />
                 </button>
                 <button
                   nz-button
@@ -103,6 +138,29 @@
                 >
                   <nz-icon nzType="delete" nzTheme="outline" />
                 </button>
+              </td>
+              <td>{{ item.Code }}</td>
+              <td>{{ item.Name }}</td>
+              <td>{{ item.CreatedDate | date : "dd/MM/yyyy" }}</td>
+              <td>{{ item.UpdatedDate | date : "dd/MM/yyyy" }}</td>
+              <td>
+                {{
+                  item.Description.length > 10
+                    ? (item.Description | slice : 0 : 10) + "..."
+                    : item.Description
+                }}
+              </td>
+
+              <td>
+                <span
+                  [ngClass]="
+                    item.IsActive
+                      ? 'text-green-600 font-medium'
+                      : 'text-red-600 font-medium'
+                  "
+                >
+                  {{ item.IsActive ? "🟢 Hoạt động" : "🔴 Ngưng hoạt động" }}
+                </span>
               </td>
             </tr>
           </tbody>
@@ -134,9 +192,13 @@
                 (nzCheckedChange)="onAllChecked($event)"
                 class="w-9"
               ></th>
-              <th class="w-[120px]">Mã loại</th>
-              <th class="w-[160px]">Tên loại</th>
-              <th class="w-[140px]"></th>
+              <th class="w-8">Thao tác</th>
+              <th class="w-32">Mã</th>
+              <th class="w-56">Tên loại</th>
+              <th class="w-9">Ngày tạo</th>
+              <th class="w-9">Ngày cập nhật</th>
+              <th class="w-9">Mô tả</th>
+              <th class="w-5">Trạng thái</th>
             </tr>
           </thead>
           <tbody>
@@ -151,11 +213,9 @@
                   (nzCheckedChange)="onItemChecked(item.Id, $event)"
                 ></label>
               </td>
-              <td>{{ item.ProductCategoryCode }}</td>
-              <td>{{ item.Name }}</td>
               <td class="space-x-2 flex">
                 <button nz-button nzType="link" (click)="viewDetail(item)">
-                  <nz-icon nzType="eye" nzTheme="outline" />
+                  <nz-icon nzType="edit" nzTheme="outline" />
                 </button>
                 <button
                   nz-button
@@ -165,6 +225,29 @@
                 >
                   <nz-icon nzType="delete" nzTheme="outline" />
                 </button>
+              </td>
+              <td>{{ item.Code }}</td>
+              <td>{{ item.Name }}</td>
+              <td>{{ item.CreatedDate | date : "dd/MM/yyyy" }}</td>
+              <td>{{ item.UpdatedDate | date : "dd/MM/yyyy" }}</td>
+              <td>
+                {{
+                  item.Description.length > 14
+                    ? (item.Description | slice : 0 : 14) + "..."
+                    : item.Description
+                }}
+              </td>
+
+              <td>
+                <span
+                  [ngClass]="
+                    item.IsActive
+                      ? 'text-green-600 font-medium'
+                      : 'text-red-600 font-medium'
+                  "
+                >
+                  {{ item.IsActive ? "🟢 Hoạt động" : "🔴 Ngưng hoạt động" }}
+                </span>
               </td>
             </tr>
           </tbody>

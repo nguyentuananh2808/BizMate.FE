@@ -1,0 +1,262 @@
+<div class="bg-login">
+  <div class="min-h-screen px-4 pt-6 z-10 relative">
+    <!-- Header -->
+    <header-common></header-common>
+
+    <!-- 🔙 Mobile Header -->
+    <div *ngIf="isMobile" class="mb-4 flex items-center justify-between gap-3">
+      <!-- Back -->
+      <button
+        type="button"
+        class="rounded-full bg-gray-200 text-gray-700 px-2 py-1 hover:bg-gray-300 transition flex items-center w-8 h-8"
+        (click)="goBack()"
+      >
+        <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
+      </button>
+
+      <!-- Search -->
+      <input
+        type="text"
+        class="flex-1 border border-gray-300 rounded-[24px] px-3 py-2 mx-2"
+        [(ngModel)]="searchKeyword"
+        (ngModelChange)="onSearch()"
+        placeholder="Tìm kiếm..."
+      />
+
+      <!-- Excel -->
+      <button
+        type="button"
+        class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
+        (click)="exportToExcel()"
+      >
+        <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
+      </button>
+    </div>
+
+    <!-- 💻 Desktop Header -->
+    <div *ngIf="!isMobile" class="mb-4 flex items-center justify-between gap-4">
+      <!-- Back -->
+      <button
+        type="button"
+        class="rounded-full bg-gray-200 text-gray-700 px-4 py-2 hover:bg-gray-300 transition flex items-center gap-2"
+        (click)="goBack()"
+      >
+        <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
+        <span>Quay lại</span>
+      </button>
+
+      <!-- Search -->
+      <input
+        type="text"
+        class="border border-gray-300 rounded-[24px] px-3 py-2 w-[58%] mx-auto"
+        [(ngModel)]="searchKeyword"
+        (ngModelChange)="onSearch()"
+        placeholder="Tìm kiếm..."
+      />
+
+      <!-- Action buttons -->
+      <div class="flex gap-3">
+        <button
+          nz-button
+          nzType="primary"
+          class="flex items-center gap-2 whitespace-nowrap rounded-[24px] h-10"
+          (click)="createProduct()"
+        >
+          <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+          Tạo mới
+        </button>
+
+        <button
+          type="button"
+          class="px-4 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-2 h-10"
+          (click)="exportToExcel()"
+        >
+          <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
+          Xuất Excel
+        </button>
+      </div>
+    </div>
+
+    <!-- 📱 Mobile Table -->
+    <div *ngIf="isMobile">
+      <div
+        class="overflow-x-auto rounded-[24px] shadow-sm bg-[rgba(187,213,237,0.33)] dark:bg-gray-900 p-3 w-full"
+      >
+        <nz-table
+          [nzData]="listOfData"
+          [nzScroll]="{ x: '1200px', y: '460px' }"
+          [nzPageSize]="10"
+          [nzFrontPagination]="true"
+          [nzLoading]="isLoading"
+          (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
+        >
+          <thead>
+            <tr
+              class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200"
+            >
+              <th class="w-4"></th>
+              <th class="w-5">Thao tác</th>
+              <th>Mã</th>
+              <th>Tên</th>
+              <th>Số lượng</th>
+              <th>Đơn vị</th>
+              <th>Nhà cung cấp</th>
+              <th>Loại sản phẩm</th>
+              <th>Mô tả</th>
+              <th>Ngày tạo</th>
+              <th>Ngày cập nhật</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
+              class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-150"
+            >
+              <td>
+                <label
+                  nz-checkbox
+                  [nzChecked]="setOfCheckedId.has(item.Id)"
+                  (nzCheckedChange)="onItemChecked(item.Id, $event)"
+                ></label>
+              </td>
+              <td class="space-x-2 flex">
+                <button nz-button nzType="link" (click)="viewDetail(item)">
+                  <nz-icon nzType="edit" nzTheme="outline"></nz-icon>
+                </button>
+                <button nz-button nzType="link" class="text-red-600">
+                  <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
+                </button>
+              </td>
+              <td>{{ item.Code }}</td>
+              <td>{{ item.Name }}</td>
+              <td>{{ item.Quantity }}</td>
+              <td>{{ getUnitText(item.Unit) }}</td>
+              <td>{{ item.SupplierName }}</td>
+              <td>{{ item.ProductCategoryName }}</td>
+              <td>
+                {{
+                  item.Description.length > 10
+                    ? (item.Description | slice : 0 : 10) + "..."
+                    : item.Description
+                }}
+              </td>
+              <td>{{ item.CreatedDate | date : "dd/MM/yyyy" }}</td>
+              <td>{{ item.UpdatedDate | date : "dd/MM/yyyy" }}</td>
+              <td>
+                <span
+                  [ngClass]="
+                    item.IsActive
+                      ? 'text-green-600 font-medium'
+                      : 'text-red-600 font-medium'
+                  "
+                >
+                  {{ item.IsActive ? "🟢 Hoạt động" : "🔴 Ngưng hoạt động" }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </div>
+
+    <!-- 💻 Desktop Table -->
+    <div *ngIf="!isMobile">
+      <div
+        class="bg-[rgba(187,213,237,0.33)] dark:bg-gray-900 shadow-lg rounded-[24px] overflow-hidden p-2"
+      >
+        <nz-table
+          [nzData]="listOfData"
+          [nzScroll]="{ x: '1200px', y: '460px' }"
+          [nzPageSize]="10"
+          [nzFrontPagination]="true"
+          [nzLoading]="isLoading"
+          (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
+        >
+          <thead>
+            <tr
+              class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200"
+            >
+              <th class="w-9"></th>
+              <th class="w-8">Thao tác</th>
+              <th>Mã</th>
+              <th class="w-24">Tên</th>
+              <th>Số lượng</th>
+              <th>Đơn vị</th>
+              <th>Nhà cung cấp</th>
+              <th>Loại sản phẩm</th>
+              <th>Mô tả</th>
+              <th>Ngày tạo</th>
+              <th>Ngày cập nhật</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
+              class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-150"
+            >
+              <td class="text-center">
+                <label
+                  nz-checkbox
+                  [nzChecked]="setOfCheckedId.has(item.Id)"
+                  (nzCheckedChange)="onItemChecked(item.Id, $event)"
+                ></label>
+              </td>
+              <td class="space-x-2 flex">
+                <button nz-button nzType="link" (click)="viewDetail(item)">
+                  <nz-icon nzType="edit" nzTheme="outline"></nz-icon>
+                </button>
+                <button nz-button nzType="link" class="text-red-600">
+                  <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
+                </button>
+              </td>
+              <td>{{ item.Code }}</td>
+              <td>{{ item.Name }}</td>
+              <td>{{ item.Quantity }}</td>
+              <td>{{ getUnitText(item.Unit) }}</td>
+              <td>{{ item.SupplierName }}</td>
+              <td>{{ item.ProductCategoryName }}</td>
+              <td>
+                {{
+                  item.Description.length > 14
+                    ? (item.Description | slice : 0 : 14) + "..."
+                    : item.Description
+                }}
+              </td>
+              <td>{{ item.CreatedDate | date : "dd/MM/yyyy" }}</td>
+              <td>{{ item.UpdatedDate | date : "dd/MM/yyyy" }}</td>
+              <td>
+                <span
+                  [ngClass]="
+                    item.IsActive
+                      ? 'text-green-600 font-medium'
+                      : 'text-red-600 font-medium'
+                  "
+                >
+                  {{ item.IsActive ? "🟢 Hoạt động" : "🔴 Ngưng hoạt động" }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </nz-table>
+      </div>
+    </div>
+
+    <!-- 📱 Float Button -->
+    <div *ngIf="isMobile" class="type">
+      <nz-float-button
+        nzType="primary"
+        style="right: 24px"
+        [nzIcon]="icon"
+        (click)="createProduct()"
+      ></nz-float-button>
+      <ng-template #icon>
+        <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+      </ng-template>
+    </div>
+
+    <!-- Bottom menu -->
+    <bottom-menu class="mt-6"></bottom-menu>
+  </div>
+</div>

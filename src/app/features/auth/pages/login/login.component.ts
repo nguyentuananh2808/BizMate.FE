@@ -34,12 +34,12 @@ export class LoginComponent {
       password: ['', Validators.required],
     });
   }
-
+  isLoading = signal(false);
   onSubmit() {
     if (this.form.invalid) return;
 
     const { email, password } = this.form.value;
-
+    this.isLoading.set(true);
     this.authService.login(email, password).subscribe({
       next: (res) => {
         localStorage.setItem('access_token', res.AccessToken.Token);
@@ -49,11 +49,15 @@ export class LoginComponent {
         localStorage.setItem('name', decoded.name);
         localStorage.setItem('email', decoded.sub);
         localStorage.setItem('role', decoded.role);
-
+        setTimeout(() => {
+          this.isLoading.set(false);
+          this.router.navigate(['/verify-otp']);
+        }, 3000);
         this.toastr.success('Đăng nhập thành công');
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
+        this.isLoading.set(false);
         const messages: Record<string, string> = {
           COMMON_NOT_EXIST: 'Tài khoản không tồn tại hoặc sai mật khẩu',
           INVALID_CREDENTIALS: 'Email hoặc mật khẩu không đúng',

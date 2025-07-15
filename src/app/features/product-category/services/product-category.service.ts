@@ -4,32 +4,39 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ProductCategoryResponse } from '../models/product-category-response.model';
 import { ProductCategory } from '../models/product-category-response.model';
+import { ProductCategoryUpdateRequest } from '../models/product-category-update-request.model';
+import { ApiUrls } from '../../../config/api.config';
 
 @Injectable({ providedIn: 'root' })
 export class ProductCategoryService {
-  private apiUrl = 'https://localhost:44349/v1/product-category';
-
   constructor(private http: HttpClient) {}
 
   GetAll(): Observable<ProductCategoryResponse> {
-    return this.http.get<ProductCategoryResponse>(`${this.apiUrl}/GetAll`);
+    return this.http.get<ProductCategoryResponse>(
+      `${ApiUrls.baseUrl}${ApiUrls.productCategory.getAll}`
+    );
   }
 
   UpdateProductCategory(
     Id: string,
-    ProductCategoryCode: string,
+    Code: string,
     Name: string,
     RowVersion: number,
+    IsActive: boolean,
     Description: string
   ): Observable<ProductCategory> {
-    const body: ProductCategory = {
+    const body: ProductCategoryUpdateRequest = {
       Id,
-      ProductCategoryCode,
+      Code,
       Name,
       RowVersion,
+      IsActive,
       Description,
     };
-    return this.http.put<ProductCategory>(`${this.apiUrl}`, body);
+    return this.http.put<ProductCategory>(
+      `${ApiUrls.baseUrl}${ApiUrls.productCategory.update}`,
+      body
+    );
   }
 
   CreateProductCategory(name: string, description: string): Observable<any> {
@@ -37,10 +44,15 @@ export class ProductCategoryService {
       name,
       description,
     };
-    return this.http.post<any>(`${this.apiUrl}`, body);
+    return this.http.post<any>(
+      `${ApiUrls.baseUrl}${ApiUrls.productCategory.create}`,
+      body
+    );
   }
 
   DeleteProductCategory(id: string): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/${id}`);
+    return this.http.delete<any>(
+      `${ApiUrls.baseUrl}${ApiUrls.productCategory.delete(id)}`
+    );
   }
 }

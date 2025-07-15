@@ -1,10 +1,15 @@
 export interface ProductCategory {
   Id: string;
-  ProductCategoryCode: string;
+  Code: string;
   Name: string;
-  RowVersion:number;
+  RowVersion: number;
   Description: string;
+  IsActive: boolean;
+  CreatedDate: Date;
+  UpdatedDate: Date;
 }
+
+
 
 export interface ProductCategoryResponse {
   ProductCategories: ProductCategory[];

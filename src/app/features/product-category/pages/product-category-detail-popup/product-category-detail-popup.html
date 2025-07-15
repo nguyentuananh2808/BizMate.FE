@@ -30,7 +30,7 @@
           type="text"
           disabled
           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          [(ngModel)]="data.ProductCategoryCode"
+          [(ngModel)]="data.Code"
           name="productCategoryCode"
         />
       </div>
@@ -46,10 +46,9 @@
           name="name"
         />
       </div>
+
       <div>
-        <label class="block text-sm font-medium text-white mb-1">
-          Mô tả
-        </label>
+        <label class="block text-sm font-medium text-white mb-1"> Mô tả </label>
         <textarea
           rows="4"
           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -57,6 +56,51 @@
           name="description"
         ></textarea>
       </div>
+
+       <div>
+        <label class="block text-sm font-medium text-white mb-1">
+          Trạng thái
+        </label>
+        <div class="flex space-x-6 items-center">
+          <!-- Hoạt động -->
+          <label class="inline-flex items-center cursor-pointer">
+            <input
+              type="radio"
+              [(ngModel)]="data.IsActive"
+              [value]="true"
+              name="isActive"
+              class="form-radio h-5 w-5"
+            />
+            <span
+              class="ml-2 font-medium"
+              [ngClass]="data.IsActive ? 'text-green-900' : 'text-white'"
+            >
+              Hoạt động
+            </span>
+          </label>
+
+          <!-- Ngưng hoạt động -->
+          <label class="inline-flex items-center cursor-pointer">
+            <input
+              type="radio"
+              [(ngModel)]="data.IsActive"
+              [value]="false"
+              name="isActive"
+              class="form-radio h-5 w-5"
+            />
+            <span
+              class="ml-2 font-medium"
+              [ngClass]="
+                data.IsActive === false ? 'text-red-600' : 'text-white'
+              "
+            >
+              Ngưng hoạt động
+            </span>
+          </label>
+        </div>
+      </div>
+
+
       <div class="flex justify-end space-x-3 pt-4">
         <button
           type="button"

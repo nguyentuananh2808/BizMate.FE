@@ -1,32 +1,30 @@
-import { ProductCategoryPopupCreateComponent } from '../product-category-popup-create.component/product-category-popup-create.component';
-import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
-import { NzTableModule } from 'ng-zorro-antd/table';
-import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
-import { NzButtonModule } from 'ng-zorro-antd/button';
-import { FormsModule } from '@angular/forms';
-import { ChangeDetectorRef } from '@angular/core';
-import { ProductCategoryService } from '../../services/product-category.service';
-import { ProductCategory } from '../../models/product-category-response.model';
-import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
-import { NzIconModule } from 'ng-zorro-antd/icon';
-import { HostListener } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { ProductCategoryDetailPopup } from '../product-category-detail-popup/product-category-detail-popup';
-import { HeaderCommonComponent } from '../../../shared/header-common.component/header-common.component';
+import {
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  OnInit,
+} from '@angular/core';
 import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
-import { NzModalModule } from 'ng-zorro-antd/modal';
-import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { HeaderCommonComponent } from '../../shared/header-common.component/header-common.component';
+import { RouterModule } from '@angular/router';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { BottomMenuComponent } from '../../shared/bottom-menu.component/bottom-menu.component';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzTableModule } from 'ng-zorro-antd/table';
+import { FormsModule } from '@angular/forms';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Product } from '../models/product-response.model';
 import { ToastrService } from 'ngx-toastr';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
+import { ProductService } from '../services/product-service';
 import { Location } from '@angular/common';
+import * as XLSX from 'xlsx';
+import saveAs from 'file-saver';
 
 @Component({
-  selector: 'product-category',
+  selector: 'product',
   standalone: true,
-  templateUrl: './product-category.component.html',
-  styleUrls: ['./product-category.component.scss'],
   imports: [
     CommonModule,
     FormsModule,
@@ -36,25 +34,25 @@ import { Location } from '@angular/common';
     BottomMenuComponent,
     NzIconModule,
     RouterModule,
-    ProductCategoryDetailPopup,
-    ProductCategoryPopupCreateComponent,
     HeaderCommonComponent,
     NzModalModule,
     NzFloatButtonModule,
   ],
   providers: [DatePipe],
+  templateUrl: './product.component.html',
+  styleUrls: ['./product.component.scss'],
 })
-export class ProductCategoryComponent implements OnInit {
+export class ProductComponent implements OnInit {
   isLoading = false;
-  listOfData: ProductCategory[] = [];
-  originalData: ProductCategory[] = [];
-  listOfCurrentPageData: ProductCategory[] = [];
+  listOfData: Product[] = [];
+  originalData: Product[] = [];
+  listOfCurrentPageData: Product[] = [];
   setOfCheckedId = new Set<string>();
   checked = false;
   indeterminate = false;
   searchKeyword = '';
   isMobile = window.innerWidth < 768;
-  selectedItem!: ProductCategory;
+  selectedItem!: Product;
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
@@ -62,7 +60,7 @@ export class ProductCategoryComponent implements OnInit {
   }
 
   constructor(
-    private productService: ProductCategoryService,
+    private productService: ProductService,
     private cdr: ChangeDetectorRef,
     private modal: NzModalService,
     private toastr: ToastrService,
@@ -73,6 +71,23 @@ export class ProductCategoryComponent implements OnInit {
   showPopup = false;
   showPopupCreate = false;
 
+  getUnitText(unit: number): string {
+    switch (unit) {
+      case 1:
+        return 'Cái';
+      case 2:
+        return 'Hộp';
+      case 3:
+        return 'Thùng';
+      case 4:
+        return 'Kg';
+      case 5:
+        return 'Lít';
+      default:
+        return 'Khác';
+    }
+  }
+
   goBack(): void {
     this.location.back();
   }
@@ -81,22 +96,22 @@ export class ProductCategoryComponent implements OnInit {
     this.fetchData();
   }
 
-  createProductCategory() {
+  createProduct() {
     this.showPopupCreate = true;
   }
 
-  viewDetail(item: ProductCategory) {
+  viewDetail(item: Product) {
     this.selectedItem = item;
     this.showPopup = true;
   }
-  closeProductCategoryDetailPopup() {
+  closeProductDetailPopup() {
     this.showPopup = false;
     setTimeout(() => {
       this.showPopup = false;
     }, 300);
   }
 
-  closeProductCategoryPopupCreate() {
+  closeProductPopupCreate() {
     this.showPopupCreate = false;
     setTimeout(() => {
       this.showPopup = false;
@@ -109,9 +124,10 @@ export class ProductCategoryComponent implements OnInit {
 
   fetchData(): void {
     this.isLoading = true;
-    this.productService.GetAll().subscribe({
+
+    this.productService.SearchProduct(null, 10, 1).subscribe({
       next: (res) => {
-        this.originalData = res.ProductCategories ?? [];
+        this.originalData = res.Products ?? [];
         this.listOfData = [...this.originalData];
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -175,7 +191,7 @@ export class ProductCategoryComponent implements OnInit {
     this.refreshCheckedStatus();
   }
 
-  onCurrentPageDataChange(data: readonly ProductCategory[]): void {
+  onCurrentPageDataChange(data: readonly Product[]): void {
     this.listOfCurrentPageData = [...data];
     this.refreshCheckedStatus();
   }
@@ -190,30 +206,30 @@ export class ProductCategoryComponent implements OnInit {
       ) && !this.checked;
   }
 
-  trackById(index: number, item: ProductCategory): string {
+  trackById(index: number, item: Product): string {
     return item.Id;
   }
 
   //delete product category
-  deleteItem(item: ProductCategory): void {
-    this.modal.confirm({
-      nzTitle: `Bạn có chắc muốn xóa loại sản phẩm "<b>${item.Name}</b>" này ?`,
-      // nzContent: `<b>${item.Name}</b> sẽ bị xóa khỏi hệ thống.`,
-      nzOkText: 'Xóa',
-      nzCancelText: 'Hủy',
-      nzOnOk: () => {
-        this.productService.DeleteProductCategory(item.Id).subscribe({
-          next: () => {
-            this.fetchData();
-            this.toastr.success('Đã xóa thành công');
-          },
-          error: () => {
-            this.toastr.error('Xóa thất bại');
-          },
-        });
-      },
-    });
-  }
+  // deleteItem(item: Product): void {
+  //   this.modal.confirm({
+  //     nzTitle: `Bạn có chắc muốn xóa loại sản phẩm "<b>${item.Name}</b>" này ?`,
+  //     // nzContent: `<b>${item.Name}</b> sẽ bị xóa khỏi hệ thống.`,
+  //     nzOkText: 'Xóa',
+  //     nzCancelText: 'Hủy',
+  //     nzOnOk: () => {
+  //       this.productService.DeleteProduct(item.Id).subscribe({
+  //         next: () => {
+  //           this.fetchData();
+  //           this.toastr.success('Đã xóa thành công');
+  //         },
+  //         error: () => {
+  //           this.toastr.error('Xóa thất bại');
+  //         },
+  //       });
+  //     },
+  //   });
+  // }
 
   //export excel
   private saveAsExcelFile(buffer: any, fileName: string): void {
@@ -228,12 +244,15 @@ export class ProductCategoryComponent implements OnInit {
 
     // 1. Thêm hàng tiêu đề (header) với định dạng đẹp
     const header = [
-      'Mã loại',
-      'Tên loại',
+      'Mã sản phẩm',
+      'Tên sản phẩm',
+      'Số lượng',
+      'Đơn vị',
+      'Loại sản phẩm',
       'Mô tả',
-      'Trạng thái',
       'Ngày tạo',
       'Ngày cập nhật',
+      'Trạng thái',
     ];
     XLSX.utils.sheet_add_aoa(worksheet, [header], { origin: 'A1' });
 
@@ -241,7 +260,10 @@ export class ProductCategoryComponent implements OnInit {
     const data = this.listOfData.map((item) => [
       item.Code,
       item.Name,
-      item.Description,
+      item.Quantity,
+      item.Unit,
+      item.ProductCategoryName,
+      item.Description ?? '',
       this.datePipe.transform(item.CreatedDate, 'dd/MM/yyyy'),
       this.datePipe.transform(item.UpdatedDate, 'dd/MM/yyyy'),
       item.IsActive ? 'Hoạt động' : 'Ngưng hoạt động',
@@ -250,8 +272,8 @@ export class ProductCategoryComponent implements OnInit {
 
     // 3. Tạo workbook
     const workbook: XLSX.WorkBook = {
-      Sheets: { 'Danh sách loại SP': worksheet },
-      SheetNames: ['Danh sách loại SP'],
+      Sheets: { 'Danh sách sản phẩm': worksheet },
+      SheetNames: ['Danh sách sản phẩm'],
     };
 
     // 4. Export
@@ -259,6 +281,6 @@ export class ProductCategoryComponent implements OnInit {
       bookType: 'xlsx',
       type: 'array',
     });
-    this.saveAsExcelFile(excelBuffer, 'danh_sach_loai_san_pham');
+    this.saveAsExcelFile(excelBuffer, 'danh_sach_san_pham');
   }
 }
