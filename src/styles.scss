@@ -27,3 +27,101 @@ body {
 .ant-pagination-next .ant-pagination-item-link {
   border-radius: 24px;
 }
+
+
+
+/////////////////
+:host {
+  display: block;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Light mode background */
+.bg-login {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: #fefefe;
+  z-index: 0;
+  transition: background-color 0.5s ease;
+}
+
+/* Dark mode background */
+.dark .bg-login {
+  background-color: #0F172A !important;
+  transition: background-color 0.5s ease;
+}
+
+/* Sóng trên - màu sáng (light mode) */
+.bg-login::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 70vw;
+  height: 100vh;
+  background: linear-gradient(to bottom right, #e0f2ff, #90cdf4);
+  clip-path: ellipse(70% 100% at 90% 40%);
+  filter: blur(6px) brightness(1.05);
+  transform: scale(1.05);
+  animation: floatUpDown 10s ease-in-out infinite;
+  z-index: 1;
+  transition: background 0.5s ease, filter 0.5s ease;
+}
+
+/* Sóng trên - màu tối (dark mode) */
+.dark .bg-login::before {
+  background: linear-gradient(to bottom right, #1e293b, #3b82f6);
+  filter: blur(6px) brightness(0.7);
+  transition: background 0.5s ease, filter 0.5s ease;
+}
+
+/* Sóng dưới - cong lần 2 (light mode) */
+.bg-login::after {
+  content: '';
+  position: absolute;
+  bottom: -10%;
+  right: 0;
+  width: 80vw;
+  height: 100vh;
+  background: linear-gradient(to top left, #90cdf4, #e0f2ff);
+  clip-path: ellipse(70% 90% at 85% 70%);
+  filter: blur(6px) brightness(0.97);
+  transform: scale(1.05);
+  animation: floatDownUp 12s ease-in-out infinite;
+  z-index: 0;
+  transition: background 0.5s ease, filter 0.5s ease;
+}
+
+/* Sóng dưới - màu tối (dark mode) */
+.dark .bg-login::after {
+  background: linear-gradient(to top left, #2563eb, #1e293b);
+  filter: blur(6px) brightness(0.8);
+  transition: background 0.5s ease, filter 0.5s ease;
+}
+
+.logo-login {
+  margin: 0 auto;
+}
+
+/* Sóng 1 trôi lên */
+@keyframes floatUpDown {
+  0%, 100% {
+    transform: translateY(0) scale(1.05);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.05);
+  }
+}
+
+/* Sóng 2 trôi xuống */
+@keyframes floatDownUp {
+  0%, 100% {
+    transform: translateY(0) scale(1.05);
+  }
+  50% {
+    transform: translateY(10px) scale(1.05);
+  }
+}

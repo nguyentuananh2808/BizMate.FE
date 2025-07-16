@@ -69,9 +69,14 @@ export class ProductCategoryComponent implements OnInit {
     private datePipe: DatePipe,
     private location: Location
   ) {}
+  isDark = false;
 
   showPopup = false;
   showPopupCreate = false;
+
+  toggleDarkMode(): void {
+    this.isDark = !this.isDark;
+  }
 
   goBack(): void {
     this.location.back();

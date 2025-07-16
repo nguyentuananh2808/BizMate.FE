@@ -67,9 +67,14 @@ export class ProductComponent implements OnInit {
     private datePipe: DatePipe,
     private location: Location
   ) {}
+  isDark = false;
 
   showPopup = false;
   showPopupCreate = false;
+
+  toggleDarkMode(): void {
+    this.isDark = !this.isDark;
+  }
 
   getUnitText(unit: number): string {
     switch (unit) {

@@ -16,13 +16,17 @@ export class DarkModeToggleComponent {
   constructor(private darkModeService: DarkModeService) {}
   sunIcon = SunOutline;
   moonIcon = MoonOutline;
+
+
   @ViewChild('checkedTpl') checkedTpl!: TemplateRef<void>;
   @ViewChild('uncheckedTpl') uncheckedTpl!: TemplateRef<void>;
   get isDark(): boolean {
     return this.darkModeService.isDarkMode();
   }
 
-  toggleDarkMode(): void {
-    this.darkModeService.toggleDarkMode();
-  }
+  
+toggleDarkMode(): void {
+  this.darkModeService.toggleDarkMode(); 
+}
+
 }

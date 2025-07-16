@@ -49,10 +49,6 @@ export class LoginComponent {
         localStorage.setItem('name', decoded.name);
         localStorage.setItem('email', decoded.sub);
         localStorage.setItem('role', decoded.role);
-        setTimeout(() => {
-          this.isLoading.set(false);
-          this.router.navigate(['/verify-otp']);
-        }, 3000);
         this.toastr.success('Đăng nhập thành công');
         this.router.navigate(['/dashboard']);
       },
