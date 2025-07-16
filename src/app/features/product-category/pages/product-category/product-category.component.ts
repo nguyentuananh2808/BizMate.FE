@@ -231,9 +231,9 @@ export class ProductCategoryComponent implements OnInit {
       'Mã loại',
       'Tên loại',
       'Mô tả',
-      'Trạng thái',
       'Ngày tạo',
       'Ngày cập nhật',
+      'Trạng thái',
     ];
     XLSX.utils.sheet_add_aoa(worksheet, [header], { origin: 'A1' });
 

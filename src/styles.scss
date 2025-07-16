@@ -1,14 +1,15 @@
-@import 'ngx-toastr/toastr'; 
+@import 'ngx-toastr/toastr';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 body {
   font-family: 'Inter', sans-serif;
 }
+
 #toast-container {
   z-index: 99999 !important;
 }
-/* styles.scss (global) */
 
 .ant-table,
 .ant-pagination {
@@ -19,7 +20,10 @@ body {
 .ant-pagination-item {
   border-radius: 24px !important;
 }
-.ant-pagination-disabled .ant-pagination-item-link, .ant-pagination-disabled:hover .ant-pagination-item-link,
-.ant-pagination-prev .ant-pagination-item-link, .ant-pagination-next .ant-pagination-item-link{
+
+.ant-pagination-disabled .ant-pagination-item-link,
+.ant-pagination-disabled:hover .ant-pagination-item-link,
+.ant-pagination-prev .ant-pagination-item-link,
+.ant-pagination-next .ant-pagination-item-link {
   border-radius: 24px;
 }
