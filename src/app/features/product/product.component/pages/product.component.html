@@ -167,7 +167,19 @@
                     : item.Name
                 }}
               </td>
-              <td>{{ item.Quantity }}</td>
+              <td
+                [ngClass]="{
+                  'text-danger-light dark:text-danger-dark font-bold':
+                    item.Quantity < 3,
+                  'text-warning-light dark:text-warning-dark font-semibold':
+                    item.Quantity >= 3 && item.Quantity < 10,
+                  'text-success-light dark:text-success-dark font-medium':
+                    item.Quantity >= 10
+                }"
+              >
+                {{ item.Quantity }}
+              </td>
+
               <td>{{ getUnitText(item.Unit) }}</td>
               <td>{{ item.SupplierName }}</td>
               <td>{{ item.ProductCategoryName }}</td>
@@ -271,7 +283,19 @@
                     : item.Name
                 }}
               </td>
-              <td>{{ item.Quantity }}</td>
+              <td
+                [ngClass]="{
+                  'text-danger-light dark:text-danger-dark font-bold':
+                    item.Quantity < 3,
+                  'text-warning-light dark:text-warning-dark font-semibold':
+                    item.Quantity >= 3 && item.Quantity < 10,
+                  'text-success-light dark:text-success-dark font-medium':
+                    item.Quantity >= 10
+                }"
+              >
+                {{ item.Quantity }}
+              </td>
+
               <td>{{ getUnitText(item.Unit) }}</td>
               <td>{{ item.SupplierName }}</td>
               <td>{{ item.ProductCategoryName }}</td>

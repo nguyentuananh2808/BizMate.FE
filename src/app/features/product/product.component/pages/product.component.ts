@@ -105,6 +105,7 @@ export class ProductComponent implements OnInit {
     this.productService.SearchProduct(null, 10, 1).subscribe({
       next: (res) => {
         this.originalData = res.Products || [];
+        console.log("data:",res);
         this.listOfData = [...this.originalData];
         this.isLoading = false;
         this.cdr.detectChanges();

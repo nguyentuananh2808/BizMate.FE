@@ -53,7 +53,9 @@ export class ProductPopupCreateComponent implements OnInit {
   private loadCategories(): void {
     this.categoryService.GetAll().subscribe({
       next: (res) => {
-        this.categories = res.ProductCategories || [];
+        this.categories = (res.ProductCategories || []).filter(
+          (cat) => cat.IsActive
+        );
         this.filteredCategories = [...this.categories];
         console.log('Categories loaded:', this.categories);
         this.cdr.detectChanges();
