@@ -11,6 +11,7 @@ export const ApiUrls = {
 
   product: {
     search: '/product/search',
+    create: '/product',
   },
   auth: {
     login: '/auth/login',

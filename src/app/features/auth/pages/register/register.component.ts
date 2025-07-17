@@ -48,8 +48,6 @@ export class RegisterComponent {
     this.authService.register(email, fullName, nameStore, password).subscribe({
       next: (res: RegisterResponse) => {
         localStorage.setItem('email', res.Email);
-        console.log('register:', res);
-        console.log('send mail success');
 
         setTimeout(() => {
           this.isLoading.set(false);

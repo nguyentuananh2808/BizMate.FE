@@ -1,14 +1,15 @@
 import {
   ApplicationConfig,
+  importProvidersFrom,
   provideBrowserGlobalErrorListeners,
-  provideZonelessChangeDetection, importProvidersFrom,
+  provideZonelessChangeDetection,
 } from '@angular/core';
 import {
   provideClientHydration,
   withEventReplay,
 } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
-import { provideAnimations } from '@angular/platform-browser/animations';
+import { BrowserAnimationsModule, provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
 import {
   provideHttpClient,
@@ -21,18 +22,18 @@ import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { registerLocaleData } from '@angular/common';
 import en from '@angular/common/locales/en';
 import { FormsModule } from '@angular/forms';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 registerLocaleData(en);
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    importProvidersFrom(BrowserAnimationsModule),
+    provideAnimations(),
     provideHttpClient(withInterceptorsFromDi()),
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
-    provideAnimations(),
     provideToastr({
       timeOut: 3000,
       positionClass: 'toast-top-right',
@@ -42,6 +43,8 @@ export const appConfig: ApplicationConfig = {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
       multi: true,
-    }, provideNzI18n(en_US), importProvidersFrom(FormsModule), provideAnimationsAsync(), provideHttpClient(),
+    },
+    provideNzI18n(en_US),
+    importProvidersFrom(FormsModule),
   ],
 };

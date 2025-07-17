@@ -122,7 +122,7 @@
               ></th>
               <th [nzWidth]="'100px'">Thao tác</th>
               <th [nzWidth]="'120px'">Mã</th>
-              <th [nzWidth]="'200px'">Tên</th>
+              <th [nzWidth]="'240px'">Tên</th>
               <th [nzWidth]="'150px'">Số lượng tồn kho</th>
               <th [nzWidth]="'80px'">Đơn vị</th>
               <th [nzWidth]="'150px'">Nhà cung cấp</th>
@@ -130,7 +130,7 @@
               <th [nzWidth]="'180px'">Mô tả</th>
               <th [nzWidth]="'120px'">Ngày tạo</th>
               <th [nzWidth]="'120px'">Ngày cập nhật</th>
-              <th [nzWidth]="'120px'">Trạng thái</th>
+              <th [nzWidth]="'180px'">Trạng thái</th>
             </tr>
           </thead>
           <tbody>
@@ -160,7 +160,13 @@
                 </button>
               </td>
               <td>{{ item.Code }}</td>
-              <td>{{ item.Name }}</td>
+              <td>
+                {{
+                  item.Name.length > 24
+                    ? (item.Name | slice : 0 : 24) + "..."
+                    : item.Name
+                }}
+              </td>
               <td>{{ item.Quantity }}</td>
               <td>{{ getUnitText(item.Unit) }}</td>
               <td>{{ item.SupplierName }}</td>
@@ -219,7 +225,7 @@
               ></th>
               <th [nzWidth]="'100px'">Thao tác</th>
               <th [nzWidth]="'120px'">Mã</th>
-              <th [nzWidth]="'200px'">Tên</th>
+              <th [nzWidth]="'240px'">Tên</th>
               <th [nzWidth]="'150px'">Số lượng tồn kho</th>
               <th [nzWidth]="'80px'">Đơn vị</th>
               <th [nzWidth]="'150px'">Nhà cung cấp</th>
@@ -227,7 +233,7 @@
               <th [nzWidth]="'180px'">Mô tả</th>
               <th [nzWidth]="'120px'">Ngày tạo</th>
               <th [nzWidth]="'120px'">Ngày cập nhật</th>
-              <th [nzWidth]="'120px'">Trạng thái</th>
+              <th [nzWidth]="'200px'">Trạng thái</th>
             </tr>
           </thead>
 
@@ -258,7 +264,13 @@
                 </button>
               </td>
               <td>{{ item.Code }}</td>
-              <td>{{ item.Name }}</td>
+              <td>
+                {{
+                  item.Name.length > 24
+                    ? (item.Name | slice : 0 : 24) + "..."
+                    : item.Name
+                }}
+              </td>
               <td>{{ item.Quantity }}</td>
               <td>{{ getUnitText(item.Unit) }}</td>
               <td>{{ item.SupplierName }}</td>
@@ -306,3 +318,9 @@
     <bottom-menu class="mt-6"></bottom-menu>
   </div>
 </div>
+<!-- popup create -->
+<product-popup-create
+  *ngIf="showPopupCreate"
+  (closePopupCreate)="closeProductPopupCreate()"
+  (create)="onRefetch()"
+></product-popup-create>

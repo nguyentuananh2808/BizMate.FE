@@ -44,11 +44,9 @@ export class VerifyOtpComponent {
     const { otp } = this.form.value;
 
     const email : string | null = localStorage.getItem('email');
-    console.log('email',email);
     this.authService.verifyOtp(otp, email).subscribe({
       next: (res: VerifyOtpResponse) => {
         localStorage.setItem('otp_info', JSON.stringify(res));
-        console.log('verify otp success');
         this.router.navigate(['/login']);
       },
       error: (err) => {
