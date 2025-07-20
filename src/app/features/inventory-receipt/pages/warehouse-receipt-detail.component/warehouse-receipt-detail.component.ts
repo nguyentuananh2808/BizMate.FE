@@ -12,7 +12,14 @@ import { ToastrService } from 'ngx-toastr';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { Location } from '@angular/common';
 import { NzIconModule } from 'ng-zorro-antd/icon';
-import { FormsModule } from '@angular/forms';
+import {
+  FormGroup,
+  FormsModule,
+  FormBuilder,
+  FormArray,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
@@ -40,12 +47,14 @@ import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
     NzModalModule,
     NzFloatButtonModule,
     UnitTextPipe,
+    ReactiveFormsModule
   ],
   templateUrl: './warehouse-receipt-detail.component.html',
   styleUrls: ['./warehouse-receipt-detail.component.scss'],
   providers: [DatePipe],
 })
 export class WarehouseReceiptDetailComponent implements OnInit {
+  receiptForm: FormGroup;
   isDark = false;
   isLoading = false;
   id!: string;
@@ -64,12 +73,56 @@ export class WarehouseReceiptDetailComponent implements OnInit {
     private toastr: ToastrService,
     private datePipe: DatePipe,
     private location: Location,
-    private route: ActivatedRoute
-  ) {}
+    private route: ActivatedRoute,
+    private fb: FormBuilder
+  ) {
+    this.receiptForm = this.fb.group({
+      supplierName: ['', Validators.required],
+      phoneNumber: [''],
+      email: [''],
+      deliveryAddress: [''],
+      details: this.fb.array([]), // danh sách sản phẩm
+    });
+  }
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
     this.isMobile = event.target.innerWidth < 768;
   }
+
+  get details(): FormArray {
+    return this.receiptForm.get('details') as FormArray;
+  }
+
+  addProduct() {
+    this.details.push(
+      this.fb.group({
+        productId: ['', Validators.required],
+        quantity: [1, [Validators.required, Validators.min(1)]],
+      })
+    );
+  }
+
+  removeProduct(index: number) {
+    this.details.removeAt(index);
+  }
+
+  submitForm() {
+    if (this.receiptForm.valid) {
+      const formData = this.receiptForm.value;
+
+      const payload = {
+        id: this.id,
+        supplierName: formData.supplierName,
+        phoneNumber: formData.phoneNumber,
+        email: formData.email,
+        deliveryAddress: formData.deliveryAddress,
+        details: formData.details,
+      };
+
+      console.log('Dữ liệu gửi:', payload);
+    }
+  }
+
   ngOnInit(): void {
     this.id = this.route.snapshot.paramMap.get('id') || '';
     this.fetchData();
