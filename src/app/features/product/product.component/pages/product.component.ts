@@ -22,6 +22,8 @@ import { Location } from '@angular/common';
 import * as XLSX from 'xlsx';
 import saveAs from 'file-saver';
 import { ProductPopupCreateComponent } from '../../product-popup-create.component/pages/product-popup-create.component';
+import { ProductPopupUpdateComponent } from '../../product-popup-update.component/product-popup-update.component';
+import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
 
 @Component({
   selector: 'product',
@@ -39,6 +41,8 @@ import { ProductPopupCreateComponent } from '../../product-popup-create.componen
     NzModalModule,
     NzFloatButtonModule,
     ProductPopupCreateComponent,
+    ProductPopupUpdateComponent,
+    UnitTextPipe,
   ],
   providers: [DatePipe],
   templateUrl: './product.component.html',
@@ -97,6 +101,7 @@ export class ProductComponent implements OnInit {
   }
   closeProductPopupCreate() {
     this.showPopupCreate = false;
+    this.fetchData();
     setTimeout(() => (this.showPopup = false), 300);
   }
 
@@ -105,8 +110,10 @@ export class ProductComponent implements OnInit {
     this.productService.SearchProduct(null, 10, 1).subscribe({
       next: (res) => {
         this.originalData = res.Products || [];
-        console.log("data:",res);
-        this.listOfData = [...this.originalData];
+        console.log('data:', res);
+        this.listOfData = [...this.originalData].sort((a, b) =>
+          a.Code.localeCompare(b.Code)
+        );
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -178,23 +185,6 @@ export class ProductComponent implements OnInit {
     return item.Id;
   }
 
-  getUnitText(unit: number): string {
-    switch (unit) {
-      case 1:
-        return 'Cái';
-      case 2:
-        return 'Hộp';
-      case 3:
-        return 'Thùng';
-      case 4:
-        return 'Kg';
-      case 5:
-        return 'Lít';
-      default:
-        return 'Khác';
-    }
-  }
-
   private saveAsExcelFile(buffer: any, fileName: string): void {
     const data: Blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
@@ -220,13 +210,12 @@ export class ProductComponent implements OnInit {
       i.Code,
       i.Name,
       i.Quantity,
-      this.getUnitText(i.Unit),
-      i.ProductCategoryName,
+      i.Name,
       i.SupplierName,
       i.Description || '',
       this.datePipe.transform(i.CreatedDate, 'dd/MM/yyyy'),
       this.datePipe.transform(i.UpdatedDate, 'dd/MM/yyyy'),
-      i.IsActive ? 'Hoạt động' : 'Ngưng hoạt động',
+      i.IsActive == false ? 'Hoạt động' : 'Ngưng hoạt động',
     ]);
     XLSX.utils.sheet_add_aoa(ws, data, { origin: -1 });
     const wb: XLSX.WorkBook = {
@@ -235,5 +224,25 @@ export class ProductComponent implements OnInit {
     };
     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     this.saveAsExcelFile(excelBuffer, 'danh_sach_san_pham');
+  }
+
+  deleteProduct(item: Product): void {
+    this.modal.confirm({
+      nzTitle: `Bạn có chắc muốn xóa sản phẩm "<b>${item.Name}</b>" này ?`,
+      // nzContent: `<b>${item.Name}</b> sẽ bị xóa khỏi hệ thống.`,
+      nzOkText: 'Xóa',
+      nzCancelText: 'Hủy',
+      nzOnOk: () => {
+        this.productService.DeleteProduct(item.Id).subscribe({
+          next: () => {
+            this.fetchData();
+            this.toastr.success('Đã xóa thành công');
+          },
+          error: () => {
+            this.toastr.error('Xóa thất bại');
+          },
+        });
+      },
+    });
   }
 }

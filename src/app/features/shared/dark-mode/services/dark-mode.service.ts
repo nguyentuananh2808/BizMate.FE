@@ -1,33 +1,42 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DarkModeService {
-  private darkMode = false;
+  private darkModeSubject: BehaviorSubject<boolean>;
+
+  public isDark$; 
 
   constructor() {
     const savedMode = localStorage.getItem('darkMode');
-    if (savedMode !== null) {
-      this.darkMode = savedMode === 'true';
-    } else {
-      this.darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    this.applyMode();
+    const prefersDark = window.matchMedia(
+      '(prefers-color-scheme: dark)'
+    ).matches;
+
+    const initialValue =
+      savedMode !== null ? savedMode === 'true' : prefersDark;
+
+    this.darkModeSubject = new BehaviorSubject<boolean>(initialValue);
+    this.isDark$ = this.darkModeSubject.asObservable();
+
+    this.applyMode(initialValue);
   }
 
   toggleDarkMode(): void {
-    this.darkMode = !this.darkMode;
-    localStorage.setItem('darkMode', String(this.darkMode));
-    this.applyMode();
+    const newValue = !this.darkModeSubject.value;
+    this.darkModeSubject.next(newValue);
+    localStorage.setItem('darkMode', String(newValue));
+    this.applyMode(newValue);
   }
 
   isDarkMode(): boolean {
-    return this.darkMode;
+    return this.darkModeSubject.value;
   }
 
-  private applyMode(): void {
-    if (this.darkMode) {
+  private applyMode(mode: boolean): void {
+    if (mode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');

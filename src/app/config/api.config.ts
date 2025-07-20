@@ -12,10 +12,16 @@ export const ApiUrls = {
   product: {
     search: '/product/search',
     create: '/product',
+    update: '/product',
+    delete: (id: string) => `/product/${id}`,
   },
   auth: {
     login: '/auth/login',
     register: '/user/register',
     verifyOtp: '/user/verify',
+  },
+  warehouseReceipt: {
+    search: '/inventory-receipt/search',
+    readById: '/inventory-receipt',
   },
 };

@@ -249,7 +249,7 @@ export class ProductCategoryComponent implements OnInit {
       item.Description,
       this.datePipe.transform(item.CreatedDate, 'dd/MM/yyyy'),
       this.datePipe.transform(item.UpdatedDate, 'dd/MM/yyyy'),
-      item.IsActive ? 'Hoạt động' : 'Ngưng hoạt động',
+      item.IsActive == false ? 'Hoạt động' : 'Ngưng hoạt động',
     ]);
     XLSX.utils.sheet_add_aoa(worksheet, data, { origin: -1 }); // Thêm vào sau header
 

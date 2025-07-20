@@ -1,6 +1,6 @@
 <div class="bg-login" [ngClass]="{ dark: isDark }">
   <div
-    class="min-h-screen px-4 pt-6 z-10 relative"
+    class="max-h-[700px] overflow-y-auto px-4 pt-6 z-10 relative"
     [ngClass]="{ 'dark:bg-gray-900': isDark }"
   >
     <!-- Header -->
@@ -14,8 +14,7 @@
         class="rounded-full bg-gray-200 text-gray-700 px-2 py-1 hover:bg-gray-300 transition flex items-center w-8 h-8"
         (click)="goBack()"
         [ngClass]="{
-          'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600':
-            isDark
+          'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600': isDark
         }"
       >
         <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
@@ -46,19 +45,12 @@
     <!-- Desktop header bar -->
     <div *ngIf="!isMobile">
       <div class="mb-4 flex items-center justify-between gap-4">
-        <!-- Nút Quay lại -->
-        <button
-          type="button"
-          class="rounded-full bg-gray-200 text-gray-700 px-4 py-2 hover:bg-gray-300 transition flex items-center gap-2"
-          (click)="goBack()"
-          [ngClass]="{
-            'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600':
-              isDark
-          }"
+        <!-- page name -->
+        <h1
+          class="text-secondary-light dark:text-secondary-dark text-2xl font-bold"
         >
-          <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
-          <span>Quay lại</span>
-        </button>
+          Loại sản phẩm
+        </h1>
 
         <!-- Ô tìm kiếm căn giữa -->
         <input
@@ -68,8 +60,7 @@
           (ngModelChange)="onSearch()"
           placeholder="Tìm kiếm..."
           [ngClass]="{
-            'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600':
-              isDark
+            'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600': isDark
           }"
         />
 
@@ -92,6 +83,20 @@
           >
             <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
             Xuất Excel
+          </button>
+
+          <!-- Nút Quay lại -->
+          <button
+            type="button"
+            class="rounded-full bg-gray-200 text-gray-700 px-4 py-2 hover:bg-gray-300 transition flex items-center gap-2"
+            (click)="goBack()"
+            [ngClass]="{
+              'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600':
+                isDark
+            }"
+          >
+            <span>Quay lại</span>
+            <nz-icon nzType="arrow-right" nzTheme="outline"></nz-icon>
           </button>
         </div>
       </div>
@@ -121,15 +126,15 @@
                 [(nzChecked)]="checked"
                 [nzIndeterminate]="indeterminate"
                 (nzCheckedChange)="onAllChecked($event)"
-                class="w-4"
+                [nzWidth]="'50px'"
               ></th>
-              <th class="w-5">Thao tác</th>
-              <th class="min-w-[80px]">Mã</th>
-              <th class="min-w-[120px]">Tên loại</th>
-              <th class="min-w-[110px]">Ngày tạo</th>
-              <th class="min-w-[130px]">Ngày cập nhật</th>
-              <th class="min-w-[180px]">Mô tả</th>
-              <th class="min-w-[140px]">Trạng thái</th>
+              <th [nzWidth]="'100px'">Thao tác</th>
+              <th [nzWidth]="'120px'">Mã</th>
+              <th [nzWidth]="'240px'">Tên loại</th>
+              <th [nzWidth]="'120px'">Ngày tạo</th>
+              <th [nzWidth]="'120px'">Ngày cập nhật</th>
+              <th [nzWidth]="'180px'">Mô tả</th>
+              <th [nzWidth]="'200px'">Trạng thái</th>
             </tr>
           </thead>
           <tbody>
@@ -171,14 +176,14 @@
               </td>
 
               <td>
-                <span
+               <span
                   [ngClass]="
                     item.IsActive
-                      ? 'text-green-600 font-medium'
-                      : 'text-red-600 font-medium'
+                      ?'text-red-600 font-medium'
+                      : 'text-green-600 font-medium'
                   "
                 >
-                  {{ item.IsActive ? "🟢 Hoạt động" : "🔴 Ngưng hoạt động" }}
+                  {{ item.IsActive ? "🔴 Ngưng hoạt động" : "🟢 Hoạt động" }}
                 </span>
               </td>
             </tr>
@@ -211,15 +216,15 @@
                 [(nzChecked)]="checked"
                 [nzIndeterminate]="indeterminate"
                 (nzCheckedChange)="onAllChecked($event)"
-                class="w-9"
+                [nzWidth]="'50px'"
               ></th>
-              <th class="w-8">Thao tác</th>
-              <th class="w-32">Mã</th>
-              <th class="w-56">Tên loại</th>
-              <th class="w-9">Ngày tạo</th>
-              <th class="w-9">Ngày cập nhật</th>
-              <th class="w-9">Mô tả</th>
-              <th class="w-5">Trạng thái</th>
+              <th [nzWidth]="'100px'">Thao tác</th>
+              <th [nzWidth]="'120px'">Mã</th>
+              <th [nzWidth]="'240px'">Tên loại</th>
+              <th [nzWidth]="'120px'">Ngày tạo</th>
+              <th [nzWidth]="'120px'">Ngày cập nhật</th>
+              <th [nzWidth]="'180px'">Mô tả</th>
+              <th [nzWidth]="'200px'">Trạng thái</th>
             </tr>
           </thead>
           <tbody>
@@ -264,11 +269,11 @@
                 <span
                   [ngClass]="
                     item.IsActive
-                      ? 'text-green-600 font-medium'
-                      : 'text-red-600 font-medium'
+                      ?'text-red-600 font-medium'
+                      : 'text-green-600 font-medium'
                   "
                 >
-                  {{ item.IsActive ? "🟢 Hoạt động" : "🔴 Ngưng hoạt động" }}
+                  {{ item.IsActive ? "🔴 Ngưng hoạt động" : "🟢 Hoạt động" }}
                 </span>
               </td>
             </tr>

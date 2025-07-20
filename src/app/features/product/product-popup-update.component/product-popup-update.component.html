@@ -4,7 +4,7 @@
   [ngClass]="{ 'opacity-100': !isClosing, 'opacity-0': isClosing }"
 >
   <div
-    class="bg-card-bg-light dark:bg-card-bg-dark rounded-2xl shadow-xl backdrop-blur-xl w-full max-w-2xl m-4 p-6 relative border border-white/40 transform transition-all duration-300"
+    class="overflow-y-auto max-h-screen bg-card-bg-light dark:bg-card-bg-dark rounded-2xl shadow-xl backdrop-blur-xl w-full max-w-2xl m-4 p-6 relative border border-white/40 transform transition-all duration-300"
     [ngClass]="{
       'opacity-100 scale-100': !isClosing,
       'opacity-0 scale-95': isClosing
@@ -22,7 +22,7 @@
     <h2
       class="text-2xl font-semibold mb-6 text-center text-text-primary-light dark:text-text-primary-dark"
     >
-      Cập nhật loại sản phẩm
+      Cập nhật sản phẩm
     </h2>
 
     <form class="space-y-6" (ngSubmit)="onSubmit()">
@@ -31,14 +31,14 @@
         <label
           class="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1"
         >
-          Mã loại
+          Mã sản phẩm
         </label>
         <input
           type="text"
           disabled
           class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-info-light dark:focus:ring-info-dark"
           [(ngModel)]="data.Code"
-          name="productCategoryCode"
+          name="productCode"
         />
       </div>
 
@@ -47,7 +47,7 @@
         <label
           class="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1"
         >
-          Tên loại
+          Tên sản phẩm
         </label>
         <input
           type="text"
@@ -55,6 +55,63 @@
           [(ngModel)]="data.Name"
           name="name"
         />
+      </div>
+
+      <!-- Loại sản phẩm -->
+      <div class="relative">
+        <label
+          for="search-category"
+          class="block text-sm font-medium mb-1 text-text-secondary-light dark:text-text-secondary-dark"
+        >
+          Loại sản phẩm
+        </label>
+
+        <input
+          id="search-category"
+          type="text"
+          [(ngModel)]="searchTerm"
+          [ngModelOptions]="{ standalone: true }"
+          (focus)="showDropdown = true"
+          (input)="filterCategories()"
+          (blur)="onBlur()"
+          placeholder="Tìm loại sản phẩm..."
+          class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-card-bg-dark text-text-primary-light dark:text-text-primary-dark focus:outline-none focus:ring-2 focus:ring-info-light dark:focus:ring-info-dark transition-colors duration-200"
+          autocomplete="off"
+        />
+
+        <ul
+          *ngIf="showDropdown && filteredCategories.length > 0"
+          class="absolute z-10 w-full max-h-48 overflow-auto mt-1 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-card-bg-dark shadow-lg"
+        >
+          <li
+            *ngFor="let cat of filteredCategories"
+            (click)="selectCategory(cat)"
+            class="cursor-pointer px-4 py-2 hover:bg-info-light dark:hover:bg-info-dark text-white"
+          >
+            {{ cat.Name }}
+          </li>
+        </ul>
+      </div>
+
+      <!-- Đơn vị -->
+      <div>
+        <label
+          class="block text-sm font-medium mb-1 text-text-secondary-light dark:text-text-secondary-dark"
+        >
+          Đơn vị
+        </label>
+        <select
+          name="unit"
+          [(ngModel)]="data.Unit"
+          class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
+        >
+          <option [value]="1">Cái</option>
+          <option [value]="2">Hộp</option>
+          <option [value]="3">Thùng</option>
+          <option [value]="4">Kg</option>
+          <option [value]="5">Lít</option>
+          <option [value]="6">Cây</option>
+        </select>
       </div>
 
       <!-- Description -->

@@ -5,6 +5,7 @@ import { Product, ProductResponse } from '../models/product-response.model';
 import { ApiUrls } from '../../../../config/api.config';
 import { ProductSearchRequest } from '../models/product-search-request.model';
 import { ProductCreateRequest } from '../models/product-create-request.model';
+import { ProductUpdateRequest } from '../models/product-update-request.model';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -26,37 +27,53 @@ export class ProductService {
     );
   }
 
-    // UpdateProduct(
-    //   Id: string,
-    //   Code: string,
-    //   Name: string,
-    //   RowVersion: number,
-    //   IsActive: boolean,
-    //   Description: string
-    // ): Observable<Product> {
-    //   const body: ProductUpdateRequest = {
-    //     Id,
-    //     Code,
-    //     Name,
-    //     RowVersion,
-    //     IsActive,
-    //     Description,
-    //   };
-    //   return this.http.put<Product>(`${this.apiUrl}`, body);
-    // }
+  UpdateProduct(
+    Id: string,
+    RowVersion: number,
+    ProductCategoryId: string,
+    Name: string,
+    Unit: number,
+    IsActive: boolean,
+    ImageUrl?: string,
+    SupplierId?: string,
+    Description?: string
+  ): Observable<Product> {
+    const body: ProductUpdateRequest = {
+      Id,
+      Name,
+      ProductCategoryId,
+      Unit,
+      ImageUrl,
+      SupplierId,
+      RowVersion,
+      IsActive,
+      Description,
+    };
+    console.log("payload:",ProductCategoryId);
+    return this.http.put<Product>(`${ApiUrls.baseUrl}${ApiUrls.product.update}`, body);
+  }
 
-    CreateProduct(name: string,productCategoryId:string,unit:number,imageUrl:string, description: string): Observable<any> {
-      const body: ProductCreateRequest = {
-        name,
-        productCategoryId,
-        unit,
-        imageUrl,
-        description,
-      };
-      return this.http.post<any>(`${ApiUrls.baseUrl}${ApiUrls.product.create}`, body);
-    }
+  CreateProduct(
+    name: string,
+    productCategoryId: string,
+    unit: number,
+    imageUrl: string,
+    description: string
+  ): Observable<any> {
+    const body: ProductCreateRequest = {
+      name,
+      productCategoryId,
+      unit,
+      imageUrl,
+      description,
+    };
+    return this.http.post<any>(
+      `${ApiUrls.baseUrl}${ApiUrls.product.create}`,
+      body
+    );
+  }
 
-    // DeleteProduct(id: string): Observable<any> {
-    //   return this.http.delete<any>(`${this.apiUrl}/${id}`);
-    // }
+  DeleteProduct(id: string): Observable<any> {
+    return this.http.delete<any>(`${ApiUrls.baseUrl}${ApiUrls.product.delete(id)}`);
+  }
 }

@@ -36,7 +36,6 @@
       <button
         type="button"
         class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
-        (click)="exportToExcel()"
       >
         <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
       </button>
@@ -45,12 +44,18 @@
     <!-- Desktop header bar -->
     <div *ngIf="!isMobile">
       <div class="mb-4 flex items-center justify-between gap-4">
-        <!-- page name -->
-        <h1
-          class="text-secondary-light dark:text-secondary-dark text-2xl font-bold"
+        <!-- Nút Quay lại -->
+        <button
+          type="button"
+          class="rounded-full bg-gray-200 text-gray-700 px-4 py-2 hover:bg-gray-300 transition flex items-center gap-2"
+          (click)="goBack()"
+          [ngClass]="{
+            'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600': isDark
+          }"
         >
-          Sản phẩm
-        </h1>
+          <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
+          <span>Quay lại</span>
+        </button>
 
         <!-- Ô tìm kiếm căn giữa -->
         <input
@@ -70,7 +75,6 @@
             nz-button
             nzType="primary"
             class="flex items-center gap-2 whitespace-nowrap rounded-[24px] h-10"
-            (click)="createProduct()"
           >
             <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
             Tạo mới
@@ -79,24 +83,9 @@
           <button
             type="button"
             class="px-4 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-2 h-10"
-            (click)="exportToExcel()"
           >
             <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
             Xuất Excel
-          </button>
-
-          <!-- Nút Quay lại -->
-          <button
-            type="button"
-            class="rounded-full bg-gray-200 text-gray-700 px-4 py-2 hover:bg-gray-300 transition flex items-center gap-2"
-            (click)="goBack()"
-            [ngClass]="{
-              'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600':
-                isDark
-            }"
-          >
-            <span>Quay lại</span>
-            <nz-icon nzType="arrow-right" nzTheme="outline"></nz-icon>
           </button>
         </div>
       </div>
@@ -108,7 +97,7 @@
         class="overflow-x-auto rounded-[24px] shadow-sm bg-[rgba(187,213,237,0.33)] p-3 w-full"
         [ngClass]="{ 'dark:bg-gray-900': isDark }"
       >
-        <nz-table
+        <!-- <nz-table
           [nzData]="listOfData"
           [nzScroll]="{ x: '1000px', y: '400px' }"
           [nzPageSize]="10"
@@ -133,7 +122,6 @@
               <th [nzWidth]="'240px'">Tên</th>
               <th [nzWidth]="'150px'">Số lượng tồn kho</th>
               <th [nzWidth]="'80px'">Đơn vị</th>
-              <!-- <th [nzWidth]="'150px'">Nhà cung cấp</th> -->
               <th [nzWidth]="'150px'">Loại SP</th>
               <th [nzWidth]="'180px'">Mô tả</th>
               <th [nzWidth]="'120px'">Ngày tạo</th>
@@ -178,9 +166,9 @@
               <td
                 [ngClass]="{
                   'text-danger-light dark:text-danger-dark font-bold':
-                    item.Quantity < 10,
+                    item.Quantity < 3,
                   'text-warning-light dark:text-warning-dark font-semibold':
-                    item.Quantity >= 10 && item.Quantity < 30,
+                    item.Quantity >= 3 && item.Quantity < 10,
                   'text-success-light dark:text-success-dark font-medium':
                     item.Quantity >= 10
                 }"
@@ -188,7 +176,7 @@
                 {{ item.Quantity }}
               </td>
 
-              <td>{{ item.Unit | unitText }}</td>
+              <td>{{ getUnitText(item.Unit) }}</td>
               <td>{{ item.ProductCategoryName }}</td>
               <td>
                 {{
@@ -203,16 +191,16 @@
                 <span
                   [ngClass]="
                     item.IsActive
-                      ? 'text-red-600 font-medium'
-                      : 'text-green-600 font-medium'
+                      ? 'text-green-600 dark:text-green-400 font-medium'
+                      : 'text-red-600 dark:text-red-400 font-medium'
                   "
                 >
-                  {{ item.IsActive ? "🔴 Ngưng hoạt động" : "🟢 Hoạt động" }}
+                  {{ item.IsActive ? "🟢 Hoạt động" : "🔴 Ngưng hoạt động" }}
                 </span>
               </td>
             </tr>
           </tbody>
-        </nz-table>
+        </nz-table> -->
       </div>
     </div>
 
@@ -244,15 +232,10 @@
               ></th>
               <th [nzWidth]="'100px'">Thao tác</th>
               <th [nzWidth]="'120px'">Mã</th>
-              <th [nzWidth]="'240px'">Tên</th>
-              <th [nzWidth]="'150px'">Số lượng tồn kho</th>
-              <th [nzWidth]="'80px'">Đơn vị</th>
-              <!-- <th [nzWidth]="'150px'">Nhà cung cấp</th> -->
-              <th [nzWidth]="'150px'">Loại SP</th>
               <th [nzWidth]="'180px'">Mô tả</th>
               <th [nzWidth]="'120px'">Ngày tạo</th>
               <th [nzWidth]="'120px'">Ngày cập nhật</th>
-              <th [nzWidth]="'200px'">Trạng thái</th>
+              <!-- <th [nzWidth]="'200px'">Trạng thái</th> -->
             </tr>
           </thead>
 
@@ -273,63 +256,41 @@
                 <button
                   nz-button
                   nzType="link"
-                  (click)="viewDetail(item)"
                   class="text-blue-700 dark:text-blue-500"
+                  [routerLink]="['/warehouse-receipt-detail', item.Id]"
                 >
                   <nz-icon nzType="edit" nzTheme="outline"></nz-icon>
                 </button>
-                <button
-                  (click)="deleteProduct(item)"
-                  nz-button
-                  nzType="link"
-                  class="text-red-600"
-                >
+                <button nz-button nzType="link" class="text-red-600">
                   <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
                 </button>
               </td>
               <td>{{ item.Code }}</td>
-              <td>
-                {{
-                  item.Name.length > 24
-                    ? (item.Name | slice : 0 : 24) + "..."
-                    : item.Name
-                }}
-              </td>
-              <td
-                [ngClass]="{
-                  'text-danger-light dark:text-danger-dark font-bold':
-                    item.Quantity < 10,
-                  'text-warning-light dark:text-warning-dark font-semibold':
-                    item.Quantity >= 10 && item.Quantity < 30,
-                  'text-success-light dark:text-success-dark font-medium':
-                    item.Quantity >= 10
-                }"
-              >
-                {{ item.Quantity }}
-              </td>
 
-              <td>{{ item.Unit | unitText }}</td>
-              <td>{{ item.ProductCategoryName }}</td>
               <td>
                 {{
-                  item.Description.length > 14
+                  item.Description && item.Description.length > 14
                     ? (item.Description | slice : 0 : 14) + "..."
                     : item.Description
                 }}
               </td>
               <td>{{ item.CreatedDate | date : "dd/MM/yyyy" }}</td>
               <td>{{ item.UpdatedDate | date : "dd/MM/yyyy" }}</td>
-              <td>
+              <!-- <td>
                 <span
                   [ngClass]="
                     item.IsActive
-                      ? 'text-red-600 font-medium'
-                      : 'text-green-600 font-medium'
+                      ? 'text-red-600 dark:text-red-400 font-medium'
+                      : 'text-green-600 dark:text-green-400 font-medium'
                   "
                 >
-                  {{ item.IsActive ? "🔴 Ngưng hoạt động" : "🟢 Hoạt động" }}
+                  {{
+                    item.IsActive == false
+                      ? "🟢 Hoạt động"
+                      : "🔴 Ngưng hoạt động"
+                  }}
                 </span>
-              </td>
+              </td> -->
             </tr>
           </tbody>
         </nz-table>
@@ -342,7 +303,6 @@
         nzType="primary"
         style="right: 24px"
         [nzIcon]="icon"
-        (click)="createProduct()"
       ></nz-float-button>
       <ng-template #icon>
         <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
@@ -354,16 +314,16 @@
   </div>
 </div>
 <!-- popup create -->
-<product-popup-create
+<!-- <product-popup-create
   *ngIf="showPopupCreate"
   (closePopupCreate)="closeProductPopupCreate()"
   (create)="onRefetch()"
-></product-popup-create>
+></product-popup-create> -->
 
 <!-- popup update -->
-<product-popup-update
+<!-- <product-popup-update
   *ngIf="showPopup"
   [data]="selectedItem"
   (closePopup)="closeProductDetailPopup()"
   (update)="onRefetch()"
-></product-popup-update>
+></product-popup-update> -->

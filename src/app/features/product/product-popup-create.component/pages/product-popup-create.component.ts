@@ -54,7 +54,7 @@ export class ProductPopupCreateComponent implements OnInit {
     this.categoryService.GetAll().subscribe({
       next: (res) => {
         this.categories = (res.ProductCategories || []).filter(
-          (cat) => cat.IsActive
+          (cat) => cat.IsActive == false
         );
         this.filteredCategories = [...this.categories];
         console.log('Categories loaded:', this.categories);
