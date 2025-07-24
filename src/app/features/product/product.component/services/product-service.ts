@@ -14,13 +14,17 @@ export class ProductService {
   SearchProduct(
     keySearch: string | null,
     pageSize: number,
-    pageIndex: number
+    pageIndex: number,
+    isActive?: boolean
   ): Observable<ProductResponse> {
     var payload: ProductSearchRequest = {
       keySearch,
       pageIndex,
       pageSize,
+      isActive
     };
+    console.log('keyseach: ', keySearch);
+
     return this.http.post<ProductResponse>(
       `${ApiUrls.baseUrl}${ApiUrls.product.search}`,
       payload
@@ -49,8 +53,11 @@ export class ProductService {
       IsActive,
       Description,
     };
-    console.log("payload:",ProductCategoryId);
-    return this.http.put<Product>(`${ApiUrls.baseUrl}${ApiUrls.product.update}`, body);
+    console.log('payload:', ProductCategoryId);
+    return this.http.put<Product>(
+      `${ApiUrls.baseUrl}${ApiUrls.product.update}`,
+      body
+    );
   }
 
   CreateProduct(
@@ -74,6 +81,8 @@ export class ProductService {
   }
 
   DeleteProduct(id: string): Observable<any> {
-    return this.http.delete<any>(`${ApiUrls.baseUrl}${ApiUrls.product.delete(id)}`);
+    return this.http.delete<any>(
+      `${ApiUrls.baseUrl}${ApiUrls.product.delete(id)}`
+    );
   }
 }

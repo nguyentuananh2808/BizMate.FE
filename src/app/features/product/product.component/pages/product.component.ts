@@ -24,6 +24,8 @@ import saveAs from 'file-saver';
 import { ProductPopupCreateComponent } from '../../product-popup-create.component/pages/product-popup-create.component';
 import { ProductPopupUpdateComponent } from '../../product-popup-update.component/product-popup-update.component';
 import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzMenuModule } from 'ng-zorro-antd/menu';
 
 @Component({
   selector: 'product',
@@ -43,6 +45,8 @@ import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
     ProductPopupCreateComponent,
     ProductPopupUpdateComponent,
     UnitTextPipe,
+    NzDropDownModule,
+    NzMenuModule,
   ],
   providers: [DatePipe],
   templateUrl: './product.component.html',
@@ -50,6 +54,7 @@ import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
 })
 export class ProductComponent implements OnInit {
   isLoading = false;
+  activeDropdown: any = null;
   listOfData: Product[] = [];
   originalData: Product[] = [];
   listOfCurrentPageData: Product[] = [];
@@ -88,6 +93,15 @@ export class ProductComponent implements OnInit {
   goBack(): void {
     this.location.back();
   }
+
+  toggleDropdown(item: any) {
+    this.activeDropdown = this.activeDropdown === item ? null : item;
+  }
+
+  closeDropdown() {
+    this.activeDropdown = null;
+  }
+
   createProduct() {
     this.showPopupCreate = true;
   }
@@ -107,15 +121,17 @@ export class ProductComponent implements OnInit {
 
   fetchData(): void {
     this.isLoading = true;
-    this.productService.SearchProduct(null, 10, 1).subscribe({
+    this.productService.SearchProduct(null, 10, 1, undefined).subscribe({
       next: (res) => {
         this.originalData = res.Products || [];
         console.log('data:', res);
-        this.listOfData = [...this.originalData].sort((a, b) =>
-          a.Code.localeCompare(b.Code)
-        );
-        this.isLoading = false;
-        this.cdr.detectChanges();
+
+        setTimeout(() => {
+          this.listOfData = [...this.originalData].sort((a, b) =>
+            a.Code.localeCompare(b.Code)
+          );
+          this.isLoading = false;
+        });
       },
       error: () => (this.isLoading = false),
     });

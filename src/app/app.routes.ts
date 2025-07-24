@@ -4,7 +4,7 @@ export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 
   {
-    path: 'warehouse-receipt-detail',
+    path: 'warehouse-receipt-detail/:id',
     loadComponent: () =>
       import(
         './features/inventory-receipt/pages/warehouse-receipt-detail.component/warehouse-receipt-detail.component'
@@ -39,7 +39,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'warehouse-receipt-detail',
+    path: 'warehouse-receipt',
     loadComponent: () =>
       import(
         './features/inventory-receipt/pages/warehouse-receipt.component/warehouse-receipt.component'
@@ -58,5 +58,12 @@ export const routes: Routes = [
       import(
         './features/product/product.component/pages/product.component'
       ).then((m) => m.ProductComponent),
+  },
+  {
+    path: 'warehouse-receipt-create',
+    loadComponent: () =>
+      import(
+        './features/inventory-receipt/pages/warehouse-receipt-create.component/warehouse-receipt-create.component'
+      ).then((m) => m.WarehouseReceiptCreateComponent),
   },
 ];

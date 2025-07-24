@@ -32,7 +32,7 @@
         }"
       />
 
-      <!-- Nút Excel -->
+      <!-- button -->
       <button
         type="button"
         class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
@@ -75,6 +75,7 @@
             nz-button
             nzType="primary"
             class="flex items-center gap-2 whitespace-nowrap rounded-[24px] h-10"
+            routerLink="/warehouse-receipt-create"
           >
             <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
             Tạo mới
@@ -303,6 +304,7 @@
         nzType="primary"
         style="right: 24px"
         [nzIcon]="icon"
+        routerLink="/warehouse-receipt-create"
       ></nz-float-button>
       <ng-template #icon>
         <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
