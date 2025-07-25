@@ -21,6 +21,7 @@ import { ToastrService } from 'ngx-toastr';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { Location } from '@angular/common';
+import { MenuComponent } from '../../../shared/menu.component/menu.component';
 
 @Component({
   selector: 'product-category',
@@ -41,6 +42,7 @@ import { Location } from '@angular/common';
     HeaderCommonComponent,
     NzModalModule,
     NzFloatButtonModule,
+    MenuComponent
   ],
   providers: [DatePipe],
 })

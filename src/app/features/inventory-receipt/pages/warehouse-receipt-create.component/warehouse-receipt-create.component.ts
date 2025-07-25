@@ -24,6 +24,7 @@ import { InventoryDetail } from '../../models/warehouse-receipt-detail.model';
 import { ProductResponse } from '../../../product/product.component/models/product-response.model';
 import { map } from 'rxjs';
 import { ProductPopupSearchComponent } from '../../../product/product-popup-search.component/product-popup-search.component';
+import { MenuComponent } from '../../../shared/menu.component/menu.component';
 
 @Component({
   standalone: true,
@@ -43,6 +44,7 @@ import { ProductPopupSearchComponent } from '../../../product/product-popup-sear
     NzFloatButtonModule,
     UnitTextPipe,
     ProductPopupSearchComponent,
+    MenuComponent
   ],
   templateUrl: './warehouse-receipt-create.component.html',
   styleUrls: ['./warehouse-receipt-create.component.scss'],

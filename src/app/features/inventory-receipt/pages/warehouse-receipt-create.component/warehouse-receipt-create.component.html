@@ -1,3 +1,7 @@
+<div class="flex">
+<app-menu class="bg-background-dark"></app-menu>
+
+
 <div class="bg-login" [ngClass]="{ dark: isDark }">
   <div
     class="max-h-[700px] overflow-y-auto px-4 pt-6 z-10 relative"
@@ -164,7 +168,7 @@
     </div>
   </div>
 </div>
-
+</div>
 <product-popup-search
   *ngIf="isPopupSearchProducts"
   (closePopup)="closeProductPopup()"

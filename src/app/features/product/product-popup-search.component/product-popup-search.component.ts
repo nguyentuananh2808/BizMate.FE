@@ -36,12 +36,15 @@ export class ProductPopupSearchComponent implements OnInit {
   @Output() selectProducts = new EventEmitter<InventoryDetail[]>();
   isClosing = false;
   isDark = false;
-  listOfData: InventoryDetail[] = [];
+  listOfData: Product[] = [];
   originalData: Product[] = [];
-  listOfCurrentPageData: InventoryDetail[] = [];
+  listOfCurrentPageData: Product[] = [];
   setOfCheckedId = new Set<string>();
   checked = false;
   indeterminate = false;
+  pageIndex = 1;
+  pageSize = 10;
+  totalCount = 0;
   searchKeyword = '';
   isLoading = false;
   constructor(
@@ -50,43 +53,22 @@ export class ProductPopupSearchComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadProducts();
+    this.fetchData();
   }
-
-  loadProducts(): void {
-    this.isLoading = true;
-    this.productService
-      .SearchProduct('', 10, 1, false)
-      .pipe(
-        map((res: ProductResponse) =>
-          res.Products.map((p) => ({
-            Id: '',
-            InventoryReceiptId: '',
-            ProductId: p.Id,
-            ProductName: p.Name,
-            ProductCode: p.Code,
-            Unit: p.Unit || 0,
-            Quantity: 0,
-          }))
-        )
-      )
-      .subscribe((products: InventoryDetail[]) => {
-        this.listOfData = [...this.listOfData, ...products];
-        this.listOfData = this.listOfData.filter(
-          (item, index, self) =>
-            index === self.findIndex((t) => t.ProductId === item.ProductId)
-        );
-        this.listOfData.sort((a, b) =>
-          a.ProductCode.localeCompare(b.ProductCode)
-        );
-        this.isLoading = false;
-        this.refreshCheckedStatus();
-        this.cdr.detectChanges();
-      });
-  }
-
   onSaveSelectedProducts(): void {
-    this.selectProducts.emit(this.listOfData);
+    const selectedInventoryDetails: InventoryDetail[] = this.listOfData
+      .filter((p) => this.setOfCheckedId.has(p.Id))
+      .map((p) => ({
+        Id: p.Id,
+        ProductId: p.Id,
+        ProductName: p.Name,
+        ProductCode: p.Code,
+        Unit: p.Unit,
+        Quantity: 0,
+        InventoryReceiptId: '',
+      }));
+
+    this.selectProducts.emit(selectedInventoryDetails);
     this.closePopup.emit();
   }
 
@@ -96,38 +78,39 @@ export class ProductPopupSearchComponent implements OnInit {
       this.closePopup.emit();
     }, 200);
   }
+  onPageChange(page: number): void {
+    this.pageIndex = page;
+    this.fetchData(this.pageIndex, this.pageSize);
+  }
 
-  onSearch(): void {
-    const keySearch = this.searchKeyword.trim();
+  fetchData(
+    pageIndex: number = this.pageIndex,
+    pageSize: number = this.pageSize
+  ): void {
     this.isLoading = true;
     this.productService
-      .SearchProduct(keySearch, 10, 1, false)
-      .pipe(
-        map((res: ProductResponse) =>
-          res.Products.map((p) => ({
-            Id: '',
-            InventoryReceiptId: '',
-            ProductId: p.Id,
-            ProductName: p.Name,
-            ProductCode: p.Code,
-            Unit: p.Unit || 0,
-            Quantity: 0,
-          }))
-        )
-      )
-      .subscribe((products: InventoryDetail[]) => {
-        this.listOfData = [...products];
-        this.listOfData = this.listOfData.filter(
-          (item, index, self) =>
-            index === self.findIndex((t) => t.ProductId === item.ProductId)
-        );
-        this.listOfData.sort((a, b) =>
-          a.ProductCode.localeCompare(b.ProductCode)
-        );
-        this.isLoading = false;
-        this.refreshCheckedStatus();
-        this.cdr.detectChanges();
+      .SearchProduct(this.searchKeyword || null, pageSize, pageIndex, undefined)
+      .subscribe({
+        next: (res) => {
+          this.originalData = res.Products || [];
+          this.totalCount = res.TotalCount || 0;
+
+          setTimeout(() => {
+            this.listOfData = [...this.originalData].sort((a, b) =>
+              a.Code.localeCompare(b.Code)
+            );
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          });
+        },
+        error: () => (this.isLoading = false),
       });
+  }
+
+  onSearch(): void {
+    this.pageIndex = 1;
+    this.searchKeyword = this.searchKeyword.trim();
+    this.fetchData(this.pageIndex, this.pageSize);
   }
 
   listOfSelection = [
@@ -160,7 +143,6 @@ export class ProductPopupSearchComponent implements OnInit {
   updateCheckedSet(id: string, chk: boolean) {
     chk ? this.setOfCheckedId.add(id) : this.setOfCheckedId.delete(id);
   }
-
   onItemChecked(id: string, chk: boolean) {
     this.updateCheckedSet(id, chk);
     this.refreshCheckedStatus();
@@ -171,23 +153,20 @@ export class ProductPopupSearchComponent implements OnInit {
     );
     this.refreshCheckedStatus();
   }
-  onCurrentPageDataChange(data: readonly InventoryDetail[]) {
+
+  onCurrentPageDataChange(data: readonly Product[]): void {
     this.listOfCurrentPageData = [...data];
-    this.refreshCheckedStatus();
   }
 
   refreshCheckedStatus() {
-    setTimeout(() => {
-      this.checked = this.listOfCurrentPageData.every((i) =>
-        this.setOfCheckedId.has(i.Id)
-      );
-      this.indeterminate =
-        this.listOfCurrentPageData.some((i) => this.setOfCheckedId.has(i.Id)) &&
-        !this.checked;
-    });
+    this.checked = this.listOfCurrentPageData.every((i) =>
+      this.setOfCheckedId.has(i.Id)
+    );
+    this.indeterminate =
+      this.listOfCurrentPageData.some((i) => this.setOfCheckedId.has(i.Id)) &&
+      !this.checked;
   }
-
-  trackById(index: number, item: InventoryDetail): string {
+  trackById(index: number, item: Product): string {
     return item.Id;
   }
 }

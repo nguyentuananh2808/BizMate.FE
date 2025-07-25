@@ -26,6 +26,7 @@ import { ProductPopupUpdateComponent } from '../../product-popup-update.componen
 import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
+import { MenuComponent } from '../../../shared/menu.component/menu.component';
 
 @Component({
   selector: 'product',
@@ -47,6 +48,7 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
     UnitTextPipe,
     NzDropDownModule,
     NzMenuModule,
+    MenuComponent
   ],
   providers: [DatePipe],
   templateUrl: './product.component.html',
@@ -67,6 +69,9 @@ export class ProductComponent implements OnInit {
   isDark = false;
   showPopup = false;
   showPopupCreate = false;
+  pageIndex = 1;
+  pageSize = 10;
+  totalCount = 0;
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
@@ -119,30 +124,39 @@ export class ProductComponent implements OnInit {
     setTimeout(() => (this.showPopup = false), 300);
   }
 
-  fetchData(): void {
-    this.isLoading = true;
-    this.productService.SearchProduct(null, 10, 1, undefined).subscribe({
-      next: (res) => {
-        this.originalData = res.Products || [];
-        console.log('data:', res);
+  onPageChange(page: number): void {
+    this.pageIndex = page;
+    this.fetchData(this.pageIndex, this.pageSize);
+  }
 
-        setTimeout(() => {
-          this.listOfData = [...this.originalData].sort((a, b) =>
-            a.Code.localeCompare(b.Code)
-          );
-          this.isLoading = false;
-        });
-      },
-      error: () => (this.isLoading = false),
-    });
+  fetchData(
+    pageIndex: number = this.pageIndex,
+    pageSize: number = this.pageSize
+  ): void {
+    this.isLoading = true;
+    this.productService
+      .SearchProduct(this.searchKeyword || null, pageSize, pageIndex, undefined)
+      .subscribe({
+        next: (res) => {
+          this.originalData = res.Products || [];
+          this.totalCount = res.TotalCount || 0;
+
+          setTimeout(() => {
+            this.listOfData = [...this.originalData].sort((a, b) =>
+              a.Code.localeCompare(b.Code)
+            );
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          });
+        },
+        error: () => (this.isLoading = false),
+      });
   }
 
   onSearch(): void {
-    const kw = this.searchKeyword.trim().toLowerCase();
-    this.listOfData = this.originalData.filter(
-      (i) =>
-        i.Code.toLowerCase().includes(kw) || i.Name.toLowerCase().includes(kw)
-    );
+    this.pageIndex = 1;
+    this.searchKeyword = this.searchKeyword.trim();
+    this.fetchData(this.pageIndex, this.pageSize);
   }
 
   listOfSelection = [
@@ -185,10 +199,11 @@ export class ProductComponent implements OnInit {
     );
     this.refreshCheckedStatus();
   }
-  onCurrentPageDataChange(data: readonly Product[]) {
+
+  onCurrentPageDataChange(data: readonly Product[]): void {
     this.listOfCurrentPageData = [...data];
-    this.refreshCheckedStatus();
   }
+
   refreshCheckedStatus() {
     this.checked = this.listOfCurrentPageData.every((i) =>
       this.setOfCheckedId.has(i.Id)

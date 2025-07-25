@@ -106,11 +106,56 @@ body {
   margin: 0 auto;
 }
 
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 240px;
+  transition: width 0.3s;
+
+  &.collapsed {
+    width: 80px;
+
+    .menu-item,
+    li {
+      text-align: center;
+
+      i {
+        font-size: 20px;
+      }
+
+      span {
+        display: none;
+      }
+    }
+  }
+
+  li {
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #f0f0f0;
+    }
+
+    ul {
+      padding-left: 16px;
+    }
+  }
+}
+
 /* Sóng 1 trôi lên */
 @keyframes floatUpDown {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0) scale(1.05);
   }
+
   50% {
     transform: translateY(-10px) scale(1.05);
   }
@@ -118,9 +163,12 @@ body {
 
 /* Sóng 2 trôi xuống */
 @keyframes floatDownUp {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0) scale(1.05);
   }
+
   50% {
     transform: translateY(10px) scale(1.05);
   }

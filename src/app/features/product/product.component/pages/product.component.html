@@ -1,3 +1,6 @@
+<div class="flex">
+<app-menu class="bg-background-dark"></app-menu>
+
 <div class="bg-login" [ngClass]="{ dark: isDark }">
   <div
     class="max-h-[700px] overflow-y-auto px-4 pt-6 z-10 relative"
@@ -111,10 +114,13 @@
         <nz-table
           [nzData]="listOfData"
           [nzScroll]="{ x: '1000px', y: '400px' }"
-          [nzPageSize]="10"
-          [nzFrontPagination]="true"
+          [nzTotal]="totalCount"
+          [nzPageSize]="pageSize"
+          [nzPageIndex]="pageIndex"
+          [nzFrontPagination]="false"
           [nzLoading]="isLoading"
           (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
+          (nzPageIndexChange)="onPageChange($event)" 
         >
           <thead>
             <tr
@@ -133,7 +139,6 @@
               <th [nzWidth]="'240px'">Tên</th>
               <th [nzWidth]="'150px'">Số lượng tồn kho</th>
               <th [nzWidth]="'80px'">Đơn vị</th>
-              <!-- <th [nzWidth]="'150px'">Nhà cung cấp</th> -->
               <th [nzWidth]="'150px'">Loại SP</th>
               <th [nzWidth]="'180px'">Mô tả</th>
               <th [nzWidth]="'120px'">Ngày tạo</th>
@@ -230,10 +235,13 @@
         <nz-table
           [nzData]="listOfData"
           [nzScroll]="{ y: '400px' }"
-          [nzPageSize]="10"
-          [nzFrontPagination]="true"
+          [nzTotal]="totalCount"
+          [nzPageSize]="pageSize"
+          [nzPageIndex]="pageIndex"
+          [nzFrontPagination]="false"
           [nzLoading]="isLoading"
           (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
+          (nzPageIndexChange)="onPageChange($event)" 
         >
           <thead>
             <tr
@@ -357,6 +365,8 @@
     <!-- Bottom menu -->
     <bottom-menu class="mt-6"></bottom-menu>
   </div>
+</div>
+
 </div>
 <!-- popup create -->
 <product-popup-create

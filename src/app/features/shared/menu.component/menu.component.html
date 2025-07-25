@@ -1,0 +1,60 @@
+<div class="p-2">
+<div
+  class="bg-slate-900 text-text-primary-dark h-screen transition-all duration-300 ease-in-out rounded-[24px] p-1"
+  [ngClass]="isCollapsed ? 'w-16' : 'w-64'"
+>
+  <!-- Toggle Sidebar Button -->
+  <div class="p-3 flex justify-end">
+    <button
+      class="bg-primary-light hover:bg-primary-dark p-2 rounded-full transition justify-items-center"
+      (click)="toggleSidebar()"
+    >
+      <i nz-icon [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"></i>
+    </button>
+  </div>
+
+  <!-- Menu Items -->
+  <ul class="space-y-1 mt-2">
+    <ng-container *ngFor="let item of menuItems">
+      <!-- Parent with children -->
+      <li *ngIf="item.children">
+        <div
+          class="flex items-center gap-3 p-3 cursor-pointer hover:bg-vkDarkEnd transition rounded"
+          (click)="toggleExpand(item.key)"
+        >
+          <i nz-icon [nzType]="item.icon"></i>
+          <span *ngIf="!isCollapsed" class="truncate">{{ item.label }}</span>
+          <i
+            *ngIf="!isCollapsed"
+            class="ml-auto"
+            nz-icon
+            [nzType]="isExpanded(item.key) ? 'down' : 'right'"
+          ></i>
+        </div>
+
+        <ul *ngIf="isExpanded(item.key) && !isCollapsed" class="pl-6 space-y-1">
+          <li
+            *ngFor="let child of item.children"
+            class="flex items-center gap-2 p-2 cursor-pointer hover:bg-vkDarkEnd transition rounded"
+            (click)="handleClick(child.route)"
+          >
+            <i nz-icon [nzType]="child.icon || 'right'"></i>
+            <span class="truncate">{{ child.label }}</span>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Item without children -->
+      <li
+        *ngIf="!item.children"
+        class="flex items-center gap-3 p-3 cursor-pointer hover:bg-vkDarkEnd transition rounded"
+        (click)="handleClick(item.route)"
+      >
+        <i nz-icon [nzType]="item.icon"></i>
+        <span *ngIf="!isCollapsed" class="truncate">{{ item.label }}</span>
+      </li>
+    </ng-container>
+  </ul>
+</div>
+</div>
+

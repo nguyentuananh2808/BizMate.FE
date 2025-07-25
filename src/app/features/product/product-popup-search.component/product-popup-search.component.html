@@ -52,11 +52,14 @@
     >
       <nz-table
         [nzData]="listOfData"
-        [nzScroll]="{ x: '1000px', y: '200px' }"
-        [nzPageSize]="10"
-        [nzFrontPagination]="true"
-        [nzLoading]="isLoading"
-        (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
+          [nzScroll]="{ y: '400px' }"
+          [nzTotal]="totalCount"
+          [nzPageSize]="pageSize"
+          [nzPageIndex]="pageIndex"
+          [nzFrontPagination]="false"
+          [nzLoading]="isLoading"
+          (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
+          (nzPageIndexChange)="onPageChange($event)" 
       >
         <thead>
           <tr
@@ -88,12 +91,12 @@
                 (nzCheckedChange)="onItemChecked(item.Id, $event)"
               ></label>
             </td>
-            <td>{{ item.ProductCode }}</td>
+            <td>{{ item.Code }}</td>
             <td>
               {{
-                item.ProductName.length > 30
-                  ? (item.ProductName | slice : 0 : 30) + "..."
-                  : item.ProductName
+                item.Name.length > 30
+                  ? (item.Name | slice : 0 : 30) + "..."
+                  : item.Name
               }}
             </td>
             <td>{{ item.Unit | unitText }}</td>

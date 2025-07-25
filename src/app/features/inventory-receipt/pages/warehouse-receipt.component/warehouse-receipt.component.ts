@@ -20,6 +20,7 @@ import { Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WarehouseReceipt } from '../../models/warehouse-receipt.model';
 import { SearchWarehouseRequest } from '../../models/warehouse-receipt-search-request.model';
+import { MenuComponent } from '../../../shared/menu.component/menu.component';
 
 @Component({
   selector: 'warehouse-receipt',
@@ -35,6 +36,7 @@ import { SearchWarehouseRequest } from '../../models/warehouse-receipt-search-re
     HeaderCommonComponent,
     NzModalModule,
     NzFloatButtonModule,
+    MenuComponent
   ],
   templateUrl: './warehouse-receipt.component.html',
   styleUrls: ['./warehouse-receipt.component.scss'],
@@ -42,6 +44,7 @@ import { SearchWarehouseRequest } from '../../models/warehouse-receipt-search-re
 })
 export class WarehouseReceiptComponent implements OnInit {
   isLoading = false;
+  activeDropdown: any = null;
   listOfData: WarehouseReceipt[] = [];
   originalData: WarehouseReceipt[] = [];
   listOfCurrentPageData: WarehouseReceipt[] = [];
@@ -80,6 +83,15 @@ export class WarehouseReceiptComponent implements OnInit {
   goBack(): void {
     this.location.back();
   }
+
+  toggleDropdown(item: any) {
+    this.activeDropdown = this.activeDropdown === item ? null : item;
+  }
+
+  closeDropdown() {
+    this.activeDropdown = null;
+  }
+
   createWarehouseReceipt() {
     this.showPopupCreate = true;
   }
