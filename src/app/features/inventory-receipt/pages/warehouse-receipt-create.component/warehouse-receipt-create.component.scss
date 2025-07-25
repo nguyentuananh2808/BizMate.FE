@@ -4,15 +4,74 @@
   border: 1px solid #ccc;
   border-radius: 8px;
 }
+
 .btn-primary {
   background: #3b82f6;
   color: white;
   padding: 6px 16px;
   border-radius: 8px;
 }
+
 .btn-submit {
   background: #10b981;
   color: white;
   padding: 8px 20px;
   border-radius: 8px;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-4px);
+  }
+
+  40% {
+    transform: translateX(4px);
+  }
+
+  60% {
+    transform: translateX(-4px);
+  }
+
+  80% {
+    transform: translateX(4px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.input-error {
+  border-color: red !important;
+  animation: shake 0.3s ease;
+}
+
+
+.type {
+  position: fixed;
+  z-index: 9999;
+}
+
+nz-float-button {
+  bottom: 8%;
+  left: 24px;
+  width: 56px;
+  height: 56px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+
+::ng-deep .ant-modal-content {
+  background-color: rgba(211, 231, 251, 0.492);
+  border-radius: 24px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+::ng-deep .ant-modal-confirm-btns .ant-btn {
+  border-radius: 24px;
 }

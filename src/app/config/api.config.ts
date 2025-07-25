@@ -23,5 +23,6 @@ export const ApiUrls = {
   warehouseReceipt: {
     search: '/inventory-receipt/search',
     readById: '/inventory-receipt',
+    create: '/inventory-receipt',
   },
 };

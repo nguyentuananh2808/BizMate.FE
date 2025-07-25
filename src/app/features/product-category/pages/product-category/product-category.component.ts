@@ -42,7 +42,7 @@ import { MenuComponent } from '../../../shared/menu.component/menu.component';
     HeaderCommonComponent,
     NzModalModule,
     NzFloatButtonModule,
-    MenuComponent
+    MenuComponent,
   ],
   providers: [DatePipe],
 })
@@ -55,6 +55,7 @@ export class ProductCategoryComponent implements OnInit {
   checked = false;
   indeterminate = false;
   searchKeyword = '';
+  activeDropdown: any = null;
   isMobile = window.innerWidth < 768;
   selectedItem!: ProductCategory;
 
@@ -79,7 +80,14 @@ export class ProductCategoryComponent implements OnInit {
   toggleDarkMode(): void {
     this.isDark = !this.isDark;
   }
-
+  
+  toggleDropdown(item: any) {
+    this.activeDropdown = this.activeDropdown === item ? null : item;
+  }
+  
+  closeDropdown() {
+    this.activeDropdown = null;
+  }
   goBack(): void {
     this.location.back();
   }

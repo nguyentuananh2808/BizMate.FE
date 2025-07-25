@@ -5,6 +5,7 @@ import { ApiUrls } from '../../../config/api.config';
 import { WarehouseReceiptSearchResponse } from '../models/warehouse-receipt-search-response.model';
 import { SearchWarehouseRequest } from '../models/warehouse-receipt-search-request.model';
 import { InventoryReadById } from '../models/warehouse-receipt-detail.model';
+import { CreateReceiptRequestRequest } from '../models/warehouse-receipt-create.model';
 
 @Injectable({ providedIn: 'root' })
 export class WarehouseReceiptService {
@@ -28,6 +29,15 @@ export class WarehouseReceiptService {
   ReadByIdWarehouseReceipt = (id: string): Observable<InventoryReadById> => {
     return this.http.get<InventoryReadById>(
       `${ApiUrls.baseUrl}${ApiUrls.warehouseReceipt.readById}/${id}`
+    );
+  };
+
+  CreateWarehouseReceipt = (
+    createReceiptRequestRequest: CreateReceiptRequestRequest
+  ): Observable<any> => {
+    return this.http.post<any>(
+      `${ApiUrls.baseUrl}${ApiUrls.warehouseReceipt.create}`,
+      createReceiptRequestRequest
     );
   };
 }

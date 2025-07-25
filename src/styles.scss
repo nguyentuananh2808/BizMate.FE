@@ -43,7 +43,7 @@ body {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  background-color: #fefefe;
+  background-color: #e7e7e7d8;
   z-index: 0;
   transition: background-color 0.5s ease;
 }
@@ -62,7 +62,7 @@ body {
   right: 0;
   width: 70vw;
   height: 100vh;
-  background: linear-gradient(to bottom right, #e0f2ff, #90cdf4);
+  background: linear-gradient(to bottom right, #daecf9, #90cdf4);
   clip-path: ellipse(70% 100% at 90% 40%);
   filter: blur(6px) brightness(1.05);
   transform: scale(1.05);
@@ -104,6 +104,29 @@ body {
 
 .logo-login {
   margin: 0 auto;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 18%;
+  left: 30px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  min-width: 80px;
+}
+
+.dropdown-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
 }
 
 

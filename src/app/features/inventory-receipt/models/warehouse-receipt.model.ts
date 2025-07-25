@@ -7,4 +7,5 @@ export interface WarehouseReceipt extends BaseCoreRespone {
   Description: string;
   CreatedDate: Date;
   UpdatedDate: Date;
+  SupplierName: string;
 }

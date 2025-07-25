@@ -1,70 +1,35 @@
 <div class="flex">
-<app-menu class="bg-background-dark"></app-menu>
+  <app-menu class="bg-background-dark"></app-menu>
 
+  <div class="bg-login" [ngClass]="{ dark: isDark }">
+    <div
+      class="max-h-[700px] overflow-y-auto px-4 pt-6 z-10 relative"
+      [ngClass]="{ 'dark:bg-gray-900': isDark }"
+    >
+      <!-- Header -->
+      <header-common></header-common>
 
-<div class="bg-login" [ngClass]="{ dark: isDark }">
-  <div
-    class="max-h-[700px] overflow-y-auto px-4 pt-6 z-10 relative"
-    [ngClass]="{ 'dark:bg-gray-900': isDark }"
-  >
-    <!-- Header -->
-    <header-common></header-common>
-
-    <!-- Mobile header bar -->
-    <div *ngIf="isMobile" class="mb-4 flex items-center justify-between gap-3">
-      <!-- Nút Quay lại -->
-      <button
-        type="button"
-        class="rounded-full bg-gray-200 text-gray-700 px-2 py-1 hover:bg-gray-300 transition flex items-center w-8 h-8"
-        (click)="goBack()"
-        [ngClass]="{
-          'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600': isDark
-        }"
+      <!-- Mobile header bar -->
+      <div
+        *ngIf="isMobile"
+        class="mb-4 flex items-center justify-between gap-3"
       >
-        <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
-      </button>
-
-      <!-- Ô tìm kiếm căn giữa -->
-      <input
-        type="text"
-        class="flex-1 border border-gray-300 rounded-[24px] px-3 py-2 mx-2"
-        [(ngModel)]="searchKeyword"
-        (ngModelChange)="onSearch()"
-        placeholder="Tìm kiếm..."
-        [ngClass]="{
-          'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600': isDark
-        }"
-      />
-
-      <!-- button -->
-      <button
-        type="button"
-        class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
-      >
-        <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
-      </button>
-    </div>
-
-    <!-- Desktop header bar -->
-    <div *ngIf="!isMobile">
-      <div class="mb-4 flex items-center justify-between gap-4">
         <!-- Nút Quay lại -->
         <button
           type="button"
-          class="rounded-full bg-gray-200 text-gray-700 px-4 py-2 hover:bg-gray-300 transition flex items-center gap-2"
+          class="rounded-full bg-gray-200 text-gray-700 px-2 py-1 hover:bg-gray-300 transition flex items-center w-8 h-8"
           (click)="goBack()"
           [ngClass]="{
             'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600': isDark
           }"
         >
           <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
-          <span>Quay lại</span>
         </button>
 
         <!-- Ô tìm kiếm căn giữa -->
         <input
           type="text"
-          class="border border-gray-300 rounded-[24px] px-3 py-2 w-[58%] mx-auto"
+          class="flex-1 border border-gray-300 rounded-[24px] px-3 py-2 mx-2"
           [(ngModel)]="searchKeyword"
           (ngModelChange)="onSearch()"
           placeholder="Tìm kiếm..."
@@ -73,36 +38,74 @@
           }"
         />
 
-        <!-- Nhóm nút -->
-        <div class="flex gap-3">
-          <button
-            nz-button
-            nzType="primary"
-            class="flex items-center gap-2 whitespace-nowrap rounded-[24px] h-10"
-            routerLink="/warehouse-receipt-create"
-          >
-            <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
-            Tạo mới
-          </button>
+        <!-- button -->
+        <button
+          type="button"
+          class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
+        >
+          <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
+        </button>
+      </div>
 
+      <!-- Desktop header bar -->
+      <div *ngIf="!isMobile">
+        <div class="mb-4 flex items-center justify-between gap-4">
+          <!-- Nút Quay lại -->
           <button
             type="button"
-            class="px-4 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-2 h-10"
+            class="rounded-full bg-gray-200 text-gray-700 px-4 py-2 hover:bg-gray-300 transition flex items-center gap-2"
+            (click)="goBack()"
+            [ngClass]="{
+              'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600':
+                isDark
+            }"
           >
-            <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
-            Xuất Excel
+            <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
+            <span>Quay lại</span>
           </button>
+
+          <!-- Ô tìm kiếm căn giữa -->
+          <input
+            type="text"
+            class="border border-gray-300 rounded-[24px] px-3 py-2 w-[58%] mx-auto"
+            [(ngModel)]="searchKeyword"
+            (ngModelChange)="onSearch()"
+            placeholder="Tìm kiếm..."
+            [ngClass]="{
+              'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600': isDark
+            }"
+          />
+
+          <!-- Nhóm nút -->
+          <div class="flex gap-3">
+            <button
+              nz-button
+              nzType="primary"
+              class="flex items-center gap-2 whitespace-nowrap rounded-[24px] h-10"
+              routerLink="/warehouse-receipt-create"
+            >
+              <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+              Tạo mới
+            </button>
+
+            <button
+              type="button"
+              class="px-4 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-2 h-10"
+            >
+              <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
+              Xuất Excel
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Mobile Table -->
-    <div *ngIf="isMobile">
-      <div
-        class="overflow-x-auto rounded-[24px] shadow-sm bg-[rgba(187,213,237,0.33)] p-3 w-full"
-        [ngClass]="{ 'dark:bg-gray-900': isDark }"
-      >
-        <!-- <nz-table
+      <!-- Mobile Table -->
+      <div *ngIf="isMobile">
+        <div
+          class="overflow-x-auto rounded-[24px] shadow-sm bg-[rgba(187,213,237,0.33)] p-3 w-full"
+          [ngClass]="{ 'dark:bg-gray-900': isDark }"
+        >
+          <!-- <nz-table
           [nzData]="listOfData"
           [nzScroll]="{ x: '1000px', y: '400px' }"
           [nzPageSize]="10"
@@ -206,119 +209,109 @@
             </tr>
           </tbody>
         </nz-table> -->
+        </div>
       </div>
-    </div>
 
-    <!-- 💻 Desktop layout -->
-    <div *ngIf="!isMobile">
-      <div
-        class="bg-[rgba(187,213,237,0.33)] shadow-lg rounded-[24px] overflow-hidden p-2"
-        [ngClass]="{ 'dark:bg-gray-900': isDark }"
-      >
-        <nz-table
-          [nzData]="listOfData"
-          [nzScroll]="{ y: '400px' }"
-          [nzPageSize]="10"
-          [nzFrontPagination]="true"
-          [nzLoading]="isLoading"
-          (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
+      <!-- 💻 Desktop layout -->
+      <div *ngIf="!isMobile">
+        <div
+          class="bg-[rgba(187,213,237,0.33)] shadow-lg rounded-[24px] overflow-hidden p-2"
+          [ngClass]="{ 'dark:bg-gray-900': isDark }"
         >
-          <thead>
-            <tr
-              class="bg-gray-100 text-gray-700"
-              [ngClass]="{ 'dark:bg-gray-800 dark:text-gray-200': isDark }"
-            >
-              <th
-                [nzSelections]="listOfSelection"
-                [(nzChecked)]="checked"
-                [nzIndeterminate]="indeterminate"
-                (nzCheckedChange)="onAllChecked($event)"
-                [nzWidth]="'50px'"
-              ></th>
-              <th [nzWidth]="'100px'">Thao tác</th>
-              <th [nzWidth]="'120px'">Mã</th>
-              <th [nzWidth]="'180px'">Mô tả</th>
-              <th [nzWidth]="'120px'">Ngày tạo</th>
-              <th [nzWidth]="'120px'">Ngày cập nhật</th>
-              <!-- <th [nzWidth]="'200px'">Trạng thái</th> -->
-            </tr>
-          </thead>
+          <nz-table
+            [nzData]="listOfData"
+            [nzScroll]="{ y: '400px' }"
+            [nzPageSize]="10"
+            [nzFrontPagination]="true"
+            [nzLoading]="isLoading"
+            (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
+          >
+            <thead>
+              <tr
+                class="bg-gray-100 text-gray-700"
+                [ngClass]="{ 'dark:bg-gray-800 dark:text-gray-200': isDark }"
+              >
+                <th
+                  [nzSelections]="listOfSelection"
+                  [(nzChecked)]="checked"
+                  [nzIndeterminate]="indeterminate"
+                  (nzCheckedChange)="onAllChecked($event)"
+                  [nzWidth]="'20px'"
+                ></th>
+                <th [nzWidth]="'20px'"></th>
+                <th [nzWidth]="'120px'">Mã</th>
+                <th [nzWidth]="'120px'">Nhà cung cấp</th>
+                <th [nzWidth]="'180px'">Mô tả</th>
+                <th [nzWidth]="'120px'">Ngày tạo</th>
+                <th [nzWidth]="'120px'">Ngày cập nhật</th>
+              </tr>
+            </thead>
 
-          <tbody>
-            <tr
-              *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
-              class="hover:bg-gray-50 transition-all duration-150"
-              [ngClass]="{ 'dark:hover:bg-gray-800': isDark }"
-            >
-              <td class="text-center">
-                <label
-                  nz-checkbox
-                  [nzChecked]="setOfCheckedId.has(item.Id)"
-                  (nzCheckedChange)="onItemChecked(item.Id, $event)"
-                ></label>
-              </td>
-              <td class="space-x-2 flex">
-                <button
-                  nz-button
-                  nzType="link"
-                  class="text-blue-700 dark:text-blue-500"
-                  [routerLink]="['/warehouse-receipt-detail', item.Id]"
-                >
-                  <nz-icon nzType="edit" nzTheme="outline"></nz-icon>
-                </button>
-                <button nz-button nzType="link" class="text-red-600">
-                  <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
-                </button>
-              </td>
-              <td>{{ item.Code }}</td>
+            <tbody>
+              <tr
+                *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
+                class="hover:bg-gray-50 transition-all duration-150"
+                [ngClass]="{ 'dark:hover:bg-gray-800': isDark }"
+              >
+                <td class="text-center">
+                  <label
+                    nz-checkbox
+                    [nzChecked]="setOfCheckedId.has(item.Id)"
+                    (nzCheckedChange)="onItemChecked(item.Id, $event)"
+                  ></label>
+                </td>
+                <td class="relative">
+                  <button class="icon-button" (click)="toggleDropdown(item)">
+                    ⋮
+                  </button>
 
-              <td>
-                {{
-                  item.Description && item.Description.length > 14
-                    ? (item.Description | slice : 0 : 14) + "..."
-                    : item.Description
-                }}
-              </td>
-              <td>{{ item.CreatedDate | date : "dd/MM/yyyy" }}</td>
-              <td>{{ item.UpdatedDate | date : "dd/MM/yyyy" }}</td>
-              <!-- <td>
-                <span
-                  [ngClass]="
-                    item.IsActive
-                      ? 'text-red-600 dark:text-red-400 font-medium'
-                      : 'text-green-600 dark:text-green-400 font-medium'
-                  "
-                >
+                  <div
+                    class="dropdown-menu flex"
+                    *ngIf="item === activeDropdown"
+                    (mouseleave)="closeDropdown()"
+                  >
+                    <div class="dropdown-item" (click)="viewDetail(item)">
+                      <nz-icon nzType="edit" nzTheme="outline"></nz-icon>
+                    </div>
+                    <div class="dropdown-item">
+                      <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
+                    </div>
+                  </div>
+                </td>
+                <td>{{ item.Code }}</td>
+                <td>{{ item.SupplierName }}</td>
+                <td>
                   {{
-                    item.IsActive == false
-                      ? "🟢 Hoạt động"
-                      : "🔴 Ngưng hoạt động"
+                    item.Description && item.Description.length > 14
+                      ? (item.Description | slice : 0 : 14) + "..."
+                      : item.Description
                   }}
-                </span>
-              </td> -->
-            </tr>
-          </tbody>
-        </nz-table>
+                </td>
+                <td>{{ item.CreatedDate | date : "dd/MM/yyyy" }}</td>
+                <td>{{ item.UpdatedDate | date : "dd/MM/yyyy" }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+        </div>
       </div>
-    </div>
 
-    <!-- Mobile Float Button -->
-    <div *ngIf="isMobile" class="type">
-      <nz-float-button
-        nzType="primary"
-        style="right: 24px"
-        [nzIcon]="icon"
-        routerLink="/warehouse-receipt-create"
-      ></nz-float-button>
-      <ng-template #icon>
-        <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
-      </ng-template>
-    </div>
+      <!-- Mobile Float Button -->
+      <div *ngIf="isMobile" class="type">
+        <nz-float-button
+          nzType="primary"
+          style="right: 24px"
+          [nzIcon]="icon"
+          routerLink="/warehouse-receipt-create"
+        ></nz-float-button>
+        <ng-template #icon>
+          <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+        </ng-template>
+      </div>
 
-    <!-- Bottom menu -->
-    <bottom-menu class="mt-6"></bottom-menu>
+      <!-- Bottom menu -->
+      <bottom-menu class="mt-6"></bottom-menu>
+    </div>
   </div>
-</div>
 </div>
 <!-- popup create -->
 <!-- <product-popup-create

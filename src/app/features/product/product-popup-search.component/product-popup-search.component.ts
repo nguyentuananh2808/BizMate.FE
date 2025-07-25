@@ -89,7 +89,7 @@ export class ProductPopupSearchComponent implements OnInit {
   ): void {
     this.isLoading = true;
     this.productService
-      .SearchProduct(this.searchKeyword || null, pageSize, pageIndex, undefined)
+      .SearchProduct(this.searchKeyword || null, pageSize, pageIndex, false)
       .subscribe({
         next: (res) => {
           this.originalData = res.Products || [];
