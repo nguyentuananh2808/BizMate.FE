@@ -41,6 +41,7 @@
     "ng-zorro-antd": "^20.1.0",
     "ng2-charts": "^8.0.0",
     "ngx-echarts": "^20.0.1",
+    "ngx-print": "^20.0.0",
     "ngx-toastr": "^19.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

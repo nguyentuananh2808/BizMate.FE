@@ -18,20 +18,21 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
 import { InventoryDetail } from '../../models/warehouse-receipt-detail.model';
-import { ProductResponse } from '../../../product/product.component/models/product-response.model';
-import { map } from 'rxjs';
 import { ProductPopupSearchComponent } from '../../../product/product-popup-search.component/product-popup-search.component';
 import { MenuComponent } from '../../../shared/menu.component/menu.component';
 import { CreateReceiptRequestRequest } from '../../models/warehouse-receipt-create.model';
 import { WarehouseReceiptService } from '../../services/warehouse-receipt.service';
+import { ToastrService } from 'ngx-toastr';
+import { NgxPrintModule } from 'ngx-print';
 
 @Component({
   standalone: true,
   selector: 'warehouse-receipt-create',
   imports: [
+    NgxPrintModule,
     CommonModule,
     FormsModule,
     NzTableModule,
@@ -57,6 +58,8 @@ export class WarehouseReceiptCreateComponent {
   dateToday = new Date();
   isPopupSearchProducts = false;
   indeterminate = false;
+  isSubmitting = false;
+  showPrint = false;
   checked = false;
   setOfCheckedId = new Set<string>();
   isMobile = window.innerWidth < 768;
@@ -66,22 +69,28 @@ export class WarehouseReceiptCreateComponent {
   editingQuantity: number | null = null;
   inputError = false;
   message: any;
-  router: any;
+  supplier = {
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+  };
 
   constructor(
     private location: Location,
     private fb: FormBuilder,
+    private toastr: ToastrService,
     private modal: NzModalService,
     private cdr: ChangeDetectorRef,
-    private receiptService: WarehouseReceiptService,
-    private productService: ProductService
+    private router: Router,
+    private receiptService: WarehouseReceiptService
   ) {
     this.receiptForm = this.fb.group({
-      supplierName: ['', Validators.required],
+      supplierName: [''],
       phoneNumber: [''],
       email: [''],
       deliveryAddress: [''],
-      details: this.fb.array([]),
+      details: this.fb.array([], Validators.required),
     });
 
     this.addProduct();
@@ -95,6 +104,7 @@ export class WarehouseReceiptCreateComponent {
   get details(): FormArray {
     return this.receiptForm.get('details') as FormArray;
   }
+
   get isSubmitDisabled(): boolean {
     return (
       this.listOfData.length === 0 ||
@@ -106,7 +116,24 @@ export class WarehouseReceiptCreateComponent {
     this.editingId = item.Id;
     this.editingQuantity = item.Quantity;
   }
+  onPrint() {
+    const { supplierName, email, phoneNumber, deliveryAddress } =
+      this.receiptForm.value;
 
+    this.supplier = {
+      name: supplierName,
+      email,
+      phone: phoneNumber,
+      address: deliveryAddress,
+    };
+
+    this.showPrint = true;
+
+    setTimeout(() => {
+      window.print();
+      this.showPrint = false;
+    }, 100);
+  }
   saveEdit(item: InventoryDetail): void {
     if (this.editingQuantity === null || this.editingQuantity < 1) {
       this.inputError = true;
@@ -141,15 +168,37 @@ export class WarehouseReceiptCreateComponent {
     });
   }
 
-  onSelectedProducts(product: InventoryDetail[]) {
-    this.listOfData = [...this.listOfData, ...product];
-    // Lọc trùng theo ProductId (nếu cần)
+  onSelectedProducts(productList: InventoryDetail[]) {
+    if (!productList || productList.length === 0) {
+      this.closeProductPopup();
+      return;
+    }
+
+    this.listOfData = [...this.listOfData, ...productList];
+
     this.listOfData = this.listOfData.filter(
       (item, index, self) => index === self.findIndex((t) => t.Id === item.Id)
     );
 
-    // Sắp xếp theo ProductCode
     this.listOfData.sort((a, b) => a.ProductCode.localeCompare(b.ProductCode));
+
+    this.details.clear();
+
+    for (const item of this.listOfData) {
+      this.details.push(
+        this.fb.group({
+          productId: [item.ProductId ?? item.Id, Validators.required],
+          quantity: [
+            item.Quantity > 0 ? item.Quantity : 1,
+            [Validators.required, Validators.min(1)],
+          ],
+        })
+      );
+    }
+    console.log('detail', this.details);
+
+    this.receiptForm.updateValueAndValidity();
+    this.closeProductPopup();
   }
 
   closeProductPopup(): void {
@@ -234,8 +283,6 @@ export class WarehouseReceiptCreateComponent {
   }
 
   submitForm(): void {
-      console.log('submit click');
-   
     const formValues = this.receiptForm.value;
 
     const payload: CreateReceiptRequestRequest = {
@@ -253,12 +300,12 @@ export class WarehouseReceiptCreateComponent {
 
     this.receiptService.CreateWarehouseReceipt(payload).subscribe({
       next: () => {
-        this.message.success('Tạo phiếu nhập thành công!');
-        this.router.navigate(['/warehouse-receipt']); 
+        this.toastr.success('Tạo phiếu nhập thành công!');
+        this.router.navigateByUrl('/warehouse-receipt');
       },
       error: (err) => {
         console.error(err);
-        this.message.error('Tạo phiếu nhập thất bại!');
+        this.toastr.error(err?.error?.message || 'Tạo phiếu nhập thất bại!');
       },
     });
   }

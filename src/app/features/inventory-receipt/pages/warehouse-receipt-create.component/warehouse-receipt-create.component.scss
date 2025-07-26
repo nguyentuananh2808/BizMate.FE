@@ -75,3 +75,51 @@ nz-float-button {
 ::ng-deep .ant-modal-confirm-btns .ant-btn {
   border-radius: 24px;
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #print-section,
+  #print-section * {
+    visibility: visible;
+  }
+
+  #print-section {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #print-section,
+  #print-section * {
+    visibility: visible !important;
+  }
+
+  #print-section {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 40px;
+    background: white;
+    font-family: "Arial", sans-serif;
+    box-sizing: border-box;
+  }
+
+  .print-only {
+    display: block;
+  }
+}
