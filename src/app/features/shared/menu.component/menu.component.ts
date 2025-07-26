@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
@@ -11,11 +11,59 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.scss'],
 })
-export class MenuComponent {
+export class MenuComponent implements OnInit {
   isCollapsed = false;
-  expandedItems: Set<string> = new Set(); 
+  expandedItems: Set<string> = new Set();
+  isMobile = false;
+  isMobileMenuOpen = false;
 
   constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    this.checkIsMobile();
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.checkIsMobile();
+  }
+
+  checkIsMobile(): void {
+    this.isMobile = window.innerWidth < 768;
+    if (!this.isMobile) {
+      this.isMobileMenuOpen = false;
+    }
+  }
+
+  openMobileMenu() {
+    this.isMobileMenuOpen = true;
+  }
+
+  closeMobileMenu() {
+    this.isMobileMenuOpen = false;
+  }
+
+  toggleExpand(key: string): void {
+    this.expandedItems.has(key)
+      ? this.expandedItems.delete(key)
+      : this.expandedItems.add(key);
+  }
+
+  isExpanded(key: string): boolean {
+    return this.expandedItems.has(key);
+  }
+
+  handleClick(route?: string): void {
+    if (route) {
+      this.router.navigate([route]);
+      if (this.isMobile) this.closeMobileMenu();
+    }
+  }
+
+  toggleSidebar(): void {
+    this.isCollapsed = !this.isCollapsed;
+    if (this.isCollapsed) this.expandedItems.clear();
+  }
 
   menuItems = [
     {
@@ -63,25 +111,4 @@ export class MenuComponent {
     },
     { key: 'reports', icon: 'bar-chart', label: 'Báo cáo', route: '/reports' },
   ];
-
-  toggleExpand(key: string): void {
-    this.expandedItems.has(key)
-      ? this.expandedItems.delete(key)
-      : this.expandedItems.add(key);
-  }
-
-  isExpanded(key: string): boolean {
-    return this.expandedItems.has(key);
-  }
-
-  handleClick(route?: string): void {
-    if (route) this.router.navigate([route]);
-  }
-
-  toggleSidebar(): void {
-    this.isCollapsed = !this.isCollapsed;
-    if (this.isCollapsed) {
-      this.expandedItems.clear();
-    }
-  }
 }
