@@ -102,7 +102,7 @@
       <!-- Mobile Table -->
       <div *ngIf="isMobile" class="mb-10">
         <div
-          class="overflow-x-auto rounded-[24px] shadow-sm bg-[rgba(187,213,237,0.33)] p-3 w-full"
+          class="overflow-x-auto rounded-[24px] bg-white shadow-md dark:bg-background-dark p-3 w-full"
           [ngClass]="{ 'dark:bg-gray-900': isDark }"
         >
           <div class="space-y-4" *ngIf="listOfData && listOfData.length > 0">
@@ -194,7 +194,7 @@
       <!-- 💻 Desktop layout -->
       <div *ngIf="!isMobile">
         <div
-          class="bg-[rgba(187,213,237,0.33)] shadow-lg rounded-[24px] overflow-hidden p-2"
+          class="bg-[rgba(187,213,237,0.33)] dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-2"
           [ngClass]="{ 'dark:bg-gray-900': isDark }"
         >
           <nz-table

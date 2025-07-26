@@ -58,6 +58,8 @@ export class ProductCategoryComponent implements OnInit {
   activeDropdown: any = null;
   isMobile = window.innerWidth < 768;
   selectedItem!: ProductCategory;
+  pageSize = 10;
+  pageIndex = 1;
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
@@ -77,14 +79,19 @@ export class ProductCategoryComponent implements OnInit {
   showPopup = false;
   showPopupCreate = false;
 
+  get paginatedList(): ProductCategory[] {
+    const start = (this.pageIndex - 1) * this.pageSize;
+    return this.listOfData.slice(start, start + this.pageSize);
+  }
+
   toggleDarkMode(): void {
     this.isDark = !this.isDark;
   }
-  
+
   toggleDropdown(item: any) {
     this.activeDropdown = this.activeDropdown === item ? null : item;
   }
-  
+
   closeDropdown() {
     this.activeDropdown = null;
   }

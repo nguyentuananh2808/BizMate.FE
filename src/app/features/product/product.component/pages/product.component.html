@@ -113,7 +113,7 @@
         <div class="space-y-4">
           <div
             *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
-            class="rounded-[20px] p-4 bg-white shadow-md dark:bg-gray-800 transition-all"
+            class="rounded-[20px] p-4 bg-white shadow-md dark:bg-background-dark transition-all"
           >
             <!-- Header: Mã + Tên + Dropdown -->
             <div class="flex justify-between items-start gap-2">
@@ -135,7 +135,7 @@
               <!-- Dropdown actions -->
               <div class="relative">
                 <button
-                  class="icon-button text-xl"
+                  class="icon-button text-xl text-secondary-light dark:text-secondary-dark"
                   (click)="toggleDropdown(item)"
                 >
                   ⋮
@@ -216,25 +216,27 @@
           </div>
         </div>
 
-
-       <!-- Phân trang cho mobile -->
-       <div class="w-full overflow-x-auto">
+        <!-- Phân trang cho mobile -->
+        <div class="w-full overflow-x-auto">
           <nz-pagination
+            *ngIf="totalCount > pageSize"
+            class="mt-4 justify-center"
+            [nzPageIndex]="pageIndex"
             [nzTotal]="totalCount"
             [nzPageSize]="pageSize"
-            [(nzPageIndex)]="pageIndex"
-            (nzPageIndexChange)="onPageChange($event)">
+            [nzSize]="'small'"
+            [nzShowQuickJumper]="false"
+            [nzShowSizeChanger]="false"
+            (nzPageIndexChange)="onPageChange($event)"
+          >
           </nz-pagination>
         </div>
-
       </div>
-
-       
 
       <!-- 💻 Desktop layout -->
       <div *ngIf="!isMobile">
         <div
-          class="bg-[rgba(187,213,237,0.33)] shadow-lg rounded-[24px] overflow-hidden p-2"
+          class="bg-[rgba(187,213,237,0.33)] dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-2"
           [ngClass]="{ 'dark:bg-gray-900': isDark }"
         >
           <nz-table

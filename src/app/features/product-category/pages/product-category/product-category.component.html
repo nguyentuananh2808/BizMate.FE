@@ -108,105 +108,70 @@
         </div>
       </div>
 
-      <!-- 📱 Mobile layout: nz-table + scroll ngang -->
+      <!-- 📱 Mobile layout -->
       <div *ngIf="isMobile">
         <div
-          class="overflow-x-auto rounded-[24px] shadow-sm bg-[rgba(187,213,237,0.33)] p-3 w-full"
-          [ngClass]="{ 'dark:bg-gray-900': isDark }"
+          *ngFor="let item of paginatedList; trackBy: trackById"
+          class="rounded-[16px] bg-[rgba(187,213,237,0.33)] dark:bg-gray-900 shadow-md p-4 flex flex-col gap-2 mb-2"
         >
-          <nz-table
-            [nzData]="listOfData"
-            [nzScroll]="{ x: '1000px', y: '400px' }"
-            [nzPageSize]="10"
-            [nzFrontPagination]="true"
-            [nzLoading]="isLoading"
-            (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
+          <div class="flex items-center justify-between">
+            <div class="text-sm font-bold text-gray-700 dark:text-gray-100">
+              {{ item.Name }}
+            </div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">
+              {{ item.Code }}
+            </div>
+          </div>
+
+          <div class="text-sm text-gray-600 dark:text-gray-300">
+            Mô tả:
+            {{
+              item.Description.length > 20
+                ? (item.Description | slice : 0 : 20) + "..."
+                : item.Description
+            }}
+          </div>
+
+          <div
+            class="flex justify-between text-sm text-gray-500 dark:text-gray-400"
           >
-            <thead>
-              <tr
-                class="bg-gray-100 text-gray-700"
-                [ngClass]="{ 'dark:bg-gray-800 dark:text-gray-200': isDark }"
-              >
-                <th
-                  [nzSelections]="listOfSelection"
-                  [(nzChecked)]="checked"
-                  [nzIndeterminate]="indeterminate"
-                  (nzCheckedChange)="onAllChecked($event)"
-                  [nzWidth]="'20px'"
-                ></th>
-                <th [nzWidth]="'20px'"></th>
-                <th [nzWidth]="'120px'">Mã</th>
-                <th [nzWidth]="'240px'">Tên loại</th>
-                <th [nzWidth]="'120px'">Ngày tạo</th>
-                <th [nzWidth]="'120px'">Ngày cập nhật</th>
-                <th [nzWidth]="'180px'">Mô tả</th>
-                <th [nzWidth]="'200px'">Trạng thái</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
-                class="hover:bg-gray-50 transition-all duration-150"
-                [ngClass]="{ 'dark:hover:bg-gray-800': isDark }"
-              >
-                <td class="text-center w-[24px]">
-                  <label
-                    nz-checkbox
-                    [nzChecked]="setOfCheckedId.has(item.Id)"
-                    (nzCheckedChange)="onItemChecked(item.Id, $event)"
-                  ></label>
-                </td>
-                <td class="relative">
-                  <button class="icon-button" (click)="toggleDropdown(item)">
-                    ⋮
-                  </button>
+            <span>Tạo: {{ item.CreatedDate | date : "dd/MM/yyyy" }}</span>
+            <span>Cập nhật: {{ item.UpdatedDate | date : "dd/MM/yyyy" }}</span>
+          </div>
 
-                  <div
-                    class="dropdown-menu flex"
-                    *ngIf="item === activeDropdown"
-                    (mouseleave)="closeDropdown()"
-                  >
-                    <div class="dropdown-item" (click)="viewDetail(item)">
-                      <nz-icon nzType="edit" nzTheme="outline"></nz-icon>
-                    </div>
-                    <div class="dropdown-item" (click)="deleteItem(item)">
-                      <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
-                    </div>
-                  </div>
-                </td>
-                <td>{{ item.Code }}</td>
-                <td>{{ item.Name }}</td>
-                <td>{{ item.CreatedDate | date : "dd/MM/yyyy" }}</td>
-                <td>{{ item.UpdatedDate | date : "dd/MM/yyyy" }}</td>
-                <td>
-                  {{
-                    item.Description.length > 10
-                      ? (item.Description | slice : 0 : 10) + "..."
-                      : item.Description
-                  }}
-                </td>
+          <div class="flex justify-between items-center mt-2">
+            <span
+              [ngClass]="
+                item.IsActive
+                  ? 'text-red-600 font-medium'
+                  : 'text-green-600 font-medium'
+              "
+            >
+              {{ item.IsActive ? "🔴 Ngưng hoạt động" : "🟢 Hoạt động" }}
+            </span>
 
-                <td>
-                  <span
-                    [ngClass]="
-                      item.IsActive
-                        ? 'text-red-600 font-medium'
-                        : 'text-green-600 font-medium'
-                    "
-                  >
-                    {{ item.IsActive ? "🔴 Ngưng hoạt động" : "🟢 Hoạt động" }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </nz-table>
+            <div class="flex gap-2">
+              <button
+                class="text-blue-500 hover:text-blue-700 text-sm font-medium"
+                (click)="viewDetail(item)"
+              >
+                Sửa
+              </button>
+              <button
+                class="text-red-500 hover:text-red-700 text-sm font-medium"
+                (click)="deleteItem(item)"
+              >
+                Xoá
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- 💻 Desktop layout -->
       <div *ngIf="!isMobile">
         <div
-          class="bg-[rgba(187,213,237,0.33)] shadow-lg rounded-[24px] overflow-hidden p-2"
+          class="bg-[rgba(187,213,237,0.33)] dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-2"
           [ngClass]="{ 'dark:bg-gray-900': isDark }"
         >
           <nz-table

@@ -19,7 +19,7 @@ module.exports = {
         },
         background: {
           light: "#EFF6FF", // light blue-gray
-          dark: "#284d85", // dark navy
+          dark: "rgb(17 24 39)", // dark navy
         },
         "text-primary": {
           light: "#1E293B", // slate-800

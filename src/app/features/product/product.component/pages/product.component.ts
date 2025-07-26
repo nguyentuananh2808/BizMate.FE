@@ -152,6 +152,10 @@ export class ProductComponent implements OnInit {
             this.listOfData = [...this.originalData].sort((a, b) =>
               a.Code.localeCompare(b.Code)
             );
+
+            if (this.isMobile) {
+              this.listOfCurrentPageData = [...this.listOfData];
+            }
             this.isLoading = false;
             this.cdr.detectChanges();
           });
@@ -164,6 +168,7 @@ export class ProductComponent implements OnInit {
     this.pageIndex = 1;
     this.searchKeyword = this.searchKeyword.trim();
     this.fetchData(this.pageIndex, this.pageSize);
+    this.cdr.detectChanges();
   }
 
   listOfSelection = [

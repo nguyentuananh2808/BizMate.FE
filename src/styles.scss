@@ -50,7 +50,7 @@ body {
 
 /* Dark mode background */
 .dark .bg-login {
-  background-color: #0F172A !important;
+  background-color: #192b55 !important;
   transition: background-color 0.5s ease;
 }
 
@@ -73,7 +73,7 @@ body {
 
 /* Sóng trên - màu tối (dark mode) */
 .dark .bg-login::before {
-  background: linear-gradient(to bottom right, #1e293b, #3b82f6);
+  background: linear-gradient(to bottom right, #d7e6ff, #3b82f6);
   filter: blur(6px) brightness(0.7);
   transition: background 0.5s ease, filter 0.5s ease;
 }
@@ -97,7 +97,7 @@ body {
 
 /* Sóng dưới - màu tối (dark mode) */
 .dark .bg-login::after {
-  background: linear-gradient(to top left, #2563eb, #1e293b);
+  background: linear-gradient(to top left, #2563eb, #94aace);
   filter: blur(6px) brightness(0.8);
   transition: background 0.5s ease, filter 0.5s ease;
 }
