@@ -27,6 +27,7 @@ import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
 import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { MenuComponent } from '../../../shared/menu.component/menu.component';
+import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 
 @Component({
   selector: 'product',
@@ -48,7 +49,8 @@ import { MenuComponent } from '../../../shared/menu.component/menu.component';
     UnitTextPipe,
     NzDropDownModule,
     NzMenuModule,
-    MenuComponent
+    MenuComponent,
+    NzPaginationModule,
   ],
   providers: [DatePipe],
   templateUrl: './product.component.html',
@@ -76,6 +78,7 @@ export class ProductComponent implements OnInit {
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
     this.isMobile = event.target.innerWidth < 768;
+    this.cdr.detectChanges();
   }
 
   constructor(
@@ -86,6 +89,10 @@ export class ProductComponent implements OnInit {
     private datePipe: DatePipe,
     private location: Location
   ) {}
+
+  get totalPages(): number {
+    return Math.ceil(this.totalCount / this.pageSize);
+  }
 
   onRefetch(): void {
     this.fetchData();

@@ -16,6 +16,7 @@ import { UnitTextPipe } from '../../../shared/pipes/unit-text-pipe';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { FormsModule } from '@angular/forms';
 import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzPaginationComponent } from 'ng-zorro-antd/pagination';
 
 @Component({
   selector: 'product-popup-search',
@@ -27,6 +28,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
     NzCheckboxModule,
     NzTableModule,
     NzIconModule,
+    NzPaginationComponent,
   ],
   templateUrl: './product-popup-search.component.html',
   styleUrls: ['./product-popup-search.component.scss'],
@@ -47,6 +49,8 @@ export class ProductPopupSearchComponent implements OnInit {
   totalCount = 0;
   searchKeyword = '';
   isLoading = false;
+  isMobile = window.innerWidth <= 768;
+
   constructor(
     private productService: ProductService,
     private cdr: ChangeDetectorRef
@@ -76,7 +80,7 @@ export class ProductPopupSearchComponent implements OnInit {
     this.isClosing = true;
     setTimeout(() => {
       this.closePopup.emit();
-    }, 200);
+    }, 800);
   }
   onPageChange(page: number): void {
     this.pageIndex = page;
@@ -99,6 +103,7 @@ export class ProductPopupSearchComponent implements OnInit {
             this.listOfData = [...this.originalData].sort((a, b) =>
               a.Code.localeCompare(b.Code)
             );
+            this.listOfCurrentPageData = [...this.listOfData];
             this.isLoading = false;
             this.cdr.detectChanges();
           });

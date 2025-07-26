@@ -1,4 +1,6 @@
+<!-- ========== Desktop Layout ========== -->
 <div
+  *ngIf="!isMobile"
   class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[9999] transition-opacity duration-300"
   [ngClass]="{ 'opacity-100': !isClosing, 'opacity-0': isClosing }"
 >
@@ -52,14 +54,14 @@
     >
       <nz-table
         [nzData]="listOfData"
-          [nzScroll]="{ y: '400px' }"
-          [nzTotal]="totalCount"
-          [nzPageSize]="pageSize"
-          [nzPageIndex]="pageIndex"
-          [nzFrontPagination]="false"
-          [nzLoading]="isLoading"
-          (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
-          (nzPageIndexChange)="onPageChange($event)" 
+        [nzScroll]="{ y: '400px' }"
+        [nzTotal]="totalCount"
+        [nzPageSize]="pageSize"
+        [nzPageIndex]="pageIndex"
+        [nzFrontPagination]="false"
+        [nzLoading]="isLoading"
+        (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
+        (nzPageIndexChange)="onPageChange($event)"
       >
         <thead>
           <tr
@@ -117,6 +119,113 @@
           Lưu
         </button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== Mobile Layout ========== -->
+<div
+  *ngIf="isMobile"
+  class="fixed inset-0 bg-black/40 backdrop-blur-sm flex flex-col z-[9999] transition-opacity duration-300"
+  [ngClass]="{ 'opacity-100': !isClosing, 'opacity-0': isClosing }"
+>
+  <div
+    class="transform transition-transform duration-300bg-white dark:bg-gray-900 rounded-t-2xl p-4 overflow-y-auto mt-auto max-h-[90vh]"
+    [ngClass]="{
+      'translate-y-0': !isClosing,
+      'translate-y-full': isClosing
+    }"
+  >
+    <!-- Close button -->
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+        Thêm sản phẩm
+      </h2>
+      <button
+        (click)="close()"
+        class="text-2xl text-gray-500 dark:text-gray-300"
+      >
+        ✕
+      </button>
+    </div>
+
+    <!-- Tìm kiếm -->
+    <div class="flex items-center gap-2 mb-3">
+      <input
+        type="text"
+        [(ngModel)]="searchKeyword"
+        (keyup.enter)="onSearch()"
+        placeholder="Tìm sản phẩm..."
+        class="flex-1 rounded-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+      />
+      <button
+        (click)="onSearch()"
+        class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full"
+      >
+        <nz-icon nzType="search" nzTheme="outline"></nz-icon>
+      </button>
+    </div>
+
+    <!-- Danh sách sản phẩm -->
+    <div *ngIf="listOfCurrentPageData.length > 0" class="space-y-3">
+      <div
+        *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
+        class="p-3 rounded-xl shadow bg-white dark:bg-gray-800 text-sm"
+      >
+        <label class="flex items-start gap-2">
+          <input
+            type="checkbox"
+            [checked]="setOfCheckedId.has(item.Id)"
+            (change)="onItemChecked(item.Id, $event.target.checked)"
+          />
+          <div class="flex-1">
+            <div
+              class="font-semibold text-secondary-light dark:text-secondary-dark"
+            >
+              {{ item.Name }}
+            </div>
+            <div class="text-blue-400 dark:text-gray-400">
+              Mã: {{ item.Code }} <br />
+              Đơn vị: {{ item.Unit | unitText }}
+            </div>
+          </div>
+        </label>
+      </div>
+    </div>
+    <div
+      *ngIf="listOfCurrentPageData.length === 0 && !isLoading"
+      class="text-gray-500 text-center py-6"
+    >
+      Không có sản phẩm nào.
+    </div>
+
+    <!-- Pagination -->
+    <nz-pagination
+      *ngIf="totalCount > pageSize"
+      class="mt-4 justify-center"
+      [nzPageIndex]="pageIndex"
+      [nzTotal]="totalCount"
+      [nzPageSize]="pageSize"
+      [nzSize]="'small'"
+      [nzShowQuickJumper]="false"
+      [nzShowSizeChanger]="false"
+      (nzPageIndexChange)="onPageChange($event)"
+    ></nz-pagination>
+
+    <!-- Buttons -->
+    <div class="mt-6 flex justify-end gap-3">
+      <button
+        class="bg-gray-400 text-white px-4 py-2 rounded-full"
+        (click)="close()"
+      >
+        Hủy
+      </button>
+      <button
+        class="bg-green-600 text-white px-4 py-2 rounded-full"
+        (click)="onSaveSelectedProducts()"
+      >
+        Lưu
+      </button>
     </div>
   </div>
 </div>

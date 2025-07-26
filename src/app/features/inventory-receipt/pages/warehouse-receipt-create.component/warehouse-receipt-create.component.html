@@ -28,6 +28,7 @@
 
         <!-- Print Button -->
         <button
+          (click)="onPrint()"
           type="button"
           class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
         >
@@ -35,29 +36,19 @@
         </button>
       </div>
 
-      <!-- desktop -->
+      <!-- Mobile Form -->
       <div
-        *ngIf="!isMobile"
-        class="mb-4 flex items-center justify-between gap-3"
+        *ngIf="isMobile"
+        class="bg-white dark:bg-gray-900 flex flex-col rounded-[24px]"
       >
-        <!-- Form Section (Shared for Desktop/Mobile) -->
-        <div class="w-full">
-          <div class="flex items-center justify-between px-3 pt-3">
-            <h2 class="text-secondary-light dark:text-secondary-dark">
-              Ngày nhập : {{ dateToday | date : "dd/MM/yyyy" }}
-            </h2>
-
-            <button
-              class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
-              (click)="onPrint()"
-            >
-              <nz-icon nzType="printer" nzTheme="outline"></nz-icon>
-              In phiếu
-            </button>
-          </div>
-
-          <form [formGroup]="receiptForm" class="space-y-6 pl-3 pt-3">
-            <div class="grid grid-cols-2 gap-4">
+        <!-- Scrollable content -->
+        <div class="overflow-y-auto px-3 py-4 space-y-4 max-h-[76vh]">
+          <div
+            class="bg-[rgba(187,213,237,0.33)] shadow-lg rounded-[24px] overflow-hidden p-4 w-full m-1"
+            [ngClass]="{ 'dark:bg-gray-900': isDark }"
+          >
+            <form [formGroup]="receiptForm" class="space-y-4">
+              <!-- Các input -->
               <div>
                 <label
                   class="block mb-1 text-secondary-light dark:text-secondary-dark"
@@ -66,10 +57,192 @@
                 </label>
                 <input
                   formControlName="supplierName"
-                  class="input-style"
-                  required
+                  class="input-style w-full"
+                  placeholder="Nhập tên nhà cung cấp..."
                 />
-                <!-- <div
+              </div>
+
+              <div>
+                <label
+                  class="block mb-1 text-secondary-light dark:text-secondary-dark"
+                >
+                  Số điện thoại
+                </label>
+                <input
+                  formControlName="phoneNumber"
+                  class="input-style w-full"
+                  placeholder="Nhập số điện thoại..."
+                />
+              </div>
+
+              <div>
+                <label
+                  class="block mb-1 text-secondary-light dark:text-secondary-dark"
+                >
+                  Email
+                </label>
+                <input
+                  formControlName="email"
+                  class="input-style w-full"
+                  placeholder="Nhập email..."
+                />
+              </div>
+
+              <div>
+                <label
+                  class="block mb-1 text-secondary-light dark:text-secondary-dark"
+                >
+                  Ghi chú
+                </label>
+                <textarea
+                  formControlName="description"
+                  rows="3"
+                  class="input-style w-full resize-none"
+                  placeholder="Nhập ghi chú..."
+                ></textarea>
+              </div>
+
+              <div class="flex justify-end">
+                <button
+                  nz-button
+                  nzType="primary"
+                  class="rounded-[24px] h-10 px-6"
+                  [disabled]="isSubmitting || isSubmitDisabled"
+                  (click)="submitForm()"
+                >
+                  <nz-icon nzType="save" nzTheme="outline"></nz-icon>
+                  <span *ngIf="isSubmitting">Đang tạo...</span>
+                  <span *ngIf="!isSubmitting">Tạo phiếu</span>
+                </button>
+              </div>
+            </form>
+
+            <!-- Danh sách sản phẩm -->
+            <div class="mt-4">
+              <div class="flex justify-between items-center mb-2">
+                <h3
+                  class="text-base font-semibold text-secondary-light dark:text-secondary-dark"
+                >
+                  Sản phẩm đã chọn
+                </h3>
+                <button
+                  nz-button
+                  nzType="primary"
+                  class="rounded-[24px] h-8 px-4 text-sm"
+                  (click)="addProducts()"
+                >
+                  <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+                  Thêm
+                </button>
+              </div>
+
+              <div
+                *ngIf="listOfData.length === 0"
+                class="text-sm text-gray-500"
+              >
+                Chưa có sản phẩm nào.
+              </div>
+
+              <div
+                *ngFor="let item of listOfData"
+                class="mb-2 p-3 rounded-lg bg-white shadow dark:bg-gray-800 text-sm"
+              >
+                <div
+                  class="font-medium text-secondary-light dark:text-secondary-dark"
+                >
+                  {{ item.ProductName }}
+                </div>
+                <div class="text-secondary-light dark:text-secondary-dark">
+                  <div>Mã: {{ item.ProductCode }}</div>
+                  <div class="flex items-center gap-2">
+                    <label
+                      class="text-secondary-light dark:text-secondary-dark mb-0"
+                      >SL:</label
+                    >
+
+                    <ng-container
+                      *ngIf="editingId === item.Id; else displayQuantity"
+                    >
+                      <input
+                        type="number"
+                        min="1"
+                        [(ngModel)]="editingQuantity"
+                        [ngModelOptions]="{ standalone: true }"
+                        class="w-20 px-2 py-1 border rounded text-black bg-white"
+                        (blur)="saveEdit(item)"
+                        (keydown.enter)="saveEdit(item)"
+                      />
+                    </ng-container>
+
+                    <ng-template #displayQuantity>
+                      <span
+                        class="cursor-pointer font-semibol"
+                        (click)="startEdit(item)"
+                        [ngClass]="{
+                          'text-danger-light dark:text-danger-dark font-bold':
+                            item.Quantity <= 0,
+                          'text-success-light dark:text-success-dark font-medium':
+                            item.Quantity > 0,
+                          'input-error': inputError
+                        }"
+                      >
+                        {{ item.Quantity }}
+                      </span>
+                    </ng-template>
+                  </div>
+
+                  <div>Đơn vị: {{ item.Unit | unitText }}</div>
+                </div>
+                <button
+                  class="mt-2 text-red-500 text-xs"
+                  (click)="deleteItem(item)"
+                >
+                  Xóa
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- desktop -->
+      <div
+        *ngIf="!isMobile"
+        class="mb-4 flex items-center justify-between gap-3"
+      >
+        <div
+          class="bg-[rgba(187,213,237,0.33)] shadow-lg rounded-[24px] overflow-hidden p-2 w-full"
+          [ngClass]="{ 'dark:bg-gray-900': isDark }"
+        >
+          <div class="w-full">
+            <div class="flex items-center justify-between px-3 pt-3">
+              <h2 class="text-secondary-light dark:text-secondary-dark">
+                Ngày nhập : {{ dateToday | date : "dd/MM/yyyy" }}
+              </h2>
+
+              <button
+                class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
+                (click)="onPrint()"
+              >
+                <nz-icon nzType="printer" nzTheme="outline"></nz-icon>
+                In phiếu
+              </button>
+            </div>
+
+            <form [formGroup]="receiptForm" class="space-y-6 pl-3 pt-3">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
+                  >
+                    Tên nhà cung cấp
+                  </label>
+                  <input
+                    formControlName="supplierName"
+                    class="input-style"
+                    placeholder="Nhập tên nhà cung cấp..."
+                  />
+                  <!-- <div
                 *ngIf="
                   receiptForm.get('supplierName')?.invalid &&
                   (receiptForm.get('supplierName')?.touched ||
@@ -79,162 +252,160 @@
               >
                 Vui lòng nhập tên nhà cung cấp
               </div> -->
+                </div>
+                <div>
+                  <label
+                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
+                    >Số điện thoại</label
+                  >
+                  <input
+                    formControlName="phoneNumber"
+                    class="input-style"
+                    placeholder="Nhập số điện thoại..."
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
+                    >Email</label
+                  >
+                  <input
+                    formControlName="email"
+                    class="input-style"
+                    placeholder="Nhập Email..."
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
+                    >Ghi chú</label
+                  >
+                  <textarea
+                    formControlName="description"
+                    rows="2"
+                    class="input-style resize-none"
+                    placeholder="Nhập ghi chú..."
+                  ></textarea>
+                </div>
               </div>
-              <div>
-                <label
-                  class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                  >Số điện thoại</label
-                >
-                <input formControlName="phoneNumber" class="input-style" />
-              </div>
-              <div>
-                <label
-                  class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                  >Email</label
-                >
-                <input formControlName="email" class="input-style" />
-              </div>
-              <div>
-                <label
-                  class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                  >Địa chỉ nhà cung cấp</label
-                >
-                <input formControlName="deliveryAddress" class="input-style" />
-              </div>
-            </div>
 
-            <!-- Table Section -->
-            <div class="grid grid-cols-2">
-              <div>
-                <h3
-                  class="text-lg font-semibold text-secondary-light dark:text-secondary-dark"
-                >
-                  Danh sách sản phẩm
-                </h3>
+              <!-- Table Section -->
+              <div class="grid grid-cols-2">
+                <div>
+                  <h3
+                    class="text-lg font-semibold text-secondary-light dark:text-secondary-dark"
+                  >
+                    Danh sách sản phẩm
+                  </h3>
+                </div>
+                <div class="flex justify-end">
+                  <button
+                    nz-button
+                    nzType="primary"
+                    class="items-center gap-2 whitespace-nowrap rounded-[24px] h-10 mb-3"
+                    (click)="addProducts()"
+                  >
+                    <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+                    Thêm sản phẩm
+                  </button>
+                </div>
               </div>
+
+              <nz-table
+                [nzData]="listOfData"
+                [nzBordered]="false"
+                [nzSize]="'middle'"
+                [nzScroll]="{ x: '1000px', y: '300px' }"
+                [nzShowPagination]="false"
+              >
+                <thead>
+                  <tr class="text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+                    <th [nzWidth]="'20px'" class="text-center"></th>
+                    <th [nzWidth]="'20px'" class="text-center">STT</th>
+                    <th [nzWidth]="'20px'"></th>
+                    <th [nzWidth]="'80px'">Mã sản phẩm</th>
+                    <th [nzWidth]="'240px'">Tên sản phẩm</th>
+                    <th [nzWidth]="'80px'">Đơn vị</th>
+                    <th [nzWidth]="'50px'">Số lượng nhập</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    *ngFor="let item of listOfData; let i = index"
+                    class="hover:bg-gray-50 transition-all duration-150"
+                    [ngClass]="{ 'dark:hover:bg-gray-800': isDark }"
+                  >
+                    <td class="text-center">
+                      <label nz-checkbox></label>
+                    </td>
+                    <td class="text-center">{{ i + 1 }}</td>
+                    <td class="space-x-2 flex">
+                      <button
+                        nz-button
+                        nzType="link"
+                        class="text-red-600"
+                        (click)="deleteItem(item)"
+                      >
+                        <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
+                      </button>
+                    </td>
+                    <td>{{ item.ProductCode }}</td>
+                    <td>{{ item.ProductName }}</td>
+                    <td>{{ item.Unit | unitText }}</td>
+                    <td
+                      [ngClass]="{
+                        'text-danger-light dark:text-danger-dark font-bold':
+                          item.Quantity <= 0,
+                        'text-success-light dark:text-success-dark font-medium':
+                          item.Quantity > 0
+                      }"
+                      (click)="startEdit(item)"
+                    >
+                      <ng-container
+                        *ngIf="editingId === item.Id; else displayQuantity"
+                      >
+                        <div class="flex items-center space-x-2">
+                          <input
+                            type="number"
+                            min="1"
+                            [(ngModel)]="editingQuantity"
+                            [ngModelOptions]="{ standalone: true }"
+                            [ngClass]="{ 'input-error': inputError }"
+                            class="w-20 px-2 py-1 border border-gray-300 rounded"
+                            (blur)="saveEdit(item)"
+                            (keydown.enter)="saveEdit(item)"
+                          />
+                        </div>
+                      </ng-container>
+                      <ng-template #displayQuantity>
+                        <span class="cursor-pointer">{{ item.Quantity }}</span>
+                      </ng-template>
+                    </td>
+                  </tr>
+                </tbody>
+              </nz-table>
+
               <div class="flex justify-end">
                 <button
                   nz-button
                   nzType="primary"
-                  class="items-center gap-2 whitespace-nowrap rounded-[24px] h-10 mb-3"
-                  (click)="addProducts()"
+                  class="rounded-[24px] h-10 px-6"
+                  [disabled]="isSubmitting || isSubmitDisabled"
+                  (click)="submitForm()"
                 >
-                  <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
-                  Thêm sản phẩm
+                  <nz-icon nzType="save" nzTheme="outline"></nz-icon>
+                  <span *ngIf="isSubmitting">Đang tạo...</span>
+                  <span *ngIf="!isSubmitting">Tạo phiếu</span>
                 </button>
               </div>
-            </div>
-
-            <nz-table
-              [nzData]="listOfData"
-              [nzBordered]="false"
-              [nzSize]="'middle'"
-              [nzScroll]="{ x: '1000px', y: '300px' }"
-              [nzShowPagination]="false"
-            >
-              <thead>
-                <tr class="text-gray-500 dark:bg-gray-700 dark:text-gray-400">
-                  <th [nzWidth]="'20px'" class="text-center"></th>
-                  <th [nzWidth]="'20px'" class="text-center">STT</th>
-                  <th [nzWidth]="'20px'"></th>
-                  <th [nzWidth]="'80px'">Mã sản phẩm</th>
-                  <th [nzWidth]="'240px'">Tên sản phẩm</th>
-                  <th [nzWidth]="'80px'">Đơn vị</th>
-                  <th [nzWidth]="'50px'">Số lượng nhập</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  *ngFor="let item of listOfData; let i = index"
-                  class="hover:bg-gray-50 transition-all duration-150"
-                  [ngClass]="{ 'dark:hover:bg-gray-800': isDark }"
-                >
-                  <td class="text-center">
-                    <label nz-checkbox></label>
-                  </td>
-                  <td class="text-center">{{ i + 1 }}</td>
-                  <td class="space-x-2 flex">
-                    <button
-                      nz-button
-                      nzType="link"
-                      class="text-red-600"
-                      (click)="deleteItem(item)"
-                    >
-                      <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
-                    </button>
-                  </td>
-                  <td>{{ item.ProductCode }}</td>
-                  <td>{{ item.ProductName }}</td>
-                  <td>{{ item.Unit | unitText }}</td>
-                  <td
-                    [ngClass]="{
-                      'text-danger-light dark:text-danger-dark font-bold':
-                        item.Quantity <= 0,
-                      'text-success-light dark:text-success-dark font-medium':
-                        item.Quantity > 0
-                    }"
-                    (click)="startEdit(item)"
-                  >
-                    <ng-container
-                      *ngIf="editingId === item.Id; else displayQuantity"
-                    >
-                      <div class="flex items-center space-x-2">
-                        <input
-                          type="number"
-                          min="1"
-                          [(ngModel)]="editingQuantity"
-                          [ngModelOptions]="{ standalone: true }"
-                          [ngClass]="{ 'input-error': inputError }"
-                          class="w-20 px-2 py-1 border border-gray-300 rounded"
-                          (blur)="saveEdit(item)"
-                          (keydown.enter)="saveEdit(item)"
-                        />
-                      </div>
-                    </ng-container>
-                    <ng-template #displayQuantity>
-                      <span class="cursor-pointer">{{ item.Quantity }}</span>
-                    </ng-template>
-                  </td>
-                </tr>
-              </tbody>
-            </nz-table>
-
-            <div class="flex justify-end">
-              <button
-                nz-button
-                nzType="primary"
-                class="rounded-[24px] h-10 px-6"
-                [disabled]="isSubmitting || isSubmitDisabled"
-                (click)="submitForm()"
-              >
-                <nz-icon nzType="save" nzTheme="outline"></nz-icon>
-                <span *ngIf="isSubmitting">Đang tạo...</span>
-                <span *ngIf="!isSubmitting">Tạo phiếu</span>
-              </button>
-            </div>
-          </form>
-
-          <!-- Bottom Menu -->
-          <bottom-menu class="mt-6"></bottom-menu>
-
-          <!-- Product Popup Create -->
-          <!-- <product-popup-create
-      *ngIf="showPopupCreate"
-      (closePopupCreate)="closeProductPopupCreate()"
-      (create)="onRefetch()"
-    ></product-popup-create> -->
-
-          <!-- Product Popup Update -->
-          <!-- <product-popup-update
-      *ngIf="showPopup"
-      [data]="selectedItem"
-      (closePopup)="closeProductDetailPopup()"
-      (update)="onRefetch()"
-    ></product-popup-update> -->
+            </form>
+          </div>
         </div>
       </div>
     </div>
   </div>
+  <!-- Bottom menu -->
+  <bottom-menu class="mt-6"></bottom-menu>
   <product-popup-search
     *ngIf="isPopupSearchProducts"
     (closePopup)="closeProductPopup()"
@@ -265,7 +436,7 @@
         </tr>
         <tr>
           <td><strong>Email:</strong> {{ supplier.email }}</td>
-          <td><strong>Địa chỉ:</strong> {{ supplier.address }}</td>
+          <td><strong>Ghi chú:</strong> {{ supplier.description }}</td>
         </tr>
       </table>
     </div>
@@ -292,7 +463,9 @@
           <td style="border: 1px solid #000; padding: 6px">
             {{ item.Quantity }}
           </td>
-          <td style="border: 1px solid #000; padding: 6px">{{ item.Unit | unitText }}</td>
+          <td style="border: 1px solid #000; padding: 6px">
+            {{ item.Unit | unitText }}
+          </td>
         </tr>
       </tbody>
     </table>

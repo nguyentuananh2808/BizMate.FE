@@ -1,3 +1,12 @@
+@media screen and (max-width: 768px) {
+
+  ::ng-deep .ant-pagination-prev,
+  ::ng-deep .ant-pagination-next {
+    border-radius: 50%;
+    background-color: #f0f0f0;
+    margin: 8px;
+  }
+}
 
 .dropdown-menu {
   position: absolute;

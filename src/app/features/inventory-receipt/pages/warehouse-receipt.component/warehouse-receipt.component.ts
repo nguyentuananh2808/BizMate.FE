@@ -21,6 +21,7 @@ import { FormsModule } from '@angular/forms';
 import { WarehouseReceipt } from '../../models/warehouse-receipt.model';
 import { SearchWarehouseRequest } from '../../models/warehouse-receipt-search-request.model';
 import { MenuComponent } from '../../../shared/menu.component/menu.component';
+import { NzPaginationComponent } from 'ng-zorro-antd/pagination';
 
 @Component({
   selector: 'warehouse-receipt',
@@ -36,7 +37,8 @@ import { MenuComponent } from '../../../shared/menu.component/menu.component';
     HeaderCommonComponent,
     NzModalModule,
     NzFloatButtonModule,
-    MenuComponent
+    MenuComponent,
+    NzPaginationComponent,
   ],
   templateUrl: './warehouse-receipt.component.html',
   styleUrls: ['./warehouse-receipt.component.scss'],
@@ -57,6 +59,11 @@ export class WarehouseReceiptComponent implements OnInit {
   isDark = false;
   showPopup = false;
   showPopupCreate = false;
+  sidebarVisible = false;
+  isCollapsed = true;
+  pageSize = 10;
+  pageIndex = 1;
+  totalCount = 0;
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
@@ -77,9 +84,16 @@ export class WarehouseReceiptComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.checkIsMobile();
+    window.addEventListener('resize', () => this.checkIsMobile());
     this.fetchData();
   }
-
+  checkIsMobile() {
+    this.isMobile = window.innerWidth <= 768;
+    if (this.isMobile) {
+      this.sidebarVisible = false;
+    }
+  }
   goBack(): void {
     this.location.back();
   }
@@ -112,15 +126,17 @@ export class WarehouseReceiptComponent implements OnInit {
   fetchData(): void {
     this.isLoading = true;
     const request: SearchWarehouseRequest = {
-      pageIndex: 1,
-      pageSize: 10,
-      keySearch: '',
-      type: 1, // phiếu nhập kho
+      pageIndex: this.pageIndex,
+      pageSize: this.pageSize,
+      keySearch: this.searchKeyword.trim(),
+      type: 1,
     };
+
     this.WarehouseReceiptService.SearchWarehouseReceipt(request).subscribe({
       next: (res) => {
         this.originalData = res.InventoryReceipts || [];
-        console.log('data:', res);
+        this.totalCount = res.TotalCount || 0;
+
         this.listOfData = [...this.originalData].sort((a, b) =>
           a.Code.localeCompare(b.Code)
         );
@@ -130,13 +146,14 @@ export class WarehouseReceiptComponent implements OnInit {
       error: () => (this.isLoading = false),
     });
   }
+  onPageIndexChange(index: number) {
+    this.pageIndex = index;
+    this.fetchData();
+  }
 
   onSearch(): void {
-    const kw = this.searchKeyword.trim().toLowerCase();
-    this.listOfData = this.originalData.filter(
-      (i) =>
-        i.Code.toLowerCase().includes(kw) || i.Code.toLowerCase().includes(kw)
-    );
+    this.pageIndex = 1;
+    this.fetchData();
   }
 
   listOfSelection = [
