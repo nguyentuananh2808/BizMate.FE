@@ -1,8 +1,7 @@
-version: '3.8'
 services:
   frontend:
     build:
-      context: ./BizMate_FE
+      context: .
       dockerfile: Dockerfile
     ports:
       - "80:80"
