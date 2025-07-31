@@ -7,7 +7,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
-RUN npm run build -- --output-path=dist --configuration production
+RUN npm run build -- --output-path=dist/BizMate.FE --configuration production
 
 # Stage 2: Nginx serve
 FROM nginx:stable-alpine
