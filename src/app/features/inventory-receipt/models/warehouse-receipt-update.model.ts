@@ -1,13 +1,16 @@
-export interface WarehouseReceiptUpdateRequest {
-  id: string;
-  rowVersion: string;
-  supplierName?: string;
-  deliveryAddress?: string;
-  description?: string;
-  details: details[];
-}
-
-export interface details {
+export interface UpdateReceiptDetailRequest {
   productId: string;
   quantity: number;
+}
+
+export interface UpdateReceiptRequestRequest {
+  id: string;
+  type: number;
+  supplierName: string;
+  customerName?: string;
+  customerPhone?: string;
+  deliveryAddress?: string;
+  description?: string;
+  rowVersion: string;
+  details: UpdateReceiptDetailRequest[];
 }

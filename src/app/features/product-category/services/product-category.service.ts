@@ -21,7 +21,7 @@ export class ProductCategoryService {
     Id: string,
     Code: string,
     Name: string,
-    RowVersion: number,
+    RowVersion: string,
     IsActive: boolean,
     Description: string
   ): Observable<ProductCategory> {

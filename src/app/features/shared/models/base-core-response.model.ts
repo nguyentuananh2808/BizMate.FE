@@ -5,7 +5,7 @@ export interface BaseCoreEntity {
   CreatedBy: string;
   UpdatedDate: Date;
   UpdatedBy: string;
-  RowVersion: number;
+  RowVersion: string;
 }
 
 export interface BaseCoreRespone extends BaseCoreEntity {

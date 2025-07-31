@@ -4,11 +4,11 @@ export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 
   {
-    path: 'warehouse-receipt-detail/:id',
+    path: 'warehouse-receipt-update/:id',
     loadComponent: () =>
       import(
-        './features/inventory-receipt/pages/warehouse-receipt-detail.component/warehouse-receipt-detail.component'
-      ).then((m) => m.WarehouseReceiptDetailComponent),
+        './features/inventory-receipt/pages/warehouse-receipt-update.component/warehouse-receipt-update.component'
+      ).then((m) => m.WarehouseReceiptUpdateComponent),
   },
   {
     path: 'product-category',

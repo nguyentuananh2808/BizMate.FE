@@ -1,6 +1,6 @@
 export interface ProductUpdateRequest {
   Id: string;
-  RowVersion: number;
+  RowVersion: string;
   ProductCategoryId: string;
   Name: string;
   Unit: number;

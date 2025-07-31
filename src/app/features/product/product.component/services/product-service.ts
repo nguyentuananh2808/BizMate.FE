@@ -33,7 +33,7 @@ export class ProductService {
 
   UpdateProduct(
     Id: string,
-    RowVersion: number,
+    RowVersion: string,
     ProductCategoryId: string,
     Name: string,
     Unit: number,

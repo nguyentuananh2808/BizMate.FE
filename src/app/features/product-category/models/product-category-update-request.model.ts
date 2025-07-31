@@ -2,7 +2,7 @@ export interface ProductCategoryUpdateRequest {
   Id: string;
   Code: string;
   Name: string;
-  RowVersion: number;
+  RowVersion: string;
   Description: string;
   IsActive: boolean;
 }

@@ -9,7 +9,7 @@ export interface Product {
   SupplierName: string;
   ProductCategoryId: string;
   ProductCategoryName: string;
-  RowVersion: number;
+  RowVersion: string;
   Description: string;
   IsActive: boolean;
   CreatedDate: Date;

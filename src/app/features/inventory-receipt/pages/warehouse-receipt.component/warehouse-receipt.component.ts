@@ -10,7 +10,7 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
 import { NzIconModule } from 'ng-zorro-antd/icon';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { HeaderCommonComponent } from '../../../shared/header-common.component/header-common.component';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
@@ -76,7 +76,8 @@ export class WarehouseReceiptComponent implements OnInit {
     private modal: NzModalService,
     private toastr: ToastrService,
     private datePipe: DatePipe,
-    private location: Location
+    private location: Location,
+    private router: Router,
   ) {}
 
   onRefetch(): void {
@@ -112,6 +113,7 @@ export class WarehouseReceiptComponent implements OnInit {
   viewDetail(item: WarehouseReceipt) {
     this.selectedItem = item;
     this.showPopup = true;
+    this.router.navigate(['/warehouse-receipt-update', item.Id]);
   }
   closeWarehouseReceiptDetailPopup() {
     this.showPopup = false;

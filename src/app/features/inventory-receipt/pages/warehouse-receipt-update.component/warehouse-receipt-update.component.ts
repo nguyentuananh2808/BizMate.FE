@@ -1,36 +1,40 @@
-import { Product } from './../../../product/product.component/models/product-response.model';
-import { ProductService } from './../../../product/product.component/services/product-service';
-import { CommonModule, Location } from '@angular/common';
-import { ChangeDetectorRef, Component, HostListener } from '@angular/core';
+import { WarehouseReceiptService } from './../../services/warehouse-receipt.service';
+import { CommonModule, DatePipe } from '@angular/common';
 import {
-  FormArray,
-  FormBuilder,
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  OnInit,
+} from '@angular/core';
+import { HeaderCommonComponent } from '../../../shared/header-common.component/header-common.component';
+import { ToastrService } from 'ngx-toastr';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { Location } from '@angular/common';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import {
   FormGroup,
-  Validators,
   FormsModule,
+  FormBuilder,
+  FormArray,
+  Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { HeaderCommonComponent } from '../../../shared/header-common.component/header-common.component';
-import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
-import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzIconModule } from 'ng-zorro-antd/icon';
+import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
-import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
-import { Router, RouterModule } from '@angular/router';
+import { NzButtonModule } from 'ng-zorro-antd/button';
 import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
-import { InventoryDetail } from '../../models/warehouse-receipt-detail.model';
+import { Product } from '../../../product/product.component/models/product-response.model';
+import { UpdateReceiptRequestRequest } from '../../models/warehouse-receipt-update.model';
+import { NgxPrintModule } from 'ngx-print';
 import { ProductPopupSearchComponent } from '../../../product/product-popup-search.component/product-popup-search.component';
 import { MenuComponent } from '../../../shared/menu.component/menu.component';
-import { CreateReceiptRequestRequest } from '../../models/warehouse-receipt-create.model';
-import { WarehouseReceiptService } from '../../services/warehouse-receipt.service';
-import { ToastrService } from 'ngx-toastr';
-import { NgxPrintModule } from 'ngx-print';
+import { InventoryDetail } from '../../models/warehouse-receipt-detail.model';
 
 @Component({
-  standalone: true,
-  selector: 'warehouse-receipt-create',
+  selector: 'warehouse-receipt-update',
   imports: [
     NgxPrintModule,
     CommonModule,
@@ -49,10 +53,13 @@ import { NgxPrintModule } from 'ngx-print';
     ProductPopupSearchComponent,
     MenuComponent,
   ],
-  templateUrl: './warehouse-receipt-create.component.html',
-  styleUrls: ['./warehouse-receipt-create.component.scss'],
+  templateUrl: './warehouse-receipt-update.component.html',
+  styleUrls: ['./warehouse-receipt-update.component.scss'],
+  providers: [DatePipe],
 })
-export class WarehouseReceiptCreateComponent {
+export class WarehouseReceiptUpdateComponent implements OnInit {
+  id: string = '';
+  rowVersion: string = '';
   receiptForm: FormGroup;
   isDark = false;
   dateToday = new Date();
@@ -81,7 +88,7 @@ export class WarehouseReceiptCreateComponent {
     private toastr: ToastrService,
     private modal: NzModalService,
     private cdr: ChangeDetectorRef,
-    private router: Router,
+    private router: ActivatedRoute,
     private receiptService: WarehouseReceiptService
   ) {
     this.receiptForm = this.fb.group({
@@ -99,6 +106,36 @@ export class WarehouseReceiptCreateComponent {
     this.isMobile = event.target.innerWidth < 768;
   }
 
+  ngOnInit(): void {
+    this.id = this.router.snapshot.paramMap.get('id')!;
+    if (this.id) {
+      this.getWarehouseReceiptDetail(this.id);
+    }
+  }
+
+  getWarehouseReceiptDetail(id: string): void {
+    this.receiptService.ReadByIdWarehouseReceipt(id).subscribe({
+      next: (res) => {
+        this.receiptForm.patchValue({
+          supplierName: res.SupplierName || '',
+          phoneNumber: res.CustomerPhone || '',
+          description: res.Description || '',
+        });
+
+        // Gán dữ liệu sản phẩm
+        this.listOfData = res.InventoryDetails || [];
+        this.rowVersion = res.RowVersion;
+
+        // Gán ngày
+        this.dateToday = res.Date || new Date();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Lỗi khi gọi ReadByIdWarehouseReceipt:', err);
+      },
+    });
+  }
+
   get details(): FormArray {
     return this.receiptForm.get('details') as FormArray;
   }
@@ -111,12 +148,19 @@ export class WarehouseReceiptCreateComponent {
   }
 
   startEdit(item: InventoryDetail): void {
-    this.editingId = item.Id;
+    if (!item || !item.ProductId) {
+      console.warn('startEdit called with invalid item:', item);
+      return;
+    }
+
+    if (this.editingId === item.ProductId) return;
+
+    this.editingId = item.ProductId;
     this.editingQuantity = item.Quantity;
   }
+
   onPrint() {
-    const { supplierName,  phoneNumber, description } =
-      this.receiptForm.value;
+    const { supplierName, phoneNumber, description } = this.receiptForm.value;
 
     this.supplier = {
       name: supplierName,
@@ -151,15 +195,17 @@ export class WarehouseReceiptCreateComponent {
     this.editingId = null;
   }
 
-  deleteItem(itemToDelete: any): void {
+  deleteItem(itemToDelete: InventoryDetail): void {
+
     this.modal.confirm({
       nzTitle: `Bạn có chắc muốn xóa sản phẩm "<b>${itemToDelete.ProductName}</b>" này?`,
       nzOkText: 'Xóa',
       nzCancelText: 'Hủy',
       nzOnOk: () => {
         this.listOfData = this.listOfData.filter(
-          (item) => item.Id !== itemToDelete.Id
+          (item) => item.ProductId !== itemToDelete.ProductId
         );
+        console.log('Sau khi xóa:', this.listOfData);
         this.cdr.detectChanges();
       },
     });
@@ -167,6 +213,18 @@ export class WarehouseReceiptCreateComponent {
 
   onSelectedProducts(productList: InventoryDetail[]) {
     if (!productList || productList.length === 0) {
+      this.closeProductPopup();
+      return;
+    }
+    const uniqueNewProducts = productList.filter(
+      (newItem) =>
+        !this.listOfData.some(
+          (existingItem) => existingItem.ProductId === newItem.ProductId
+        )
+    );
+
+    if (uniqueNewProducts.length === 0) {
+      this.toastr.warning('Sản phẩm được chọn đã tồn tại trong danh sách!');
       this.closeProductPopup();
       return;
     }
@@ -282,11 +340,13 @@ export class WarehouseReceiptCreateComponent {
   submitForm(): void {
     const formValues = this.receiptForm.value;
 
-    const payload: CreateReceiptRequestRequest = {
+    const payload: UpdateReceiptRequestRequest = {
+      id: this.id,
       type: 1, //phiếu nhập
       supplierName: formValues.supplierName,
       customerName: '',
       customerPhone: formValues.phoneNumber,
+      rowVersion: this.rowVersion,
       description: formValues.description,
       details: this.listOfData.map((item) => ({
         productId: item.ProductId ?? item.Id,
@@ -294,14 +354,16 @@ export class WarehouseReceiptCreateComponent {
       })),
     };
 
-    this.receiptService.CreateWarehouseReceipt(payload).subscribe({
+    this.receiptService.UpdateWarehouseReceipt(payload).subscribe({
       next: () => {
-        this.toastr.success('Tạo phiếu nhập thành công!');
-        this.router.navigateByUrl('/warehouse-receipt');
+        this.toastr.success('Câp nhật phiếu nhập thành công!');
+        // this.router.navigateByUrl('/warehouse-receipt');
       },
       error: (err) => {
         console.error(err);
-        this.toastr.error(err?.error?.message || 'Tạo phiếu nhập thất bại!');
+        this.toastr.error(
+          err?.error?.message || 'Câp nhật phiếu nhập thất bại!'
+        );
       },
     });
   }

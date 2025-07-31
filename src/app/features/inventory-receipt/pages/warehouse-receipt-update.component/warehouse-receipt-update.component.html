@@ -98,8 +98,8 @@
                   (click)="submitForm()"
                 >
                   <nz-icon nzType="save" nzTheme="outline"></nz-icon>
-                  <span *ngIf="isSubmitting">Đang tạo...</span>
-                  <span *ngIf="!isSubmitting">Tạo phiếu</span>
+                  <span *ngIf="isSubmitting">Đang cập nhật...</span>
+                  <span *ngIf="!isSubmitting">Cập nhật phiếu</span>
                 </button>
               </div>
             </form>
@@ -148,7 +148,7 @@
                     >
 
                     <ng-container
-                      *ngIf="editingId === item.Id; else displayQuantity"
+                      *ngIf="editingId === item.ProductId; else displayQuantity"
                     >
                       <input
                         type="number"
@@ -202,69 +202,88 @@
           [ngClass]="{ 'dark:bg-gray-900': isDark }"
         >
           <div class="w-full">
-            <div class="flex items-center justify-between px-3 pt-3">
-              <h2 class="text-secondary-light dark:text-secondary-dark">
-                Ngày nhập : {{ dateToday | date : "dd/MM/yyyy" }}
-              </h2>
-
-              <button
-                class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
-                (click)="onPrint()"
-              >
-                <nz-icon nzType="printer" nzTheme="outline"></nz-icon>
-                In phiếu
-              </button>
-            </div>
-
             <form [formGroup]="receiptForm" class="space-y-6 pl-3 pt-3">
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label
-                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
+              <div
+                class="bg-white dark:bg-background-dark rounded-xl p-6 shadow-md space-y-6"
+              >
+                <div
+                  class="flex flex-col md:flex-row md:items-center md:justify-between"
+                >
+                  <h2
+                    class="text-sm text-gray-600 dark:text-gray-300 font-medium"
                   >
-                    Tên nhà cung cấp
-                  </label>
-                  <input
-                    formControlName="supplierName"
-                    class="input-style"
-                    placeholder="Nhập tên nhà cung cấp..."
-                  />
+                    Ngày nhập hàng:
+                    <span class="font-semibold text-black dark:text-white">{{
+                      dateToday | date : "dd/MM/yyyy"
+                    }}</span>
+                  </h2>
                 </div>
-                <div>
-                  <label
-                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                    >Số điện thoại</label
-                  >
-                  <input
-                    formControlName="phoneNumber"
-                    class="input-style"
-                    placeholder="Nhập số điện thoại..."
-                  />
-                </div>
-                <div>
-                  <label
-                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                    >Ghi chú</label
-                  >
-                  <textarea
-                    formControlName="description"
-                    rows="2"
-                    class="input-style resize-none"
-                    placeholder="Nhập ghi chú..."
-                  ></textarea>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <!-- Tên nhà cung cấp -->
+                  <div>
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
+                      Tên nhà cung cấp
+                    </label>
+                    <input
+                      formControlName="supplierName"
+                      type="text"
+                      class="w-full px-4 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                      placeholder="Nhập tên nhà cung cấp..."
+                    />
+                  </div>
+
+                  <!-- Số điện thoại -->
+                  <div>
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
+                      Số điện thoại
+                    </label>
+                    <input
+                      formControlName="phoneNumber"
+                      type="text"
+                      class="w-full px-4 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                      placeholder="Nhập số điện thoại..."
+                    />
+                  </div>
+
+                  <!-- Ghi chú -->
+                  <div class="md:col-span-2">
+                    <label
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
+                      Ghi chú
+                    </label>
+                    <textarea
+                      formControlName="description"
+                      rows="3"
+                      class="w-full px-4 py-2 border rounded-md shadow-sm resize-none focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                      placeholder="Nhập ghi chú..."
+                    ></textarea>
+                  </div>
                 </div>
               </div>
 
               <!-- Table Section -->
               <div class="grid grid-cols-2">
-                <div>
+                <div class="flex items-center">
                   <h3
                     class="text-lg font-semibold text-secondary-light dark:text-secondary-dark"
                   >
                     Danh sách sản phẩm
                   </h3>
                 </div>
-                <div class="flex justify-end">
+                <div class="flex justify-end items-center">
+                  <button
+                    class="items-center gap-2 whitespace-nowrap rounded-[24px] mb-3 h-10 bg-green-500 text-white p-3 mr-2"
+                    (click)="onPrint()"
+                  >
+                    <nz-icon nzType="printer" nzTheme="outline"></nz-icon>
+                    In phiếu
+                  </button>
                   <button
                     nz-button
                     nzType="primary"
@@ -297,7 +316,11 @@
                 </thead>
                 <tbody>
                   <tr
-                    *ngFor="let item of listOfData; let i = index"
+                    *ngFor="
+                      let item of listOfData;
+                      let i = index;
+                      trackBy: trackById
+                    "
                     class="hover:bg-gray-50 transition-all duration-150"
                     [ngClass]="{ 'dark:hover:bg-gray-800': isDark }"
                   >
@@ -328,7 +351,10 @@
                       (click)="startEdit(item)"
                     >
                       <ng-container
-                        *ngIf="editingId === item.Id; else displayQuantity"
+                        *ngIf="
+                          editingId === item.ProductId;
+                          else displayQuantity
+                        "
                       >
                         <div class="flex items-center space-x-2">
                           <input
@@ -360,8 +386,8 @@
                   (click)="submitForm()"
                 >
                   <nz-icon nzType="save" nzTheme="outline"></nz-icon>
-                  <span *ngIf="isSubmitting">Đang tạo...</span>
-                  <span *ngIf="!isSubmitting">Tạo phiếu</span>
+                  <span *ngIf="isSubmitting">Đang cập nhât...</span>
+                  <span *ngIf="!isSubmitting">Cập nhât phiếu</span>
                 </button>
               </div>
             </form>

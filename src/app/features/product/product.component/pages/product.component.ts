@@ -281,8 +281,10 @@ export class ProductComponent implements OnInit {
             this.fetchData();
             this.toastr.success('Đã xóa thành công');
           },
-          error: () => {
-            this.toastr.error('Xóa thất bại');
+          error: (error) => {
+            const errorMessage =
+              error?.error?.Message || 'Xóa thất bại. Vui lòng thử lại.';
+            this.toastr.error(errorMessage);
           },
         });
       },
