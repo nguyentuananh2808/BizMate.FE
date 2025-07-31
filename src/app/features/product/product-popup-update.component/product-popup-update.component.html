@@ -1,0 +1,203 @@
+<div
+  *ngIf="data"
+  class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[9999] transition-opacity duration-300"
+  [ngClass]="{ 'opacity-100': !isClosing, 'opacity-0': isClosing }"
+>
+  <div
+    class="overflow-y-auto max-h-screen bg-card-bg-light dark:bg-card-bg-dark rounded-2xl shadow-xl backdrop-blur-xl w-full max-w-2xl m-4 p-6 relative border border-white/40 transform transition-all duration-300"
+    [ngClass]="{
+      'opacity-100 scale-100': !isClosing,
+      'opacity-0 scale-95': isClosing
+    }"
+  >
+    <!-- Close button -->
+    <button
+      (click)="close()"
+      class="absolute top-3 right-4 text-text-primary-light dark:text-text-primary-dark hover:text-danger-light dark:hover:text-danger-dark text-2xl"
+    >
+      ✕
+    </button>
+
+    <!-- Heading -->
+    <h2
+      class="text-2xl font-semibold mb-6 text-center text-text-primary-light dark:text-text-primary-dark"
+    >
+      Cập nhật sản phẩm
+    </h2>
+
+    <form class="space-y-6" (ngSubmit)="onSubmit()">
+      <!-- Code -->
+      <div>
+        <label
+          class="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1"
+        >
+          Mã sản phẩm
+        </label>
+        <input
+          type="text"
+          disabled
+          class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-info-light dark:focus:ring-info-dark"
+          [(ngModel)]="data.Code"
+          name="productCode"
+        />
+      </div>
+
+      <!-- Name -->
+      <div>
+        <label
+          class="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1"
+        >
+          Tên sản phẩm
+        </label>
+        <input
+          type="text"
+          class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-info-light dark:focus:ring-info-dark"
+          [(ngModel)]="data.Name"
+          name="name"
+        />
+      </div>
+
+      <!-- Loại sản phẩm -->
+      <div class="relative">
+        <label
+          for="search-category"
+          class="block text-sm font-medium mb-1 text-text-secondary-light dark:text-text-secondary-dark"
+        >
+          Loại sản phẩm
+        </label>
+
+        <input
+          id="search-category"
+          type="text"
+          [(ngModel)]="searchTerm"
+          [ngModelOptions]="{ standalone: true }"
+          (focus)="showDropdown = true"
+          (input)="filterCategories()"
+          (blur)="onBlur()"
+          placeholder="Tìm loại sản phẩm..."
+          class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-card-bg-dark text-text-primary-light dark:text-text-primary-dark focus:outline-none focus:ring-2 focus:ring-info-light dark:focus:ring-info-dark transition-colors duration-200"
+          autocomplete="off"
+        />
+
+        <ul
+          *ngIf="showDropdown && filteredCategories.length > 0"
+          class="absolute z-10 w-full max-h-48 overflow-auto mt-1 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-card-bg-dark shadow-lg"
+        >
+          <li
+            *ngFor="let cat of filteredCategories"
+            (click)="selectCategory(cat)"
+            class="cursor-pointer px-4 py-2 hover:bg-info-light dark:hover:bg-info-dark text-white"
+          >
+            {{ cat.Name }}
+          </li>
+        </ul>
+      </div>
+
+      <!-- Đơn vị -->
+      <div>
+        <label
+          class="block text-sm font-medium mb-1 text-text-secondary-light dark:text-text-secondary-dark"
+        >
+          Đơn vị
+        </label>
+        <select
+          name="unit"
+          [(ngModel)]="data.Unit"
+          class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
+        >
+          <option [value]="1">Cái</option>
+          <option [value]="2">Hộp</option>
+          <option [value]="3">Thùng</option>
+          <option [value]="4">Kg</option>
+          <option [value]="5">Lít</option>
+          <option [value]="6">Cây</option>
+        </select>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label
+          class="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1"
+        >
+          Mô tả
+        </label>
+        <textarea
+          rows="4"
+          class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-info-light dark:focus:ring-info-dark"
+          [(ngModel)]="data.Description"
+          name="description"
+        ></textarea>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label
+          class="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1"
+        >
+          Trạng thái
+        </label>
+        <div class="flex space-x-6 items-center">
+          <!-- Hoạt động -->
+          <label class="inline-flex items-center cursor-pointer">
+            <input
+              type="radio"
+              [(ngModel)]="data.IsActive"
+              [value]="false"
+              name="isActive"
+              class="form-radio h-5 w-5"
+            />
+            <span
+              class="ml-2 font-medium"
+              [ngClass]="
+                data.IsActive === false
+                  ? 'text-success-dark dark:text-success-light'
+                  : 'text-text-secondary-light dark:text-text-secondary-dark'
+              "
+            >
+              Hoạt động
+            </span>
+          </label>
+
+          <!-- Ngưng hoạt động -->
+          <label class="inline-flex items-center cursor-pointer">
+            <input
+              type="radio"
+              [(ngModel)]="data.IsActive"
+              [value]="true"
+              name="isActive"
+              class="form-radio h-5 w-5"
+            />
+            <span
+              class="ml-2 font-medium"
+              [ngClass]="
+                data.IsActive
+                  ? 'text-danger-light dark:text-danger-dark'
+                  : 'text-text-secondary-light dark:text-text-secondary-dark'
+              "
+            >
+              Ngưng hoạt động
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex justify-end space-x-3 pt-4">
+        <button
+          type="button"
+          class="px-4 py-2 rounded-lg bg-neutral-200 dark:bg-neutral-600 hover:bg-neutral-300 dark:hover:bg-neutral-500 text-neutral-800 dark:text-neutral-100"
+          (click)="close()"
+        >
+          Hủy
+        </button>
+        <button
+          type="submit"
+          [disabled]="isSaving"
+          class="px-6 py-2 rounded-lg bg-primary-light dark:bg-primary-dark text-white hover:bg-secondary-light dark:hover:bg-secondary-dark transition disabled:opacity-50"
+        >
+          Lưu
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

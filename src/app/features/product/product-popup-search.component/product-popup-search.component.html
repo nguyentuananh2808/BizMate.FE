@@ -1,0 +1,231 @@
+<!-- ========== Desktop Layout ========== -->
+<div
+  *ngIf="!isMobile"
+  class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[9999] transition-opacity duration-300"
+  [ngClass]="{ 'opacity-100': !isClosing, 'opacity-0': isClosing }"
+>
+  <div
+    class="overflow-y-auto max-h-screen bg-card-bg-light dark:bg-card-bg-dark rounded-2xl shadow-xl backdrop-blur-xl w-full max-w-2xl m-4 p-6 relative border border-white/40 transform transition-all duration-300"
+    [ngClass]="{
+      'opacity-100 scale-100': !isClosing,
+      'opacity-0 scale-95': isClosing
+    }"
+  >
+    <!-- Close button -->
+    <button
+      (click)="close()"
+      class="absolute top-3 right-4 text-text-primary-light dark:text-text-primary-dark hover:text-danger-light dark:hover:text-danger-dark text-2xl"
+    >
+      ✕
+    </button>
+
+    <!-- Heading -->
+    <h2
+      class="text-2xl font-semibold mb-6 text-center text-text-primary-light dark:text-text-primary-dark"
+    >
+      Thêm sản phẩm
+    </h2>
+    <div class="flex items-center mb-3">
+      <!-- Input tìm kiếm -->
+      <input
+        type="text"
+        class="flex-1 border border-gray-300 rounded-[24px] px-3 py-2 mx-2"
+        [(ngModel)]="searchKeyword"
+        placeholder="Tìm kiếm sản phẩm..."
+        [ngClass]="{
+          'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600': isDark
+        }"
+      />
+
+      <!-- Nút tìm kiếm -->
+      <button
+        (click)="onSearch()"
+        class="text-white bg-blue-600 hover:bg-blue-700 rounded-full p-2 mr-2 transition duration-200"
+        [ngClass]="{ 'dark:bg-blue-500 hover:dark:bg-blue-600': isDark }"
+        title="Tìm kiếm "
+      >
+        <nz-icon class="size-5 pl-0.5" nzType="search" nzTheme="outline" />
+      </button>
+    </div>
+
+    <div
+      class="overflow-x-auto rounded-[24px] shadow-sm bg-[rgba(187,213,237,0.33)] p-3 w-full"
+      [ngClass]="{ 'dark:bg-gray-900': isDark }"
+    >
+      <nz-table
+        [nzData]="listOfData"
+        [nzScroll]="{ y: '400px' }"
+        [nzTotal]="totalCount"
+        [nzPageSize]="pageSize"
+        [nzPageIndex]="pageIndex"
+        [nzFrontPagination]="false"
+        [nzLoading]="isLoading"
+        (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
+        (nzPageIndexChange)="onPageChange($event)"
+      >
+        <thead>
+          <tr
+            class="bg-gray-100 text-gray-700"
+            [ngClass]="{ 'dark:bg-gray-800 dark:text-gray-200': isDark }"
+          >
+            <th
+              [nzSelections]="listOfSelection"
+              [(nzChecked)]="checked"
+              [nzIndeterminate]="indeterminate"
+              (nzCheckedChange)="onAllChecked($event)"
+              [nzWidth]="'28px'"
+            ></th>
+            <th [nzWidth]="'50px'">Mã sản phẩm</th>
+            <th [nzWidth]="'240px'">Tên sản phẩm</th>
+            <th [nzWidth]="'60px'">Đơn vị</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
+            class="hover:bg-gray-50 transition-all duration-150"
+            [ngClass]="{ 'dark:hover:bg-gray-800': isDark }"
+          >
+            <td>
+              <label
+                nz-checkbox
+                [nzChecked]="setOfCheckedId.has(item.Id)"
+                (nzCheckedChange)="onItemChecked(item.Id, $event)"
+              ></label>
+            </td>
+            <td>{{ item.Code }}</td>
+            <td>
+              {{
+                item.Name.length > 30
+                  ? (item.Name | slice : 0 : 30) + "..."
+                  : item.Name
+              }}
+            </td>
+            <td>{{ item.Unit | unitText }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+      <div class="mt-4 flex justify-end gap-4">
+        <button
+          class="bg-gray-400 text-white px-4 py-2 rounded-full hover:bg-gray-500 transition"
+          (click)="close()"
+        >
+          Hủy
+        </button>
+        <button
+          class="bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transition"
+          (click)="onSaveSelectedProducts()"
+        >
+          Lưu
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== Mobile Layout ========== -->
+<div
+  *ngIf="isMobile"
+  class="fixed inset-0 bg-black/40 backdrop-blur-sm flex flex-col z-[9999] transition-opacity duration-300"
+  [ngClass]="{ 'opacity-100': !isClosing, 'opacity-0': isClosing }"
+>
+  <div
+    class="ml-3 mr-3 transform transition-transform duration-300bg-white dark:bg-gray-900 bg-slate-300 rounded-t-2xl p-4 overflow-y-auto mt-auto max-h-[90vh]"
+    [ngClass]="{
+      'translate-y-0': !isClosing,
+      'translate-y-full': isClosing
+    }"
+  >
+    <!-- Close button -->
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+        Thêm sản phẩm
+      </h2>
+      <button
+        (click)="close()"
+        class="text-2xl text-gray-500 dark:text-gray-300"
+      >
+        ✕
+      </button>
+    </div>
+
+    <!-- Tìm kiếm -->
+    <div class="flex items-center gap-2 mb-3">
+      <input
+        type="text"
+        [(ngModel)]="searchKeyword"
+        (keyup.enter)="onSearch()"
+        placeholder="Tìm sản phẩm..."
+        class="flex-1 rounded-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+      />
+      <button
+        (click)="onSearch()"
+        class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full"
+      >
+        <nz-icon nzType="search" nzTheme="outline"></nz-icon>
+      </button>
+    </div>
+
+    <!-- Danh sách sản phẩm -->
+    <div *ngIf="listOfCurrentPageData.length > 0" class="space-y-3">
+      <div
+        *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
+        class="p-3 rounded-xl shadow bg-white dark:bg-gray-800 text-sm"
+      >
+        <label class="flex items-start gap-2">
+          <input
+            type="checkbox"
+            [checked]="setOfCheckedId.has(item.Id)"
+            (change)="onItemChecked(item.Id, $event.target.checked)"
+          />
+          <div class="flex-1">
+            <div
+              class="font-semibold text-secondary-light dark:text-secondary-dark"
+            >
+              {{ item.Name }}
+            </div>
+            <div class="text-blue-400 dark:text-gray-400">
+              Mã: {{ item.Code }} <br />
+              Đơn vị: {{ item.Unit | unitText }}
+            </div>
+          </div>
+        </label>
+      </div>
+    </div>
+    <div
+      *ngIf="listOfCurrentPageData.length === 0 && !isLoading"
+      class="text-gray-500 text-center py-6"
+    >
+      Không có sản phẩm nào.
+    </div>
+
+    <!-- Pagination -->
+    <nz-pagination
+      *ngIf="totalCount > pageSize"
+      class="mt-4 justify-center"
+      [nzPageIndex]="pageIndex"
+      [nzTotal]="totalCount"
+      [nzPageSize]="pageSize"
+      [nzSize]="'small'"
+      [nzShowQuickJumper]="false"
+      [nzShowSizeChanger]="false"
+      (nzPageIndexChange)="onPageChange($event)"
+    ></nz-pagination>
+
+    <!-- Buttons -->
+    <div class="mt-6 flex justify-end gap-3">
+      <button
+        class="bg-gray-400 text-white px-4 py-2 rounded-full"
+        (click)="close()"
+      >
+        Hủy
+      </button>
+      <button
+        class="bg-green-600 text-white px-4 py-2 rounded-full"
+        (click)="onSaveSelectedProducts()"
+      >
+        Lưu
+      </button>
+    </div>
+  </div>
+</div>

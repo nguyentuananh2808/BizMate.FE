@@ -5,11 +5,12 @@ import { ProductCategory } from '../../models/product-category-response.model';
 import { ProductCategoryService } from '../../services/product-category.service';
 import { finalize } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 
 @Component({
   selector: 'product-category-detail-popup',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NzSelectModule],
   templateUrl: './product-category-detail-popup.html',
   styleUrl: './product-category-detail-popup.scss',
 })
@@ -37,9 +38,10 @@ export class ProductCategoryDetailPopup {
     this.productCategoryService
       .UpdateProductCategory(
         this.data.Id,
-        this.data.ProductCategoryCode,
+        this.data.Code,
         this.data.Name,
         this.data.RowVersion,
+        this.data.IsActive,
         this.data.Description || ''
       )
       .pipe(finalize(() => (this.isSaving = false)))
@@ -54,6 +56,7 @@ export class ProductCategoryDetailPopup {
             MUST_NOT_EMPTY: 'Bắt nhập tên loại sản phẩm !',
             COMMON_CONCURRENCY_CONFLICT:
               'Dữ liệu đã bị thay đổi bởi người dùng khác. Vui lòng tải lại và thử lại.',
+              COMMON_NOT_EXIST:'Tên loại sản phẩm đã tồn tại.'
           };
 
           const messageCode = err.error?.Message || 'UNKNOWN_ERROR';

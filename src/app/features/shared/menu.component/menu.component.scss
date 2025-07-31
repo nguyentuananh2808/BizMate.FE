@@ -1,0 +1,18 @@
+@media (max-width: 768px) {
+  :host {
+    position: fixed;
+    z-index: 50;
+  }
+
+  .-translate-x-full {
+    transform: translateX(-100%);
+  }
+
+  .translate-x-0 {
+    transform: translateX(0);
+  }
+
+  .transition-all {
+    transition: all 0.3s ease-in-out;
+  }
+}

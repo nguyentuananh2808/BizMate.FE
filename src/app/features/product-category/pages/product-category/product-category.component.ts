@@ -1,6 +1,6 @@
 import { ProductCategoryPopupCreateComponent } from '../product-category-popup-create.component/product-category-popup-create.component';
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -18,6 +18,10 @@ import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { ToastrService } from 'ngx-toastr';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import { Location } from '@angular/common';
+import { MenuComponent } from '../../../shared/menu.component/menu.component';
 
 @Component({
   selector: 'product-category',
@@ -38,7 +42,9 @@ import { ToastrService } from 'ngx-toastr';
     HeaderCommonComponent,
     NzModalModule,
     NzFloatButtonModule,
+    MenuComponent,
   ],
+  providers: [DatePipe],
 })
 export class ProductCategoryComponent implements OnInit {
   isLoading = false;
@@ -49,8 +55,11 @@ export class ProductCategoryComponent implements OnInit {
   checked = false;
   indeterminate = false;
   searchKeyword = '';
+  activeDropdown: any = null;
   isMobile = window.innerWidth < 768;
   selectedItem!: ProductCategory;
+  pageSize = 10;
+  pageIndex = 1;
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
@@ -61,11 +70,35 @@ export class ProductCategoryComponent implements OnInit {
     private productService: ProductCategoryService,
     private cdr: ChangeDetectorRef,
     private modal: NzModalService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private datePipe: DatePipe,
+    private location: Location
   ) {}
+  isDark = false;
 
   showPopup = false;
   showPopupCreate = false;
+
+  get paginatedList(): ProductCategory[] {
+    const start = (this.pageIndex - 1) * this.pageSize;
+    return this.listOfData.slice(start, start + this.pageSize);
+  }
+
+  toggleDarkMode(): void {
+    this.isDark = !this.isDark;
+  }
+
+  toggleDropdown(item: any) {
+    this.activeDropdown = this.activeDropdown === item ? null : item;
+  }
+
+  closeDropdown() {
+    this.activeDropdown = null;
+  }
+  goBack(): void {
+    this.location.back();
+  }
+
   onRefetch(): void {
     this.fetchData();
   }
@@ -116,7 +149,7 @@ export class ProductCategoryComponent implements OnInit {
     const keyword = this.searchKeyword.trim().toLowerCase();
     this.listOfData = this.originalData.filter(
       (item) =>
-        item.ProductCategoryCode.toLowerCase().includes(keyword) ||
+        item.Code.toLowerCase().includes(keyword) ||
         item.Name.toLowerCase().includes(keyword)
     );
   }
@@ -187,7 +220,7 @@ export class ProductCategoryComponent implements OnInit {
   deleteItem(item: ProductCategory): void {
     this.modal.confirm({
       nzTitle: `Bạn có chắc muốn xóa loại sản phẩm "<b>${item.Name}</b>" này ?`,
-     // nzContent: `<b>${item.Name}</b> sẽ bị xóa khỏi hệ thống.`,
+      // nzContent: `<b>${item.Name}</b> sẽ bị xóa khỏi hệ thống.`,
       nzOkText: 'Xóa',
       nzCancelText: 'Hủy',
       nzOnOk: () => {
@@ -202,5 +235,52 @@ export class ProductCategoryComponent implements OnInit {
         });
       },
     });
+  }
+
+  //export excel
+  private saveAsExcelFile(buffer: any, fileName: string): void {
+    const data: Blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
+    });
+    saveAs(data, `${fileName}.xlsx`);
+  }
+
+  exportToExcel(): void {
+    const worksheet: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
+
+    // 1. Thêm hàng tiêu đề (header) với định dạng đẹp
+    const header = [
+      'Mã loại',
+      'Tên loại',
+      'Mô tả',
+      'Ngày tạo',
+      'Ngày cập nhật',
+      'Trạng thái',
+    ];
+    XLSX.utils.sheet_add_aoa(worksheet, [header], { origin: 'A1' });
+
+    // 2. Thêm dữ liệu
+    const data = this.listOfData.map((item) => [
+      item.Code,
+      item.Name,
+      item.Description,
+      this.datePipe.transform(item.CreatedDate, 'dd/MM/yyyy'),
+      this.datePipe.transform(item.UpdatedDate, 'dd/MM/yyyy'),
+      item.IsActive == false ? 'Hoạt động' : 'Ngưng hoạt động',
+    ]);
+    XLSX.utils.sheet_add_aoa(worksheet, data, { origin: -1 }); // Thêm vào sau header
+
+    // 3. Tạo workbook
+    const workbook: XLSX.WorkBook = {
+      Sheets: { 'Danh sách loại SP': worksheet },
+      SheetNames: ['Danh sách loại SP'],
+    };
+
+    // 4. Export
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+    this.saveAsExcelFile(excelBuffer, 'danh_sach_loai_san_pham');
   }
 }

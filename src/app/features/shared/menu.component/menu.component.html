@@ -1,0 +1,81 @@
+<!-- Nút mở menu (mobile only) -->
+<button
+  *ngIf="isMobile && !isMobileMenuOpen"
+  class="fixed top-4 left-4 z-50 bg-primary-light text-white p-2 rounded-full shadow-md"
+  (click)="openMobileMenu()"
+>
+  <i nz-icon nzType="menu"></i>
+</button>
+
+<!-- Overlay đen khi menu mở -->
+<div
+  *ngIf="isMobile && isMobileMenuOpen"
+  class="fixed inset-0 bg-black bg-opacity-40 z-40"
+  (click)="closeMobileMenu()"
+></div>
+
+<!-- Sidebar -->
+<div
+  class="bg-slate-900 text-white h-screen transition-all duration-300 ease-in-out z-50 overflow-y-auto m-1 rounded-[24px]"
+  [ngClass]="{
+    'fixed top-0 left-0 w-64': isMobile,
+    'translate-x-0': isMobile && isMobileMenuOpen,
+    '-translate-x-full': isMobile && !isMobileMenuOpen,
+    'w-16': isCollapsed && !isMobile,
+    'w-64': !isCollapsed && !isMobile,
+    'rounded-[24px] p-1': !isMobile
+  }"
+>
+  <!-- Toggle Button (desktop or inside mobile menu) -->
+  <div class="p-3 flex justify-end">
+    <button
+      class="bg-primary-light hover:bg-primary-dark p-2 rounded-full"
+      (click)="isMobile ? closeMobileMenu() : toggleSidebar()"
+    >
+      <i nz-icon [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"></i>
+    </button>
+  </div>
+
+  <!-- Menu Items -->
+  <ul class="space-y-1 m-2">
+    <ng-container *ngFor="let item of menuItems">
+      <!-- Menu cha có con -->
+      <li *ngIf="item.children">
+        <div
+          class="flex items-center gap-3 p-3 cursor-pointer hover:bg-vkDarkEnd transition rounded"
+          (click)="toggleExpand(item.key)"
+        >
+          <i nz-icon [nzType]="item.icon"></i>
+          <span *ngIf="!isCollapsed" class="truncate">{{ item.label }}</span>
+          <i
+            *ngIf="!isCollapsed"
+            class="ml-auto"
+            nz-icon
+            [nzType]="isExpanded(item.key) ? 'down' : 'right'"
+          ></i>
+        </div>
+
+        <ul *ngIf="isExpanded(item.key) && !isCollapsed" class="pl-6 space-y-1">
+          <li
+            *ngFor="let child of item.children"
+            class="flex items-center gap-2 p-2 cursor-pointer hover:bg-vkDarkEnd transition rounded"
+            (click)="handleClick(child.route)"
+          >
+            <i nz-icon [nzType]="child.icon || 'right'"></i>
+            <span class="truncate">{{ child.label }}</span>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Menu không có con -->
+      <li
+        *ngIf="!item.children"
+        class="flex items-center gap-3 p-3 cursor-pointer hover:bg-vkDarkEnd transition rounded"
+        (click)="handleClick(item.route)"
+      >
+        <i nz-icon [nzType]="item.icon"></i>
+        <span *ngIf="!isCollapsed" class="truncate">{{ item.label }}</span>
+      </li>
+    </ng-container>
+  </ul>
+</div>

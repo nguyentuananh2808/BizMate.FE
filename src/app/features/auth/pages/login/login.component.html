@@ -6,7 +6,7 @@
       <!-- Logo -->
       <img
         class="mx-auto mb-2"
-        src="assets/images/logo-bizmate.png"
+        src="assets/images/logo_vuakongfishing.png"
         alt="logo"
         width="200"
       />
@@ -41,9 +41,32 @@
         <!-- Đăng nhập -->
         <button
           type="submit"
-          class="w-full bg-blue-500 text-white py-2 rounded-full text-sm hover:bg-blue-600 transition"
+          [disabled]="isLoading()"
+          class="w-full bg-blue-500 text-white py-2 rounded-full text-sm hover:bg-blue-600 transition flex items-center justify-center gap-2"
         >
-          Đăng nhập
+          <svg
+            *ngIf="isLoading()"
+            class="animate-spin h-4 w-4 text-white"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 000 16z"
+            ></path>
+          </svg>
+
+          <span>{{ isLoading() ? "Đang đăng nhập..." : "Đăng nhập" }}</span>
         </button>
 
         <!-- Thông báo lỗi -->
@@ -52,14 +75,14 @@
         </div>
 
         <!-- Tạo tài khoản -->
-        <div class="text-center mt-8 text-sm">
+        <!-- <div class="text-center mt-8 text-sm">
           Chưa có tài khoản ?
           <a
             routerLink="/register"
             class="text-orange-500 font-medium hover:underline"
             >Tạo tài khoản</a
           >
-        </div>
+        </div> -->
       </form>
     </div>
   </div>

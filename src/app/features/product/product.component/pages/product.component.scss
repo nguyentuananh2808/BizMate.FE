@@ -1,0 +1,63 @@
+.type {
+  position: fixed;
+  z-index: 9999;
+}
+
+nz-float-button {
+  bottom: 8%;
+  left: 24px;
+  width: 56px;
+  height: 56px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+
+::ng-deep .ant-modal-content {
+  background-color: rgba(211, 231, 251, 0.492);
+  border-radius: 24px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+::ng-deep .ant-modal-confirm-btns .ant-btn {
+  border-radius: 24px;
+}
+
+.icon-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 4px;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
+}
+
+
+@media (max-width: 767px) {
+  .ant-modal {
+    max-width: calc(100vw - 16px);
+    margin: 50% auto;
+  }
+}
+
+:host ::ng-deep .ant-pagination {
+  justify-content: center !important;
+  padding: 0.5rem 0;
+}
+
+:host ::ng-deep .ant-pagination-simple-pager input {
+  background-color: transparent;
+  border: none;
+  color: white;
+  text-align: center;
+}
+
+@media screen and (max-width: 768px) {
+  nz-pagination {
+    font-size: 12px;
+  }
+}

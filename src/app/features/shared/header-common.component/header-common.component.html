@@ -1,12 +1,30 @@
 <header
-  class="flex flex-col md:flex-row items-center justify-between mb-4 gap-4 md:gap-0 bg-[rgba(172,214,250,0.3)] rounded-[24px] pl-4 pr-4 pt-1 pb-1"
+  class="flex flex-col md:flex-row items-center justify-between mb-4 gap-4 md:gap-0 bg-background-light dark:bg-background-dark rounded-[24px] pl-4 pr-4 pt-1 pb-1 transition-colors duration-500"
 >
-  <a routerLink="/dashboard">
-    <h1
-      class="h-full flex items-center text-3xl font-extrabold text-center md:text-left bg-gradient-to-r from-blue-500 to-indigo-600 text-transparent bg-clip-text"
-    >
-      {{ nameStore }}
-    </h1>
-  </a>
-  <top-menu></top-menu>
+  <div class="flex items-center">
+    <!-- logo -->
+    <img
+      [src]="
+        isDark
+          ? 'assets/images/logo_vuakong_light.png'
+          : 'assets/images/logo_vuakong.png'
+      "
+      alt="logo"
+      class="w-10 mr-2 transition duration-300"
+    />
+
+    <a routerLink="/dashboard">
+      <h1
+        class="text-2xl font-bold bg-gradient-to-l from-vkStart to-vkEnd bg-clip-text text-transparent dark:text-secondary-dark"
+      >
+        {{ nameStore }}
+      </h1>
+    </a>
+  </div>
+
+  <div class="gap-9 hidden md:flex">
+    <top-menu></top-menu>
+
+    <dark-mode-toggle class="gap-5"></dark-mode-toggle>
+  </div>
 </header>

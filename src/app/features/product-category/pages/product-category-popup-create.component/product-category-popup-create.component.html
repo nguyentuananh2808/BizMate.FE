@@ -3,48 +3,63 @@
   [ngClass]="{ 'opacity-100': !isClosing, 'opacity-0': isClosing }"
 >
   <div
-    class="bg-[rgba(110,206,254,0.7)] rounded-2xl shadow-xl backdrop-blur-xl w-full max-w-2xl m-4 p-6 relative border border-white/40 transform transition-all duration-300"
+    class="bg-card-bg-light dark:bg-card-bg-dark rounded-2xl shadow-xl backdrop-blur-xl w-full max-w-2xl m-4 p-6 relative border border-white/40 transform transition-all duration-300"
     [ngClass]="{
       'opacity-100 scale-100': !isClosing,
       'opacity-0 scale-95': isClosing
     }"
   >
+    <!-- Nút đóng -->
     <button
       (click)="close()"
-      class="absolute top-3 right-4 text-white hover:text-red-500 text-2xl"
+      class="absolute top-3 right-4 text-text-primary-light dark:text-text-primary-dark hover:text-danger-light dark:hover:text-danger-dark text-2xl"
     >
       ✕
     </button>
 
-    <h2 class="text-2xl font-semibold mb-6 text-center text-white">
+    <!-- Tiêu đề -->
+    <h2
+      class="text-2xl font-semibold mb-6 text-center text-text-primary-light dark:text-text-primary-dark"
+    >
       Tạo mới loại sản phẩm
     </h2>
 
     <form class="space-y-6" (ngSubmit)="onSubmit()">
+      <!-- Tên loại -->
       <div>
-        <label class="block text-sm font-medium text-white mb-1">
+        <label
+          class="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1"
+        >
           Tên loại sản phẩm
         </label>
         <input
           type="text"
-          class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-info-light dark:focus:ring-info-dark"
           name="name"
           [(ngModel)]="name"
         />
       </div>
+
+      <!-- Mô tả -->
       <div>
-        <label class="block text-sm font-medium text-white mb-1"> Mô tả </label>
+        <label
+          class="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1"
+        >
+          Mô tả
+        </label>
         <textarea
           rows="4"
-          class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-info-light dark:focus:ring-info-dark"
           name="description"
           [(ngModel)]="description"
         ></textarea>
       </div>
+
+      <!-- Buttons -->
       <div class="flex justify-end space-x-3 pt-4">
         <button
           type="button"
-          class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800"
+          class="px-4 py-2 rounded-lg bg-neutral-200 dark:bg-neutral-600 hover:bg-neutral-300 dark:hover:bg-neutral-500 text-neutral-800 dark:text-neutral-100"
           (click)="close()"
         >
           Hủy
@@ -52,7 +67,7 @@
         <button
           type="submit"
           [disabled]="isSaving"
-          class="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50"
+          class="px-6 py-2 rounded-lg bg-primary-light dark:bg-primary-dark text-white hover:bg-secondary-light dark:hover:bg-secondary-dark transition disabled:opacity-50"
         >
           Lưu
         </button>

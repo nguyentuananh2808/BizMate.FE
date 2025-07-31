@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { CommonModule, NgIf } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
   FormGroup,
@@ -9,20 +9,13 @@ import {
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../services/auth.service';
-import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { RegisterResponse } from '../../models/register-response.model';
 
 @Component({
   selector: 'register-app',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    NgIf,
-    HttpClientModule,
-    RouterModule,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss'],
 })
@@ -55,8 +48,6 @@ export class RegisterComponent {
     this.authService.register(email, fullName, nameStore, password).subscribe({
       next: (res: RegisterResponse) => {
         localStorage.setItem('email', res.Email);
-        console.log('register:', res);
-        console.log('send mail success');
 
         setTimeout(() => {
           this.isLoading.set(false);

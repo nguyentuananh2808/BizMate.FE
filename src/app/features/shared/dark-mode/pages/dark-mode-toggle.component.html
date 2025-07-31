@@ -1,0 +1,14 @@
+<nz-switch
+  [ngModel]="isDark"
+  (ngModelChange)="toggleDarkMode()"
+  [nzCheckedChildren]="checkedTpl"
+  [nzUnCheckedChildren]="uncheckedTpl"
+></nz-switch>
+
+<ng-template #checkedTpl>
+  <span nz-icon nzType="sun"></span>
+</ng-template>
+
+<ng-template #uncheckedTpl>
+  <span nz-icon nzType="moon"></span>
+</ng-template>

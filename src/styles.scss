@@ -1,14 +1,15 @@
-@import 'ngx-toastr/toastr'; 
+@import 'ngx-toastr/toastr';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 body {
   font-family: 'Inter', sans-serif;
 }
+
 #toast-container {
   z-index: 99999 !important;
 }
-/* styles.scss (global) */
 
 .ant-table,
 .ant-pagination {
@@ -19,7 +20,212 @@ body {
 .ant-pagination-item {
   border-radius: 24px !important;
 }
-.ant-pagination-disabled .ant-pagination-item-link, .ant-pagination-disabled:hover .ant-pagination-item-link,
-.ant-pagination-prev .ant-pagination-item-link, .ant-pagination-next .ant-pagination-item-link{
+
+.ant-pagination-disabled .ant-pagination-item-link,
+.ant-pagination-disabled:hover .ant-pagination-item-link,
+.ant-pagination-prev .ant-pagination-item-link,
+.ant-pagination-next .ant-pagination-item-link {
   border-radius: 24px;
+}
+
+
+
+/////////////////
+:host {
+  display: block;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Light mode background */
+.bg-login {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: #e7e7e7d8;
+  z-index: 0;
+  transition: background-color 0.5s ease;
+}
+
+/* Dark mode background */
+.dark .bg-login {
+  background-color: #192b55 !important;
+  transition: background-color 0.5s ease;
+}
+
+/* Sóng trên - màu sáng (light mode) */
+.bg-login::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 70vw;
+  height: 100vh;
+  background: linear-gradient(to bottom right, #daecf9, #90cdf4);
+  clip-path: ellipse(70% 100% at 90% 40%);
+  filter: blur(6px) brightness(1.05);
+  transform: scale(1.05);
+  animation: floatUpDown 10s ease-in-out infinite;
+  z-index: 1;
+  transition: background 0.5s ease, filter 0.5s ease;
+}
+
+/* Sóng trên - màu tối (dark mode) */
+.dark .bg-login::before {
+  background: linear-gradient(to bottom right, #d7e6ff, #3b82f6);
+  filter: blur(6px) brightness(0.7);
+  transition: background 0.5s ease, filter 0.5s ease;
+}
+
+/* Sóng dưới - cong lần 2 (light mode) */
+.bg-login::after {
+  content: '';
+  position: absolute;
+  bottom: -10%;
+  right: 0;
+  width: 80vw;
+  height: 100vh;
+  background: linear-gradient(to top left, #90cdf4, #e0f2ff);
+  clip-path: ellipse(70% 90% at 85% 70%);
+  filter: blur(6px) brightness(0.97);
+  transform: scale(1.05);
+  animation: floatDownUp 12s ease-in-out infinite;
+  z-index: 0;
+  transition: background 0.5s ease, filter 0.5s ease;
+}
+
+/* Sóng dưới - màu tối (dark mode) */
+.dark .bg-login::after {
+  background: linear-gradient(to top left, #2563eb, #94aace);
+  filter: blur(6px) brightness(0.8);
+  transition: background 0.5s ease, filter 0.5s ease;
+}
+
+.logo-login {
+  margin: 0 auto;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 18%;
+  left: 30px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  min-width: 80px;
+}
+
+.dropdown-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+}
+
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 240px;
+  transition: width 0.3s;
+
+  &.collapsed {
+    width: 80px;
+
+    .menu-item,
+    li {
+      text-align: center;
+
+      i {
+        font-size: 20px;
+      }
+
+      span {
+        display: none;
+      }
+    }
+  }
+
+  li {
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #f0f0f0;
+    }
+
+    ul {
+      padding-left: 16px;
+    }
+  }
+}
+
+/* Sóng 1 trôi lên */
+@keyframes floatUpDown {
+
+  0%,
+  100% {
+    transform: translateY(0) scale(1.05);
+  }
+
+  50% {
+    transform: translateY(-10px) scale(1.05);
+  }
+}
+
+/* Sóng 2 trôi xuống */
+@keyframes floatDownUp {
+
+  0%,
+  100% {
+    transform: translateY(0) scale(1.05);
+  }
+
+  50% {
+    transform: translateY(10px) scale(1.05);
+  }
+}
+
+
+//in phieu
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  #print-section,
+  #print-section * {
+    visibility: visible !important;
+  }
+
+  #print-section {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    padding: 20px;
+    background: white;
+    box-sizing: border-box;
+  }
+
+  /* Ẩn sidebar, header, footer... nếu cần */
+  app-menu,
+  header-common,
+  bottom-menu,
+  product-popup-create,
+  product-popup-update,
+  product-popup-search {
+    display: none !important;
+  }
 }
