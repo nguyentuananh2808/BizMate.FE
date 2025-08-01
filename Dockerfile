@@ -8,5 +8,5 @@ RUN npm run build
 
 # Nginx stage
 FROM nginx:alpine
-COPY --from=build /app/dist/BizMate.FE/browser /usr/share/nginx/html
+COPY --from=build /app/dist/BizMate.FE /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf

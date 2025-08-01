@@ -1,6 +1,6 @@
 export const ApiUrls = {
-  baseUrl: 'http://103.163.118.228/v1',
-
+ baseUrl: 'http://103.163.118.228/v1',
+ //baseUrl: 'https://localhost:44349/v1',
   productCategory: {
     getAll: '/product-category/GetAll',
     getById: (id: string) => `/product-category/${id}`,
