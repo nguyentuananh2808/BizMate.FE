@@ -77,7 +77,7 @@ export class WarehouseReceiptComponent implements OnInit {
     private toastr: ToastrService,
     private datePipe: DatePipe,
     private location: Location,
-    private router: Router,
+    private router: Router
   ) {}
 
   onRefetch(): void {
@@ -124,12 +124,18 @@ export class WarehouseReceiptComponent implements OnInit {
     this.fetchData();
     setTimeout(() => (this.showPopup = false), 300);
   }
-
-  fetchData(): void {
+  onPageChange(page: number): void {
+    this.pageIndex = page;
+    this.fetchData(this.pageIndex, this.pageSize);
+  }
+  fetchData(
+    pageIndex: number = this.pageIndex,
+    pageSize: number = this.pageSize
+  ): void {
     this.isLoading = true;
     const request: SearchWarehouseRequest = {
-      pageIndex: this.pageIndex,
-      pageSize: this.pageSize,
+      pageIndex: pageIndex,
+      pageSize: pageSize,
       keySearch: this.searchKeyword.trim(),
       type: 1,
     };
@@ -147,10 +153,6 @@ export class WarehouseReceiptComponent implements OnInit {
       },
       error: () => (this.isLoading = false),
     });
-  }
-  onPageIndexChange(index: number) {
-    this.pageIndex = index;
-    this.fetchData();
   }
 
   onSearch(): void {

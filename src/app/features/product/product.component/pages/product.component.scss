@@ -1,3 +1,44 @@
+@media screen and (max-width: 768px) {
+  ::ng-deep .ant-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+  }
+
+  ::ng-deep .ant-pagination-item,
+  ::ng-deep .ant-pagination-prev,
+  ::ng-deep .ant-pagination-next {
+    min-width: 36px;
+    height: 36px;
+    line-height: 36px;
+    font-size: 14px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    color: #333;
+    border: 1px solid #d9d9d9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s;
+  }
+
+  ::ng-deep .ant-pagination-item-active {
+    //background-color: #1890ff;
+    color: #ffffff;
+    border-color: #1890ff;
+    font-weight: 600;
+  }
+
+  ::ng-deep .ant-pagination-item:hover,
+  ::ng-deep .ant-pagination-prev:hover,
+  ::ng-deep .ant-pagination-next:hover {
+    background-color: #e6f7ff;
+    border-color: #91d5ff;
+    color: #1890ff;
+  }
+}
+
+
 .type {
   position: fixed;
   z-index: 9999;
@@ -5,7 +46,7 @@
 
 nz-float-button {
   bottom: 8%;
-  left: 24px;
+  right: 24px;
   width: 56px;
   height: 56px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -32,7 +73,7 @@ nz-float-button {
   border-radius: 4px;
 
   &:hover {
-    background-color: #f0f0f0;
+    //background-color: #f0f0f0;
   }
 }
 
@@ -44,17 +85,7 @@ nz-float-button {
   }
 }
 
-:host ::ng-deep .ant-pagination {
-  justify-content: center !important;
-  padding: 0.5rem 0;
-}
 
-:host ::ng-deep .ant-pagination-simple-pager input {
-  background-color: transparent;
-  border: none;
-  color: white;
-  text-align: center;
-}
 
 @media screen and (max-width: 768px) {
   nz-pagination {

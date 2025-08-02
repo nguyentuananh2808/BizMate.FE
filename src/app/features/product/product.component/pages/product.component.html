@@ -6,62 +6,36 @@
       class="max-h-[700px] overflow-y-auto px-4 pt-6 z-10 relative"
       [ngClass]="{ 'dark:bg-gray-900': isDark }"
     >
-      <!-- Header -->
-      <header-common></header-common>
-
       <!-- Mobile header bar -->
       <div
         *ngIf="isMobile"
-        class="mb-4 flex items-center justify-between gap-3"
+        class="fixed bg-background-light dark:bg-background-dark p-3 rounded-[24px]"
       >
-        <!-- Nút Quay lại -->
-        <button
-          type="button"
-          class="rounded-full bg-gray-200 text-gray-700 px-2 py-1 hover:bg-gray-300 transition flex items-center w-8 h-8"
-          (click)="goBack()"
-          [ngClass]="{
-            'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600': isDark
-          }"
+        <!-- Header -->
+        <header-common></header-common>
+
+        <!-- Mobile header bar -->
+        <div
+          *ngIf="isMobile"
+          class="mb-4 flex items-center justify-between gap-3"
         >
-          <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
-        </button>
-
-        <!-- Ô tìm kiếm căn giữa -->
-        <input
-          type="text"
-          class="flex-1 border border-gray-300 rounded-[24px] px-3 py-2 mx-2"
-          [(ngModel)]="searchKeyword"
-          (ngModelChange)="onSearch()"
-          placeholder="Tìm kiếm..."
-          [ngClass]="{
-            'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600': isDark
-          }"
-        />
-
-        <!-- Nút Excel -->
-        <button
-          type="button"
-          class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
-          (click)="exportToExcel()"
-        >
-          <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
-        </button>
-      </div>
-
-      <!-- Desktop header bar -->
-      <div *ngIf="!isMobile">
-        <div class="mb-4 flex items-center justify-between gap-4">
-          <!-- page name -->
-          <h1
-            class="text-secondary-light dark:text-secondary-dark text-2xl font-bold"
+          <!-- Nút Quay lại -->
+          <button
+            type="button"
+            class="rounded-full bg-gray-200 text-gray-700 px-2 py-1 hover:bg-gray-300 transition flex items-center w-8 h-8"
+            (click)="goBack()"
+            [ngClass]="{
+              'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600':
+                isDark
+            }"
           >
-            Sản phẩm
-          </h1>
+            <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
+          </button>
 
           <!-- Ô tìm kiếm căn giữa -->
           <input
             type="text"
-            class="border border-gray-300 rounded-[24px] px-3 py-2 w-[58%] mx-auto"
+            class="flex-1 border border-gray-300 rounded-[24px] px-3 py-2 mx-2"
             [(ngModel)]="searchKeyword"
             (ngModelChange)="onSearch()"
             placeholder="Tìm kiếm..."
@@ -69,47 +43,19 @@
               'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600': isDark
             }"
           />
-
-          <!-- Nhóm nút -->
-          <div class="flex gap-3">
-            <button
-              nz-button
-              nzType="primary"
-              class="flex items-center gap-2 whitespace-nowrap rounded-[24px] h-10"
-              (click)="createProduct()"
-            >
-              <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
-              Tạo mới
-            </button>
-
-            <button
-              type="button"
-              class="px-4 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-2 h-10"
-              (click)="exportToExcel()"
-            >
-              <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
-              Xuất Excel
-            </button>
-
-            <!-- Nút Quay lại -->
-            <button
-              type="button"
-              class="rounded-full bg-gray-200 text-gray-700 px-4 py-2 hover:bg-gray-300 transition flex items-center gap-2"
-              (click)="goBack()"
-              [ngClass]="{
-                'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600':
-                  isDark
-              }"
-            >
-              <span>Quay lại</span>
-              <nz-icon nzType="arrow-right" nzTheme="outline"></nz-icon>
-            </button>
-          </div>
+          <!-- Nút Excel -->
+          <button
+            type="button"
+            class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
+            (click)="exportToExcel()"
+          >
+            <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
+          </button>
         </div>
       </div>
 
       <!-- Mobile Table -->
-      <div *ngIf="isMobile">
+      <div *ngIf="isMobile" class="mt-40">
         <div class="space-y-4">
           <div
             *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
@@ -123,7 +69,9 @@
                 >
                   {{ item.Code }}
                 </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <div
+                  class="text-[18px] text-secondary-light dark:text-secondary-dark mt-1"
+                >
                   {{
                     item.Name.length > 36
                       ? (item.Name | slice : 0 : 36) + "..."
@@ -142,7 +90,7 @@
                 </button>
                 <div
                   *ngIf="item === activeDropdown"
-                  class="absolute right-0 mt-1 bg-white dark:bg-gray-700 rounded shadow p-2 z-50"
+                  class="absolute right-0 mt-1 bg-white dark:bg-gray-700 rounded shadow p-2 z-50 w-[110px]"
                   (mouseleave)="closeDropdown()"
                 >
                   <button
@@ -214,6 +162,12 @@
               </div>
             </div>
           </div>
+          <div
+            *ngIf="!listOfData.length"
+            class="text-center text-secondary-light dark:text-secondary-dark py-8"
+          >
+            Không có dữ liệu
+          </div>
         </div>
 
         <!-- Phân trang cho mobile -->
@@ -233,10 +187,73 @@
         </div>
       </div>
 
+      <!-- Desktop header bar -->
+      <div *ngIf="!isMobile">
+        <!-- Header -->
+        <header-common></header-common>
+
+        <div class="mb-4 flex items-center justify-between gap-4">
+          <!-- page name -->
+          <h1
+            class="text-secondary-light dark:text-secondary-dark text-2xl font-bold"
+          >
+            Sản phẩm
+          </h1>
+
+          <!-- Ô tìm kiếm căn giữa -->
+          <input
+            type="text"
+            class="border border-gray-300 rounded-[24px] px-3 py-2 w-[58%] mx-auto"
+            [(ngModel)]="searchKeyword"
+            (ngModelChange)="onSearch()"
+            placeholder="Tìm kiếm..."
+            [ngClass]="{
+              'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600': isDark
+            }"
+          />
+
+          <!-- Nhóm nút -->
+          <div class="flex gap-3">
+            <button
+              nz-button
+              nzType="primary"
+              class="flex items-center gap-2 whitespace-nowrap rounded-[24px] h-10"
+              (click)="createProduct()"
+            >
+              <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+              Tạo mới
+            </button>
+
+            <button
+              type="button"
+              class="px-4 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition flex items-center gap-2 h-10"
+              (click)="exportToExcel()"
+            >
+              <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
+              Xuất Excel
+            </button>
+
+            <!-- Nút Quay lại -->
+            <button
+              type="button"
+              class="rounded-full bg-gray-200 text-gray-700 px-4 py-2 hover:bg-gray-300 transition flex items-center gap-2"
+              (click)="goBack()"
+              [ngClass]="{
+                'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600':
+                  isDark
+              }"
+            >
+              <span>Quay lại</span>
+              <nz-icon nzType="arrow-right" nzTheme="outline"></nz-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- 💻 Desktop layout -->
       <div *ngIf="!isMobile">
         <div
-          class="bg-[rgba(187,213,237,0.33)] dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-2"
+          class="bg-[rgba(171,211,249,0.76)] dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-2"
           [ngClass]="{ 'dark:bg-gray-900': isDark }"
         >
           <nz-table
@@ -255,13 +272,14 @@
                 class="bg-gray-100 text-gray-700"
                 [ngClass]="{ 'dark:bg-gray-800 dark:text-gray-200': isDark }"
               >
-                <th
+                <!-- <th
                   [nzSelections]="listOfSelection"
                   [(nzChecked)]="checked"
                   [nzIndeterminate]="indeterminate"
                   (nzCheckedChange)="onAllChecked($event)"
                   [nzWidth]="'50px'"
-                ></th>
+                ></th> -->
+                <th [nzWidth]="'60px'" class="text-center">STT</th>
                 <th [nzWidth]="'40px'"></th>
                 <th [nzWidth]="'120px'">Mã</th>
                 <th [nzWidth]="'240px'">Tên</th>
@@ -278,17 +296,22 @@
 
             <tbody>
               <tr
-                *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
+                *ngFor="
+                  let item of listOfCurrentPageData;
+                  trackBy: trackById;
+                  let i = index
+                "
                 class="hover:bg-gray-50 transition-all duration-150"
                 [ngClass]="{ 'dark:hover:bg-gray-800': isDark }"
               >
-                <td class="text-center">
+                <!-- <td class="text-center">
                   <label
                     nz-checkbox
                     [nzChecked]="setOfCheckedId.has(item.Id)"
                     (nzCheckedChange)="onItemChecked(item.Id, $event)"
                   ></label>
-                </td>
+                </td> -->
+                <td class="text-center">{{ i + 1 }}</td>
                 <td class="relative">
                   <button class="icon-button" (click)="toggleDropdown(item)">
                     ⋮

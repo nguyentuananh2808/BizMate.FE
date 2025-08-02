@@ -17,7 +17,7 @@
         <!-- Nút Quay lại -->
         <button
           type="button"
-          class="rounded-full bg-gray-200 text-gray-700 px-2 py-1 hover:bg-gray-300 transition flex items-center w-8 h-8"
+          class="rounded-full bg-gray-300 text-gray-700 px-2 py-1 hover:bg-gray-300 transition flex items-center w-8 h-8"
           (click)="goBack()"
           [ngClass]="{
             'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600': isDark
@@ -50,19 +50,12 @@
       <!-- Desktop header bar -->
       <div *ngIf="!isMobile">
         <div class="mb-4 flex items-center justify-between gap-4">
-          <!-- Nút Quay lại -->
-          <button
-            type="button"
-            class="rounded-full bg-gray-200 text-gray-700 px-4 py-2 hover:bg-gray-300 transition flex items-center gap-2"
-            (click)="goBack()"
-            [ngClass]="{
-              'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600':
-                isDark
-            }"
+          <!-- page name -->
+          <h1
+            class="text-secondary-light dark:text-secondary-dark text-2xl font-bold"
           >
-            <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
-            <span>Quay lại</span>
-          </button>
+            Phiếu nhập
+          </h1>
 
           <!-- Ô tìm kiếm căn giữa -->
           <input
@@ -95,17 +88,31 @@
               <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
               Xuất Excel
             </button>
+
+            <!-- Nút Quay lại -->
+            <button
+              type="button"
+              class="rounded-full bg-gray-300 text-gray-700 px-4 py-2 hover:bg-gray-300 transition flex items-center gap-2"
+              (click)="goBack()"
+              [ngClass]="{
+                'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600':
+                  isDark
+              }"
+            >
+              <span>Quay lại</span>
+              <nz-icon nzType="arrow-right" nzTheme="outline"></nz-icon>
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Mobile Table -->
       <div *ngIf="isMobile" class="mb-10">
-        <div
-          class="overflow-x-auto rounded-[24px] bg-white shadow-md dark:bg-background-dark p-3 w-full"
-          [ngClass]="{ 'dark:bg-gray-900': isDark }"
-        >
-          <div class="space-y-4" *ngIf="listOfData && listOfData.length > 0">
+        <div class="space-y-4">
+          <div
+            *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
+            class="rounded-[20px] p-4 bg-white shadow-md dark:bg-background-dark transition-all"
+          >
             <div
               *ngFor="let item of listOfData; trackBy: trackById"
               class="rounded-[20px] p-4 bg-white shadow-md dark:bg-gray-800 transition-all"
@@ -166,35 +173,36 @@
               </div>
             </div>
           </div>
-          <!-- Bọc thêm 1 div để căn giữa bằng flex -->
-          <div class="flex justify-center mt-4">
-            <nz-pagination
-              *ngIf="isMobile && totalCount > 0"
-              [nzPageIndex]="pageIndex"
-              [nzTotal]="totalCount"
-              [nzPageSize]="pageSize"
-              [nzSize]="'small'"
-              [nzShowQuickJumper]="false"
-              [nzShowSizeChanger]="false"
-              (nzPageIndexChange)="onPageIndexChange($event)"
-            >
-            </nz-pagination>
-          </div>
+        </div>
+        <!-- Bọc thêm 1 div để căn giữa bằng flex -->
+        <div class="flex justify-center mt-4">
+          <nz-pagination
+            *ngIf="isMobile && totalCount > 0"
+            [nzPageIndex]="pageIndex"
+            [nzTotal]="totalCount"
+            [nzPageSize]="pageSize"
+            [nzSize]="'small'"
+            [nzShowQuickJumper]="false"
+            [nzShowSizeChanger]="false"
+            (nzPageIndexChange)="onPageChange($event)"
+          >
+          </nz-pagination>
+        </div>
+
+        <div
+          *ngIf="!listOfData.length"
+          class="text-center text-secondary-light dark:text-secondary-dark py-8"
+        >
+          Không có dữ liệu
         </div>
       </div>
 
-      <div
-        *ngIf="!listOfData.length"
-        class="text-center text-gray-500 dark:text-gray-400 py-8"
-      >
-        Không có dữ liệu
-      </div>
       <!-- Pagination for mobile -->
 
       <!-- 💻 Desktop layout -->
       <div *ngIf="!isMobile">
         <div
-          class="bg-[rgba(187,213,237,0.33)] dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-2"
+          class="bg-[rgba(171,211,249,0.76)] dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-2"
           [ngClass]="{ 'dark:bg-gray-900': isDark }"
         >
           <nz-table
@@ -204,7 +212,7 @@
             [nzPageIndex]="pageIndex"
             [nzLoading]="isLoading"
             [nzFrontPagination]="false"
-            (nzPageIndexChange)="onPageIndexChange($event)"
+            (nzPageIndexChange)="onPageChange($event)"
             (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
           >
             <thead>
@@ -212,14 +220,15 @@
                 class="bg-gray-100 text-gray-700"
                 [ngClass]="{ 'dark:bg-gray-800 dark:text-gray-200': isDark }"
               >
-                <th
+                <!-- <th
                   [nzSelections]="listOfSelection"
                   [(nzChecked)]="checked"
                   [nzIndeterminate]="indeterminate"
                   (nzCheckedChange)="onAllChecked($event)"
                   [nzWidth]="'20px'"
-                ></th>
-                <th [nzWidth]="'20px'"></th>
+                ></th> -->
+                <th [nzWidth]="'20px'" class="text-center">STT</th>
+                <th [nzWidth]="'40px'"></th>
                 <th [nzWidth]="'120px'">Mã</th>
                 <th [nzWidth]="'120px'">Nhà cung cấp</th>
                 <th [nzWidth]="'180px'">Mô tả</th>
@@ -230,17 +239,22 @@
 
             <tbody>
               <tr
-                *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
+                *ngFor="
+                  let item of listOfCurrentPageData;
+                  trackBy: trackById;
+                  let i = index
+                "
                 class="hover:bg-gray-50 transition-all duration-150"
                 [ngClass]="{ 'dark:hover:bg-gray-800': isDark }"
               >
-                <td class="text-center">
+                <!-- <td class="text-center">
                   <label
                     nz-checkbox
                     [nzChecked]="setOfCheckedId.has(item.Id)"
                     (nzCheckedChange)="onItemChecked(item.Id, $event)"
                   ></label>
-                </td>
+                </td> -->
+                <td class="text-center">{{ i + 1 }}</td>
                 <td class="relative">
                   <button class="icon-button" (click)="toggleDropdown(item)">
                     ⋮
@@ -280,7 +294,6 @@
       <div *ngIf="isMobile" class="type">
         <nz-float-button
           nzType="primary"
-          style="right: 24px"
           [nzIcon]="icon"
           routerLink="/warehouse-receipt-create"
         ></nz-float-button>
