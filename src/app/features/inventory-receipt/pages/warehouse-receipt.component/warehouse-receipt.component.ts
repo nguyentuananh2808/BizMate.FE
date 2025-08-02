@@ -148,6 +148,9 @@ export class WarehouseReceiptComponent implements OnInit {
         this.listOfData = [...this.originalData].sort((a, b) =>
           a.Code.localeCompare(b.Code)
         );
+
+        this.listOfCurrentPageData = this.listOfData;
+
         this.isLoading = false;
         this.cdr.detectChanges();
       },
