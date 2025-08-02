@@ -68,7 +68,9 @@ export class WarehouseReceiptCreateComponent {
   editingId: string | null = null;
   editingQuantity: number | null = null;
   inputError = false;
+  allData: any[] = [];
   message: any;
+  searchKeyword = '';
   supplier = {
     name: '',
     phone: '',
@@ -115,8 +117,7 @@ export class WarehouseReceiptCreateComponent {
     this.editingQuantity = item.Quantity;
   }
   onPrint() {
-    const { supplierName,  phoneNumber, description } =
-      this.receiptForm.value;
+    const { supplierName, phoneNumber, description } = this.receiptForm.value;
 
     this.supplier = {
       name: supplierName,
@@ -165,6 +166,20 @@ export class WarehouseReceiptCreateComponent {
     });
   }
 
+  onSearch(): void {
+    this.searchKeyword = this.searchKeyword.trim().toLowerCase();
+    if (!this.searchKeyword) {
+      this.listOfData = [...this.allData];
+    } else {
+      this.listOfData = this.allData.filter((item) =>
+        Object.values(item).some((value) =>
+          String(value).toLowerCase().includes(this.searchKeyword)
+        )
+      );
+    }
+    this.cdr.detectChanges();
+  }
+
   onSelectedProducts(productList: InventoryDetail[]) {
     if (!productList || productList.length === 0) {
       this.closeProductPopup();
@@ -178,6 +193,8 @@ export class WarehouseReceiptCreateComponent {
     );
 
     this.listOfData.sort((a, b) => a.ProductCode.localeCompare(b.ProductCode));
+
+    this.allData = [...this.listOfData];
 
     this.details.clear();
 
