@@ -185,7 +185,7 @@
       <!-- 💻 Desktop layout -->
       <div *ngIf="!isMobile">
         <div
-          class="bg-[rgba(187,213,237,0.33)] dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-2"
+          class="bg-[rgba(171,211,249,0.76)] dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-2"
           [ngClass]="{ 'dark:bg-gray-900': isDark }"
         >
           <nz-table
@@ -201,14 +201,15 @@
                 class="bg-gray-100 text-gray-700"
                 [ngClass]="{ 'dark:bg-gray-800 dark:text-gray-200': isDark }"
               >
-                <th
+                <!-- <th
                   [nzSelections]="listOfSelection"
                   [(nzChecked)]="checked"
                   [nzIndeterminate]="indeterminate"
                   (nzCheckedChange)="onAllChecked($event)"
                   [nzWidth]="'24px'"
-                ></th>
-                <th [nzWidth]="'24px'"></th>
+                ></th> -->
+                <th [nzWidth]="'50px'" class="text-center">STT</th>
+                <th [nzWidth]="'40px'"></th>
                 <th [nzWidth]="'120px'">Mã</th>
                 <th [nzWidth]="'240px'">Tên loại</th>
                 <th [nzWidth]="'120px'">Ngày tạo</th>
@@ -219,17 +220,22 @@
             </thead>
             <tbody>
               <tr
-                *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
+                *ngFor="
+                  let item of listOfCurrentPageData;
+                  trackBy: trackById;
+                  let i = index
+                "
                 class="hover:bg-gray-50 transition-all duration-150"
                 [ngClass]="{ 'dark:hover:bg-gray-800': isDark }"
               >
-                <td class="text-center">
+                <!-- <td class="text-center">
                   <label
                     nz-checkbox
                     [nzChecked]="setOfCheckedId.has(item.Id)"
                     (nzCheckedChange)="onItemChecked(item.Id, $event)"
                   ></label>
-                </td>
+                </td> -->
+                <td class="text-center">{{ i + 1 }}</td>
                 <td class="relative">
                   <button class="icon-button" (click)="toggleDropdown(item)">
                     ⋮

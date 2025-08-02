@@ -76,6 +76,8 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
   editingQuantity: number | null = null;
   inputError = false;
   message: any;
+  allData: any[] = [];
+  searchKeyword = '';
   supplier = {
     name: '',
     phone: '',
@@ -194,9 +196,20 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
   stopEdit(): void {
     this.editingId = null;
   }
-
+  onSearch(): void {
+    this.searchKeyword = this.searchKeyword.trim().toLowerCase();
+    if (!this.searchKeyword) {
+      this.listOfData = [...this.allData];
+    } else {
+      this.listOfData = this.allData.filter((item) =>
+        Object.values(item).some((value) =>
+          String(value).toLowerCase().includes(this.searchKeyword)
+        )
+      );
+    }
+    this.cdr.detectChanges();
+  }
   deleteItem(itemToDelete: InventoryDetail): void {
-
     this.modal.confirm({
       nzTitle: `Bạn có chắc muốn xóa sản phẩm "<b>${itemToDelete.ProductName}</b>" này?`,
       nzOkText: 'Xóa',
