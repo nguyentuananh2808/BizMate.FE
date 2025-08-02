@@ -6,50 +6,124 @@
       class="max-h-[700px] overflow-y-auto px-4 pt-6 z-10 relative"
       [ngClass]="{ 'dark:bg-gray-900': isDark }"
     >
-      <!-- Header -->
-      <header-common></header-common>
-
-      <!-- Mobile header bar -->
       <div
         *ngIf="isMobile"
-        class="mb-4 flex items-center justify-between gap-3"
+        class="fixed bg-background-light dark:bg-background-dark p-3 rounded-[24px]"
       >
-        <!-- Nút Quay lại -->
-        <button
-          type="button"
-          class="rounded-full bg-gray-200 text-gray-700 px-2 py-1 hover:bg-gray-300 transition flex items-center w-8 h-8"
-          (click)="goBack()"
-          [ngClass]="{
-            'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600': isDark
-          }"
-        >
-          <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
-        </button>
+        <!-- Header -->
+        <header-common></header-common>
 
-        <!-- Ô tìm kiếm căn giữa -->
-        <input
-          type="text"
-          class="flex-1 border border-gray-300 rounded-[24px] px-3 py-2 mx-2"
-          [(ngModel)]="searchKeyword"
-          (ngModelChange)="onSearch()"
-          placeholder="Tìm kiếm..."
-          [ngClass]="{
-            'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600': isDark
-          }"
-        />
-
-        <!-- Nút Excel -->
-        <button
-          type="button"
-          class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
-          (click)="exportToExcel()"
+        <!-- Mobile header bar -->
+        <div
+          *ngIf="isMobile"
+          class="mb-4 flex items-center justify-between gap-3"
         >
-          <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
-        </button>
+          <!-- Nút Quay lại -->
+          <button
+            type="button"
+            class="rounded-full bg-gray-200 text-gray-700 px-2 py-1 hover:bg-gray-300 transition flex items-center w-8 h-8"
+            (click)="goBack()"
+            [ngClass]="{
+              'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600':
+                isDark
+            }"
+          >
+            <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
+          </button>
+
+          <!-- Ô tìm kiếm căn giữa -->
+          <input
+            type="text"
+            class="flex-1 border border-gray-300 rounded-[24px] px-3 py-2 mx-2"
+            [(ngModel)]="searchKeyword"
+            (ngModelChange)="onSearch()"
+            placeholder="Tìm kiếm..."
+            [ngClass]="{
+              'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600': isDark
+            }"
+          />
+          <!-- Nút Excel -->
+          <button
+            type="button"
+            class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
+            (click)="exportToExcel()"
+          >
+            <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- 📱 Mobile layout -->
+      <div *ngIf="isMobile" class="mt-40">
+        <div
+          *ngFor="let item of listOfData; trackBy: trackById"
+          class="rounded-[16px] bg-[rgb(255,255,255)] dark:bg-gray-900 shadow-md p-4 flex flex-col gap-2 mb-2"
+        >
+          <div class="flex items-center justify-between">
+            <div class="text-sm font-bold text-gray-700 dark:text-gray-100">
+              {{ item.Name }}
+            </div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">
+              {{ item.Code }}
+            </div>
+          </div>
+
+          <div class="text-sm text-gray-600 dark:text-gray-300">
+            Mô tả:
+            {{
+              item.Description.length > 20
+                ? (item.Description | slice : 0 : 20) + "..."
+                : item.Description
+            }}
+          </div>
+
+          <div
+            class="flex justify-between text-sm text-gray-500 dark:text-gray-400"
+          >
+            <span>Tạo: {{ item.CreatedDate | date : "dd/MM/yyyy" }}</span>
+            <span>Cập nhật: {{ item.UpdatedDate | date : "dd/MM/yyyy" }}</span>
+          </div>
+
+          <div class="flex justify-between items-center mt-2">
+            <span
+              [ngClass]="
+                item.IsActive
+                  ? 'text-red-600 font-medium'
+                  : 'text-green-600 font-medium'
+              "
+            >
+              {{ item.IsActive ? "🔴 Ngưng hoạt động" : "🟢 Hoạt động" }}
+            </span>
+
+            <div class="flex gap-2">
+              <button
+                class="text-blue-500 hover:text-blue-700 text-sm font-medium"
+                (click)="viewDetail(item)"
+              >
+                Sửa
+              </button>
+              <button
+                class="text-red-500 hover:text-red-700 text-sm font-medium"
+                (click)="deleteItem(item)"
+              >
+                Xoá
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
+          *ngIf="!listOfData.length"
+          class="text-center text-secondary-light dark:text-secondary-dark py-8"
+        >
+          Không có dữ liệu
+        </div>
       </div>
 
       <!-- Desktop header bar -->
       <div *ngIf="!isMobile">
+        <!-- Header -->
+        <header-common></header-common>
+
         <div class="mb-4 flex items-center justify-between gap-4">
           <!-- page name -->
           <h1
@@ -108,66 +182,6 @@
         </div>
       </div>
 
-      <!-- 📱 Mobile layout -->
-      <div *ngIf="isMobile">
-        <div
-          *ngFor="let item of paginatedList; trackBy: trackById"
-          class="rounded-[16px] bg-[rgba(187,213,237,0.33)] dark:bg-gray-900 shadow-md p-4 flex flex-col gap-2 mb-2"
-        >
-          <div class="flex items-center justify-between">
-            <div class="text-sm font-bold text-gray-700 dark:text-gray-100">
-              {{ item.Name }}
-            </div>
-            <div class="text-xs text-gray-500 dark:text-gray-400">
-              {{ item.Code }}
-            </div>
-          </div>
-
-          <div class="text-sm text-gray-600 dark:text-gray-300">
-            Mô tả:
-            {{
-              item.Description.length > 20
-                ? (item.Description | slice : 0 : 20) + "..."
-                : item.Description
-            }}
-          </div>
-
-          <div
-            class="flex justify-between text-sm text-gray-500 dark:text-gray-400"
-          >
-            <span>Tạo: {{ item.CreatedDate | date : "dd/MM/yyyy" }}</span>
-            <span>Cập nhật: {{ item.UpdatedDate | date : "dd/MM/yyyy" }}</span>
-          </div>
-
-          <div class="flex justify-between items-center mt-2">
-            <span
-              [ngClass]="
-                item.IsActive
-                  ? 'text-red-600 font-medium'
-                  : 'text-green-600 font-medium'
-              "
-            >
-              {{ item.IsActive ? "🔴 Ngưng hoạt động" : "🟢 Hoạt động" }}
-            </span>
-
-            <div class="flex gap-2">
-              <button
-                class="text-blue-500 hover:text-blue-700 text-sm font-medium"
-                (click)="viewDetail(item)"
-              >
-                Sửa
-              </button>
-              <button
-                class="text-red-500 hover:text-red-700 text-sm font-medium"
-                (click)="deleteItem(item)"
-              >
-                Xoá
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- 💻 Desktop layout -->
       <div *ngIf="!isMobile">
         <div
@@ -192,9 +206,9 @@
                   [(nzChecked)]="checked"
                   [nzIndeterminate]="indeterminate"
                   (nzCheckedChange)="onAllChecked($event)"
-                  [nzWidth]="'20px'"
+                  [nzWidth]="'24px'"
                 ></th>
-                <th [nzWidth]="'20px'"></th>
+                <th [nzWidth]="'24px'"></th>
                 <th [nzWidth]="'120px'">Mã</th>
                 <th [nzWidth]="'240px'">Tên loại</th>
                 <th [nzWidth]="'120px'">Ngày tạo</th>

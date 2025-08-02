@@ -101,11 +101,11 @@
 
       <!-- Mobile Table -->
       <div *ngIf="isMobile" class="mb-10">
-        <div
-          class="overflow-x-auto rounded-[24px] bg-white shadow-md dark:bg-background-dark p-3 w-full"
-          [ngClass]="{ 'dark:bg-gray-900': isDark }"
-        >
-          <div class="space-y-4" *ngIf="listOfData && listOfData.length > 0">
+        <div class="space-y-4">
+          <div
+            *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
+            class="rounded-[20px] p-4 bg-white shadow-md dark:bg-background-dark transition-all"
+          >
             <div
               *ngFor="let item of listOfData; trackBy: trackById"
               class="rounded-[20px] p-4 bg-white shadow-md dark:bg-gray-800 transition-all"
@@ -166,29 +166,30 @@
               </div>
             </div>
           </div>
-          <!-- Bọc thêm 1 div để căn giữa bằng flex -->
-          <div class="flex justify-center mt-4">
-            <nz-pagination
-              *ngIf="isMobile && totalCount > 0"
-              [nzPageIndex]="pageIndex"
-              [nzTotal]="totalCount"
-              [nzPageSize]="pageSize"
-              [nzSize]="'small'"
-              [nzShowQuickJumper]="false"
-              [nzShowSizeChanger]="false"
-              (nzPageIndexChange)="onPageIndexChange($event)"
-            >
-            </nz-pagination>
-          </div>
+        </div>
+        <!-- Bọc thêm 1 div để căn giữa bằng flex -->
+        <div class="flex justify-center mt-4">
+          <nz-pagination
+            *ngIf="isMobile && totalCount > 0"
+            [nzPageIndex]="pageIndex"
+            [nzTotal]="totalCount"
+            [nzPageSize]="pageSize"
+            [nzSize]="'small'"
+            [nzShowQuickJumper]="false"
+            [nzShowSizeChanger]="false"
+            (nzPageIndexChange)="onPageChange($event)"
+          >
+          </nz-pagination>
+        </div>
+
+        <div
+          *ngIf="!listOfData.length"
+          class="text-center text-secondary-light dark:text-secondary-dark py-8"
+        >
+          Không có dữ liệu
         </div>
       </div>
 
-      <div
-        *ngIf="!listOfData.length"
-        class="text-center text-gray-500 dark:text-gray-400 py-8"
-      >
-        Không có dữ liệu
-      </div>
       <!-- Pagination for mobile -->
 
       <!-- 💻 Desktop layout -->
@@ -204,7 +205,7 @@
             [nzPageIndex]="pageIndex"
             [nzLoading]="isLoading"
             [nzFrontPagination]="false"
-            (nzPageIndexChange)="onPageIndexChange($event)"
+            (nzPageIndexChange)="onPageChange($event)"
             (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
           >
             <thead>
@@ -280,7 +281,6 @@
       <div *ngIf="isMobile" class="type">
         <nz-float-button
           nzType="primary"
-          style="right: 24px"
           [nzIcon]="icon"
           routerLink="/warehouse-receipt-create"
         ></nz-float-button>

@@ -1,0 +1,11 @@
+:host ::ng-deep .ant-pagination {
+  justify-content: center !important;
+  padding: 0.5rem 0;
+}
+
+:host ::ng-deep .ant-pagination-simple-pager input {
+  background-color: transparent;
+  border: none;
+  color: white;
+  text-align: center;
+}

@@ -241,10 +241,8 @@ export class ProductComponent implements OnInit {
       'Tên sản phẩm',
       'Số lượng',
       'Đơn vị',
-      'Loại sản phẩm',
       'Nhà cung cấp',
       'Mô tả',
-      'Ngày tạo',
       'Ngày cập nhật',
       'Trạng thái',
     ];
@@ -256,7 +254,6 @@ export class ProductComponent implements OnInit {
       i.Name,
       i.SupplierName,
       i.Description || '',
-      this.datePipe.transform(i.CreatedDate, 'dd/MM/yyyy'),
       this.datePipe.transform(i.UpdatedDate, 'dd/MM/yyyy'),
       i.IsActive == false ? 'Hoạt động' : 'Ngưng hoạt động',
     ]);
