@@ -126,6 +126,7 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
 
         // Gán dữ liệu sản phẩm
         this.listOfData = res.InventoryDetails || [];
+        this.allData = [...this.listOfData];
         this.rowVersion = res.RowVersion;
 
         // Gán ngày
@@ -196,11 +197,13 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
   stopEdit(): void {
     this.editingId = null;
   }
+
   onSearch(): void {
     this.searchKeyword = this.searchKeyword.trim().toLowerCase();
     if (!this.searchKeyword) {
       this.listOfData = [...this.allData];
     } else {
+      console.log('allData :', this.allData);
       this.listOfData = this.allData.filter((item) =>
         Object.values(item).some((value) =>
           String(value).toLowerCase().includes(this.searchKeyword)
@@ -209,6 +212,7 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
     }
     this.cdr.detectChanges();
   }
+
   deleteItem(itemToDelete: InventoryDetail): void {
     this.modal.confirm({
       nzTitle: `Bạn có chắc muốn xóa sản phẩm "<b>${itemToDelete.ProductName}</b>" này?`,
@@ -249,6 +253,8 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
     );
 
     this.listOfData.sort((a, b) => a.ProductCode.localeCompare(b.ProductCode));
+
+    this.allData = [...this.listOfData];
 
     this.details.clear();
 

@@ -111,11 +111,10 @@
         <div class="space-y-4">
           <div
             *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
-            class="rounded-[20px] p-4 bg-white shadow-md dark:bg-background-dark transition-all"
           >
             <div
               *ngFor="let item of listOfData; trackBy: trackById"
-              class="rounded-[20px] p-4 bg-white shadow-md dark:bg-gray-800 transition-all"
+              class="rounded-[20px] p-4 bg-white shadow-md dark:bg-background-dark transition-all"
             >
               <div class="flex justify-between items-center mb-2">
                 <h3
@@ -123,12 +122,33 @@
                 >
                   Mã phiếu: {{ item.Code }}
                 </h3>
+                <!-- Dropdown actions -->
+              <div class="relative">
                 <button
-                  class="text-xl text-secondary-light dark:text-secondary-dark"
+                  class="icon-button text-xl text-secondary-light dark:text-secondary-dark"
                   (click)="toggleDropdown(item)"
                 >
                   ⋮
                 </button>
+                <div
+                  *ngIf="item === activeDropdown"
+                  class="absolute right-0 mt-1 bg-white dark:bg-gray-700 rounded shadow p-2 z-50 w-[110px]"
+                  (mouseleave)="closeDropdown()"
+                >
+                  <button
+                    class="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-sm px-2 py-1 w-full"
+                    (click)="viewDetail(item)"
+                  >
+                    <nz-icon nzType="edit" nzTheme="outline"></nz-icon> Chi tiết
+                  </button>
+                  <!-- <button
+                    class="flex items-center gap-2 text-red-600 dark:text-red-400 text-sm px-2 py-1 w-full"
+                    (click)="deleteProduct(item)"
+                  >
+                    <nz-icon nzType="delete" nzTheme="outline"></nz-icon> Xóa
+                  </button> -->
+                </div>
+              </div>
               </div>
 
               <div class="text-sm text-gray-600 dark:text-gray-300">
@@ -152,25 +172,7 @@
                   {{ item.UpdatedDate | date : "dd/MM/yyyy" }}
                 </div>
               </div>
-
-              <!-- Dropdown hành động -->
-              <div
-                *ngIf="item === activeDropdown"
-                class="mt-2 flex gap-3"
-                (mouseleave)="closeDropdown()"
-              >
-                <button
-                  class="flex items-center gap-1 text-blue-600 dark:text-blue-400"
-                  (click)="viewDetail(item)"
-                >
-                  <nz-icon nzType="edit" nzTheme="outline"></nz-icon> Chi tiết
-                </button>
-                <button
-                  class="flex items-center gap-1 text-red-600 dark:text-red-400"
-                >
-                  <nz-icon nzType="delete" nzTheme="outline"></nz-icon> Xóa
-                </button>
-              </div>
+              
             </div>
           </div>
         </div>

@@ -171,6 +171,8 @@ export class WarehouseReceiptCreateComponent {
     if (!this.searchKeyword) {
       this.listOfData = [...this.allData];
     } else {
+      console.log('allData :', this.allData);
+
       this.listOfData = this.allData.filter((item) =>
         Object.values(item).some((value) =>
           String(value).toLowerCase().includes(this.searchKeyword)
