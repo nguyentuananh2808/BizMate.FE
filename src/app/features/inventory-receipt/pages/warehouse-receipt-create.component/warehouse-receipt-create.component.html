@@ -56,7 +56,7 @@
         <!-- Mobile Form -->
         <div
           *ngIf="isMobile"
-          class=" bg-[rgba(233,233,233,0.87)] dark:bg-gray-900 flex flex-col rounded-[24px]"
+          class="bg-[rgba(233,233,233,0.87)] dark:bg-gray-900 flex flex-col rounded-[24px]"
         >
           <!-- Scrollable content -->
           <div class="overflow-y-auto px-3 py-4 space-y-4 max-h-[76vh]">
@@ -214,10 +214,10 @@
       </div>
 
       <!-- Desktop header bar -->
-      <div *ngIf="!isMobile" >
+      <div *ngIf="!isMobile">
         <!-- Header -->
         <header-common></header-common>
-        <div class="mb-4 flex items-center justify-between gap-4 ">
+        <div class="mb-4 flex items-center justify-between gap-4">
           <!-- page name -->
           <h1
             class="text-secondary-light dark:text-secondary-dark text-2xl font-bold"
@@ -481,7 +481,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of listOfData; let i = index">
+          <tr *ngFor="let item of allData; let i = index">
             <td style="border: 1px solid #000; padding: 6px">{{ i + 1 }}</td>
             <td style="border: 1px solid #000; padding: 6px">
               {{ item.ProductCode }}
