@@ -4,8 +4,11 @@ export interface WarehouseReceipt extends BaseCoreRespone {
   Id: string;
   Date: Date;
   Type: number;
-  Description: string;
-  CreatedDate: Date;
-  UpdatedDate: Date;
-  SupplierName: string;
+  SupplierName?: string;
+  DeliveryAddress: string;
+  StatusName?: string;
+  StatusCode?: string;
+  StatusId?: string;
+  CustomerPhone?: string;
+  CustomerName?: string;
 }

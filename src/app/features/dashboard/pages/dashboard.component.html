@@ -16,10 +16,12 @@
           <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             Tỉ lệ đơn hàng theo trạng thái
           </h2>
-          <canvas baseChart
-                  [data]="pieChartData"
-                  [type]="pieChartType"
-                  [options]="{ responsive: true }">
+          <canvas
+            baseChart
+            [data]="pieChartData"
+            [type]="pieChartType"
+            [options]="{ responsive: true }"
+          >
           </canvas>
         </div>
 
@@ -28,13 +30,17 @@
           <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">
             Doanh thu theo tháng
           </h2>
-          <canvas baseChart
-                  [data]="barChartData"
-                  [options]="barChartOptions"
-                  chartType="bar">
+          <canvas
+            baseChart
+            [data]="barChartData"
+            [options]="barChartOptions"
+            chartType="bar"
+          >
           </canvas>
         </div>
       </div>
     </div>
   </div>
 </div>
+<!-- Bottom menu -->
+<bottom-menu class="mt-6"></bottom-menu>

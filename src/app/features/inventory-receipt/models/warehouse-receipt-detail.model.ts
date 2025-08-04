@@ -5,6 +5,8 @@ export interface InventoryReadById extends BaseCoreRespone {
   Date: Date;
   InventoryCode: string;
   SupplierName: string;
+  CustomerName: string;
+  DeliveryAddress: string;
   Type: number;
   Description: string;
   CustomerPhone: string;

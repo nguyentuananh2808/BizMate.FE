@@ -37,50 +37,51 @@
             'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600': isDark
           }"
         />
-        <!-- Nút Lọc -->
-        <div class="relative inline-block" (clickOutside)="hideTooltip()">
-          <button
-            nz-button
-            (click)="toggleTooltip()"
-            class="flex items-center whitespace-nowrap rounded-[24px] w-8 bg-white hover:bg-gray-100 transition-all border"
-          >
-            <nz-icon nzType="filter" nzTheme="outline" class="ml-2" />
-          </button>
 
-          <!-- Tooltip -->
-          <div
-            *ngIf="showTooltip"
-            class="absolute right-0 mt-2 z-50 bg-white p-3 rounded-[24px] shadow-lg border w-[300px]"
-          >
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Chọn ngày:</label
-            >
-            <nz-range-picker
-              [(ngModel)]="dateRange"
-              [nzPlacement]="placement"
-              class="w-full"
-            ></nz-range-picker>
-
-            <div class="flex justify-end pt-2 gap-2">
+         <!-- Nút Lọc -->
+            <div class="relative inline-block" (clickOutside)="hideTooltip()">
               <button
                 nz-button
-                nzType="default"
-                class="rounded-[24px]"
-                (click)="clearDateFilter()"
+                (click)="toggleTooltip()"
+                class="flex items-center whitespace-nowrap rounded-[24px] w-8 bg-white hover:bg-gray-100 transition-all border"
               >
-                Xóa
+                <nz-icon nzType="filter" nzTheme="outline" class="ml-2" />
               </button>
-              <button
-                nz-button
-                class="rounded-[24px]"
-                nzType="primary"
-                (click)="applyDateFilter()"
+
+              <!-- Tooltip -->
+              <div
+                *ngIf="showTooltip"
+                class="absolute right-0 mt-2 z-50 bg-white p-3 rounded-[24px] shadow-lg border w-[300px]"
               >
-                Áp dụng
-              </button>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Chọn ngày:</label
+                >
+                <nz-range-picker
+                  [(ngModel)]="dateRange"
+                  [nzPlacement]="placement"
+                  class="w-full"
+                ></nz-range-picker>
+
+                <div class="flex justify-end pt-2 gap-2">
+                  <button
+                    nz-button
+                    nzType="default"
+                    class="rounded-[24px]"
+                    (click)="clearDateFilter()"
+                  >
+                    Xóa
+                  </button>
+                  <button
+                    nz-button
+                    class="rounded-[24px]"
+                    nzType="primary"
+                    (click)="applyDateFilter()"
+                  >
+                    Áp dụng
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
         <!-- button -->
         <button
           type="button"
@@ -97,7 +98,7 @@
           <h1
             class="text-secondary-light dark:text-secondary-dark text-2xl font-bold"
           >
-            Phiếu nhập
+            Đơn hàng
           </h1>
 
           <!-- Ô tìm kiếm căn giữa -->
@@ -160,11 +161,12 @@
               </div>
             </div>
 
+            <!-- nút tạo mới -->
             <button
               nz-button
               nzType="primary"
               class="flex items-center gap-2 whitespace-nowrap rounded-[24px] h-10"
-              routerLink="/warehouse-receipt-create"
+              routerLink="/order-create"
             >
               <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
               Tạo mới
@@ -200,14 +202,13 @@
         <div class="space-y-4">
           <div *ngFor="let item of listOfCurrentPageData; trackBy: trackById">
             <div
-              *ngFor="let item of listOfData; trackBy: trackById"
               class="rounded-[20px] p-4 bg-white shadow-md dark:bg-background-dark transition-all"
             >
               <div class="flex justify-between items-center mb-2">
                 <h3
                   class="font-semibold text-sm text-gray-700 dark:text-gray-200"
                 >
-                  Mã phiếu: {{ item.Code }}
+                  Mã đơn: {{ item.Code }}
                 </h3>
                 <!-- Dropdown actions -->
                 <div class="relative">
@@ -240,8 +241,15 @@
               </div>
 
               <div class="text-sm text-gray-600 dark:text-gray-300">
+                <div><strong>Khách hàng:</strong> {{ item.CustomerName }}</div>
+                <div><strong>SĐT:</strong> {{ item.CustomerPhone }}</div>
                 <div>
-                  <strong>Nhà cung cấp:</strong> {{ item.SupplierName }}
+                  <strong>Địa chỉ:</strong>
+                  {{
+                    item.DeliveryAddress && item.DeliveryAddress.length > 28
+                      ? (item.DeliveryAddress | slice : 0 : 20) + "..."
+                      : item.DeliveryAddress
+                  }}
                 </div>
                 <div>
                   <strong>Mô tả:</strong>
@@ -253,11 +261,11 @@
                 </div>
                 <div>
                   <strong>Ngày tạo:</strong>
-                  {{ item.CreatedDate | date : "dd/MM/yyyy" }}
+                  {{ item.CreatedDate | date: 'dd/MM/yyyy' }}
                 </div>
                 <div>
                   <strong>Ngày cập nhật:</strong>
-                  {{ item.UpdatedDate | date : "dd/MM/yyyy" }}
+                  {{ item.UpdatedDate | date : "dd/MM/yyyy" : "UTC" }}
                 </div>
               </div>
             </div>
@@ -319,7 +327,9 @@
                 <th [nzWidth]="'20px'" class="text-center">STT</th>
                 <th [nzWidth]="'40px'"></th>
                 <th [nzWidth]="'120px'">Mã</th>
-                <th [nzWidth]="'120px'">Nhà cung cấp</th>
+                <th [nzWidth]="'120px'">Khách hàng</th>
+                <th [nzWidth]="'120px'">SĐT</th>
+                <th [nzWidth]="'180px'">Địa chỉ</th>
                 <th [nzWidth]="'180px'">Mô tả</th>
                 <th [nzWidth]="'120px'">Ngày tạo</th>
                 <th [nzWidth]="'120px'">Ngày cập nhật</th>
@@ -363,7 +373,15 @@
                   </div>
                 </td>
                 <td>{{ item.Code }}</td>
-                <td>{{ item.SupplierName }}</td>
+                <td>{{ item.CustomerName }}</td>
+                <td>{{ item.CustomerPhone }}</td>
+                <td>
+                  {{
+                    item.DeliveryAddress && item.DeliveryAddress.length > 34
+                      ? (item.DeliveryAddress | slice : 0 : 34) + "..."
+                      : item.DeliveryAddress
+                  }}
+                </td>
                 <td>
                   {{
                     item.Description && item.Description.length > 34
@@ -384,7 +402,7 @@
         <nz-float-button
           nzType="primary"
           [nzIcon]="icon"
-          routerLink="/warehouse-receipt-create"
+          routerLink="/order-create"
         ></nz-float-button>
         <ng-template #icon>
           <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>

@@ -101,7 +101,7 @@ export class MenuComponent implements OnInit {
       key: 'orders',
       icon: 'shopping-cart',
       label: 'Đơn hàng',
-      route: '/orders',
+      route: '/order',
     },
     {
       key: 'customers',
