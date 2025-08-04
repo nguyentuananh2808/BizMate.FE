@@ -20,6 +20,9 @@ export class WarehouseReceiptService {
       pageIndex: request.pageIndex,
       pageSize: request.pageSize,
       type: request.type,
+      dateFrom: request.dateFrom,
+      dateTo: request.dateTo,
+      statusCode: request.statusCode,
     };
     return this.http.post<WarehouseReceiptSearchResponse>(
       `${ApiUrls.baseUrl}${ApiUrls.warehouseReceipt.search}`,
@@ -33,9 +36,7 @@ export class WarehouseReceiptService {
     );
   };
 
-  UpdateWarehouseReceipt(
-    body: UpdateReceiptRequestRequest
-  ): Observable<any> {
+  UpdateWarehouseReceipt(body: UpdateReceiptRequestRequest): Observable<any> {
     return this.http.put<any>(
       `${ApiUrls.baseUrl}${ApiUrls.warehouseReceipt.update}`,
       body

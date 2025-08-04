@@ -3,6 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
   HostListener,
+  Directive,
   OnInit,
 } from '@angular/core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -14,23 +15,23 @@ import { Router, RouterModule } from '@angular/router';
 import { HeaderCommonComponent } from '../../../shared/header-common.component/header-common.component';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
-import { WarehouseReceiptService } from '../../services/warehouse-receipt.service';
 import { ToastrService } from 'ngx-toastr';
 import { Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { WarehouseReceipt } from '../../models/warehouse-receipt.model';
-import { SearchWarehouseRequest } from '../../models/warehouse-receipt-search-request.model';
+import { WarehouseReceiptService } from '../../../inventory-receipt/services/warehouse-receipt.service';
 import { MenuComponent } from '../../../shared/menu.component/menu.component';
 import { NzPaginationComponent } from 'ng-zorro-antd/pagination';
+import { WarehouseReceipt } from '../../../inventory-receipt/models/warehouse-receipt.model';
+import { SearchWarehouseRequest } from '../../../inventory-receipt/models/warehouse-receipt-search-request.model';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 
 @Component({
-  selector: 'warehouse-receipt',
+  selector: 'order',
   imports: [
+    NzDatePickerModule,
     CommonModule,
     FormsModule,
     NzTableModule,
-    NzDatePickerModule,
     NzCheckboxModule,
     NzButtonModule,
     BottomMenuComponent,
@@ -42,11 +43,11 @@ import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
     MenuComponent,
     NzPaginationComponent,
   ],
-  templateUrl: './warehouse-receipt.component.html',
-  styleUrls: ['./warehouse-receipt.component.scss'],
+  templateUrl: './order.component.html',
+  styleUrls: ['./order.component.scss'],
   providers: [DatePipe],
 })
-export class WarehouseReceiptComponent implements OnInit {
+export class OrderComponent implements OnInit {
   isLoading = false;
   activeDropdown: any = null;
   listOfData: WarehouseReceipt[] = [];
@@ -118,7 +119,7 @@ export class WarehouseReceiptComponent implements OnInit {
   viewDetail(item: WarehouseReceipt) {
     this.selectedItem = item;
     this.showPopup = true;
-    this.router.navigate(['/warehouse-receipt-update', item.Id]);
+    this.router.navigate(['/WarehouseReceipt-update', item.Id]);
   }
   closeWarehouseReceiptDetailPopup() {
     this.showPopup = false;
@@ -150,14 +151,20 @@ export class WarehouseReceiptComponent implements OnInit {
       pageIndex: pageIndex,
       pageSize: pageSize,
       keySearch: this.searchKeyword.trim(),
-      type: 1,
+      type: 2, //phiếu xuất
       dateFrom: fromDate,
       dateTo: toDate,
     };
 
     this.WarehouseReceiptService.SearchWarehouseReceipt(request).subscribe({
       next: (res) => {
-        this.originalData = res.InventoryReceipts || [];
+        this.originalData = (res.InventoryReceipts || []).map((item) => ({
+          ...item,
+          CreatedDate: new Date(item.CreatedDate),
+          
+          UpdatedDate: new Date(item.UpdatedDate),
+        }));
+        console.log("data",this.originalData);
         this.totalCount = res.TotalCount || 0;
 
         this.listOfData = [...this.originalData].sort((a, b) =>
@@ -165,7 +172,6 @@ export class WarehouseReceiptComponent implements OnInit {
         );
 
         this.listOfCurrentPageData = this.listOfData;
-
         this.isLoading = false;
         this.cdr.detectChanges();
       },

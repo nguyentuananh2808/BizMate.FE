@@ -3,6 +3,13 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 
+  // {
+  //   path: 'order-update/:id',
+  //   loadComponent: () =>
+  //     import(
+  //       './features/order/pages/order-update.component/order-update.component'
+  //     ).then((m) => m.OrderUpdateComponent),
+  // },
   {
     path: 'warehouse-receipt-update/:id',
     loadComponent: () =>
@@ -46,6 +53,13 @@ export const routes: Routes = [
       ).then((m) => m.WarehouseReceiptComponent),
   },
   {
+    path: 'order',
+    loadComponent: () =>
+      import('./features/orders/pages/order.component/order.component').then(
+        (m) => m.OrderComponent
+      ),
+  },
+  {
     path: 'verify-otp',
     loadComponent: () =>
       import('./features/auth/pages/verify-otp/verify-otp.component').then(
@@ -65,5 +79,13 @@ export const routes: Routes = [
       import(
         './features/inventory-receipt/pages/warehouse-receipt-create.component/warehouse-receipt-create.component'
       ).then((m) => m.WarehouseReceiptCreateComponent),
+  },
+
+  {
+    path: 'order-create',
+    loadComponent: () =>
+      import(
+        './features/orders/pages/order-create.component/order-create.component'
+      ).then((m) => m.OrderCreateComponent),
   },
 ];
