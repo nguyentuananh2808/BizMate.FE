@@ -3,13 +3,13 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 
-  // {
-  //   path: 'order-update/:id',
-  //   loadComponent: () =>
-  //     import(
-  //       './features/order/pages/order-update.component/order-update.component'
-  //     ).then((m) => m.OrderUpdateComponent),
-  // },
+  {
+    path: 'order-update/:id',
+    loadComponent: () =>
+      import(
+        './features/orders/pages/order-update.component/order-update.component'
+      ).then((m) => m.OrderUpdateComponent),
+  },
   {
     path: 'warehouse-receipt-update/:id',
     loadComponent: () =>
@@ -87,5 +87,13 @@ export const routes: Routes = [
       import(
         './features/orders/pages/order-create.component/order-create.component'
       ).then((m) => m.OrderCreateComponent),
+  },
+
+  {
+    path: 'user-information',
+    loadComponent: () =>
+      import('./features/user/user-information/user-information').then(
+        (m) => m.UserInformation
+      ),
   },
 ];

@@ -119,7 +119,7 @@ export class OrderComponent implements OnInit {
   viewDetail(item: WarehouseReceipt) {
     this.selectedItem = item;
     this.showPopup = true;
-    this.router.navigate(['/WarehouseReceipt-update', item.Id]);
+    this.router.navigate(['/order-update', item.Id]);
   }
   closeWarehouseReceiptDetailPopup() {
     this.showPopup = false;

@@ -1,3 +1,4 @@
+
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -17,8 +18,8 @@ import {
 import { BaseChartDirective } from 'ng2-charts';
 import { HeaderCommonComponent } from '../../shared/header-common.component/header-common.component';
 import { MenuComponent } from '../../shared/menu.component/menu.component';
+import { BottomMenuComponent } from '../../shared/bottom-menu.component/bottom-menu.component';
 
-// ✅ Đăng ký các thành phần cần cho Pie & Bar chart
 Chart.register(
   ArcElement,
   BarElement,
@@ -33,7 +34,7 @@ Chart.register(
 @Component({
   selector: 'dashboard-app',
   standalone: true,
-  imports: [CommonModule, BaseChartDirective, HeaderCommonComponent, MenuComponent],
+  imports: [CommonModule, BaseChartDirective, HeaderCommonComponent, MenuComponent,BottomMenuComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })

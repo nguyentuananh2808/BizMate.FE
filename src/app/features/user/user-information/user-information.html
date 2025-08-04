@@ -1,0 +1,116 @@
+<div class="flex">
+  <app-menu class="bg-background-dark"></app-menu>
+
+  <div class="bg-login" [ngClass]="{ dark: isDark }">
+    <div
+      class="max-h-[800px] overflow-y-auto px-4 pt-6 z-10 relative"
+      [ngClass]="{ 'dark:bg-gray-900': isDark }"
+    >
+      <!-- Header -->
+      <header-common></header-common>
+
+      <!-- Desktop view -->
+      <div
+        class="hidden md:block border rounded-2xl shadow-xl p-6 bg-background-light dark:bg-background-dark max-w-[600px] m-auto"
+      >
+        <h2
+          class="text-2xl font-bold mb-4 text-secondary-light dark:text-secondary-dark"
+        >
+          Thông tin người dùng
+        </h2>
+        <div class="grid grid-cols-2 gap-6">
+          <div>
+            <label
+              class="font-semibold text-secondary-light dark:text-secondary-dark"
+              >Họ tên:</label
+            >
+            <p class="text-secondary-light dark:text-secondary-dark">
+              {{ user.name }}
+            </p>
+          </div>
+          <div>
+            <label
+              class="font-semibold text-secondary-light dark:text-secondary-dark"
+              >Email:</label
+            >
+            <p class="text-secondary-light dark:text-secondary-dark">
+              {{ user.email }}
+            </p>
+          </div>
+          <div>
+            <label
+              class="font-semibold text-secondary-light dark:text-secondary-dark"
+              >Vai trò:</label
+            >
+            <p class="text-secondary-light dark:text-secondary-dark">
+              {{ user.role }}
+            </p>
+          </div>
+          <div>
+            <label
+              class="font-semibold text-secondary-light dark:text-secondary-dark"
+              >Cửa hàng:</label
+            >
+            <p class="text-secondary-light dark:text-secondary-dark">
+              {{ user.storeName }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile view -->
+      <div
+        class="md:hidden border rounded-xl shadow-md p-4 space-y-3 bg-background-light dark:bg-background-dark max-w-[300px] m-auto"
+      >
+        <h2
+          class="text-xl font-bold mb-2 text-secondary-light dark:text-secondary-dark"
+        >
+          Thông tin
+        </h2>
+        <div>
+          <span
+            class="font-semibold text-secondary-light dark:text-secondary-dark"
+            >👤 Tên:</span
+          >
+          <span class="text-secondary-light dark:text-secondary-dark">
+            {{ user.name }}</span
+          >
+        </div>
+        <div>
+          <span
+            class="font-semibold text-secondary-light dark:text-secondary-dark"
+            >📧 Email:</span
+          >
+          <span class="text-secondary-light dark:text-secondary-dark">
+            {{ user.email }}</span
+          >
+        </div>
+        <div>
+          <span
+            class="font-semibold text-secondary-light dark:text-secondary-dark"
+            >🏷 Vai trò:</span
+          ><span class="text-secondary-light dark:text-secondary-dark">
+            {{ user.role }}</span
+          >
+        </div>
+        <div>
+          <span
+            class="font-semibold text-secondary-light dark:text-secondary-dark"
+            >🏪 Cửa hàng:</span
+          ><span class="text-secondary-light dark:text-secondary-dark">
+            {{ user.storeName }}</span
+          >
+        </div>
+        <div>
+          <span
+            class="font-semibold text-secondary-light dark:text-secondary-dark"
+            >🌞 Dark mode:</span
+          ><span><dark-mode-toggle class="gap-5 ml-7"></dark-mode-toggle></span>
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Bottom menu -->
+  <bottom-menu class="mt-6"></bottom-menu>
+</div>
