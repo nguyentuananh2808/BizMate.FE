@@ -9,16 +9,13 @@
       <!-- Mobile header bar -->
       <div
         *ngIf="isMobile"
-        class="fixed bg-background-light dark:bg-background-dark p-3 rounded-[24px]"
+        class="fixed bg-background-light dark:bg-background-dark p-3 rounded-[24px] w-[92%] m-auto"
       >
         <!-- Header -->
         <header-common></header-common>
 
         <!-- Mobile header bar -->
-        <div
-          *ngIf="isMobile"
-          class="mb-4 flex items-center justify-between gap-3"
-        >
+        <div *ngIf="isMobile" class="flex items-center justify-between gap-3">
           <!-- Nút Quay lại -->
           <button
             type="button"
@@ -33,16 +30,37 @@
           </button>
 
           <!-- Ô tìm kiếm căn giữa -->
-          <input
-            type="text"
-            class="flex-1 border border-gray-300 rounded-[24px] px-3 py-2 mx-2"
-            [(ngModel)]="searchKeyword"
-            (ngModelChange)="onSearch()"
-            placeholder="Tìm kiếm..."
-            [ngClass]="{
-              'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600': isDark
-            }"
-          />
+          <div class="relative flex-1 mx-2">
+            <input
+              type="text"
+              class="w-full border border-gray-300 rounded-[24px] px-4 py-2 pr-10"
+              [(ngModel)]="searchKeyword"
+              placeholder="Tìm kiếm..."
+              [ngClass]="{
+                'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600':
+                  isDark
+              }"
+            />
+            <button
+              (click)="onSearch()"
+              class="absolute inset-y-0 right-3 flex items-center"
+            >
+              <svg
+                class="w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z"
+                />
+              </svg>
+            </button>
+          </div>
+
           <!-- Nút Excel -->
           <button
             type="button"
@@ -55,7 +73,7 @@
       </div>
 
       <!-- Mobile Table -->
-      <div *ngIf="isMobile" class="mt-40">
+      <div *ngIf="isMobile" class="mt-36">
         <div class="space-y-4">
           <div
             *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
@@ -201,16 +219,36 @@
           </h1>
 
           <!-- Ô tìm kiếm căn giữa -->
-          <input
-            type="text"
-            class="border border-gray-300 rounded-[24px] px-3 py-2 w-[58%] mx-auto"
-            [(ngModel)]="searchKeyword"
-            (ngModelChange)="onSearch()"
-            placeholder="Tìm kiếm..."
-            [ngClass]="{
-              'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600': isDark
-            }"
-          />
+          <div class="relative flex-1 mx-2">
+            <input
+              type="text"
+              class="border border-gray-300 rounded-[24px] px-3 py-2 w-[100%] mx-auto"
+              [(ngModel)]="searchKeyword"
+              placeholder="Tìm kiếm..."
+              [ngClass]="{
+                'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600':
+                  isDark
+              }"
+            />
+            <button
+              (click)="onSearch()"
+              class="absolute inset-y-0 right-3 flex items-center"
+            >
+              <svg
+                class="w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z"
+                />
+              </svg>
+            </button>
+          </div>
 
           <!-- Nhóm nút -->
           <div class="flex gap-3">

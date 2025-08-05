@@ -174,8 +174,9 @@ export class WarehouseReceiptComponent implements OnInit {
   }
 
   onSearch(): void {
-    this.pageIndex = 1;
-    this.fetchData();
+    this.searchKeyword = this.searchKeyword.trim();
+    this.fetchData(this.pageIndex, this.pageSize);
+    this.cdr.detectChanges();
   }
 
   listOfSelection = [

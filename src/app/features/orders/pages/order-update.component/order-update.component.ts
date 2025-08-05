@@ -346,9 +346,9 @@ export class OrderUpdateComponent implements OnInit {
 
     const payload: UpdateReceiptRequestRequest = {
       id: this.id,
-      type: 1, //phiếu nhập
-      supplierName: formValues.supplierName,
-      customerName: '',
+      type: 2, //phiếu xuất
+      supplierName: '',
+      customerName: formValues.customerName,
       customerPhone: formValues.phoneNumber,
       rowVersion: this.rowVersion,
       description: formValues.description,

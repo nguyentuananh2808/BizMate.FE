@@ -8,7 +8,7 @@
     >
       <div
         *ngIf="isMobile"
-        class="fixed bg-background-light dark:bg-background-dark p-3 rounded-[24px]"
+        class="fixed bg-background-light dark:bg-background-dark p-3 rounded-[24px] w-[92%] m-auto"
       >
         <!-- Header -->
         <header-common></header-common>
@@ -16,7 +16,7 @@
         <!-- Mobile header bar -->
         <div
           *ngIf="isMobile"
-          class="mb-4 flex items-center justify-between gap-3"
+          class="flex items-center justify-between gap-3"
         >
           <!-- Nút Quay lại -->
           <button
@@ -54,7 +54,7 @@
       </div>
 
       <!-- 📱 Mobile layout -->
-      <div *ngIf="isMobile" class="mt-40">
+      <div *ngIf="isMobile" class="mt-36">
         <div
           *ngFor="let item of listOfData; trackBy: trackById"
           class="rounded-[16px] bg-[rgb(255,255,255)] dark:bg-gray-900 shadow-md p-4 flex flex-col gap-2 mb-2"
@@ -135,7 +135,7 @@
           <!-- Ô tìm kiếm căn giữa -->
           <input
             type="text"
-            class="border border-gray-300 rounded-[24px] px-3 py-2 w-[58%] mx-auto"
+            class="border border-gray-300 rounded-[24px] px-3 py-2 w-[50%] mx-auto"
             [(ngModel)]="searchKeyword"
             (ngModelChange)="onSearch()"
             placeholder="Tìm kiếm..."
