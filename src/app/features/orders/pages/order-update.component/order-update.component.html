@@ -471,10 +471,28 @@
 
     <!-- Nội dung in -->
     <div id="print-section" class="print-only">
-      <div style="text-align: center; margin-bottom: 16px">
-        <h2 style="font-size: 24px; margin: 0">VuaKong</h2>
-        <h3 style="margin: 4px 0 0 0">Phiếu Xuất Kho</h3>
-        <p style="margin: 0">Ngày: {{ dateToday | date : "dd/MM/yyyy" }}</p>
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 16px;
+        "
+      >
+        <!-- Tiêu đề ở giữa -->
+        <div style="text-align: center; flex-grow: 1; margin-left: -60px">
+          <img
+            src="assets/images/logo_vuakongfishing_bottom.png"
+            alt="Logo"
+            class="w-32 m-auto"
+          />
+
+          <h3 style="margin: 4px 0 0 0">Phiếu Xuất Kho</h3>
+          <p style="margin: 0">Ngày: {{ dateToday | date : "dd/MM/yyyy" }}</p>
+        </div>
+
+        <!-- Giữ chỗ bên phải để căn giữa đẹp -->
+        <div style="width: 60px"></div>
       </div>
 
       <div style="margin-bottom: 20px">
