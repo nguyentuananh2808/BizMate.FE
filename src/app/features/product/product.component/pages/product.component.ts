@@ -29,6 +29,7 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { MenuComponent } from '../../../shared/menu.component/menu.component';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 
+
 @Component({
   selector: 'product',
   standalone: true,
@@ -165,7 +166,6 @@ export class ProductComponent implements OnInit {
   }
 
   onSearch(): void {
-    this.pageIndex = 1;
     this.searchKeyword = this.searchKeyword.trim();
     this.fetchData(this.pageIndex, this.pageSize);
     this.cdr.detectChanges();

@@ -9,7 +9,7 @@
       <!-- Mobile header bar -->
       <div
         *ngIf="isMobile"
-        class="fixed bg-[rgb(247,251,255)] dark:bg-background-dark p-3 rounded-[24px]"
+        class="fixed bg-[rgb(247,251,255)] dark:bg-background-dark p-3 rounded-[24px] w-[94%] mb-16"
       >
         <!-- Header -->
         <header-common></header-common>
@@ -44,7 +44,7 @@
             }"
           />
           <!-- Print Button -->
-          <button
+          <button disabled
             (click)="onPrint()"
             type="button"
             class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"

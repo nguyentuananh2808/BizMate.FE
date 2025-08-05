@@ -3,95 +3,121 @@
 
   <div class="bg-login" [ngClass]="{ dark: isDark }">
     <div
-      class="max-h-[800px] overflow-y-auto px-4 pt-6 z-10 relative"
+      class="max-h-[700px] overflow-y-auto px-4 pt-6 z-10 relative"
       [ngClass]="{ 'dark:bg-gray-900': isDark }"
     >
-      <!-- Header -->
-      <header-common></header-common>
-
       <!-- Mobile header bar -->
       <div
         *ngIf="isMobile"
-        class="mb-4 flex items-center justify-between gap-3"
+        class="fixed bg-background-light dark:bg-background-dark p-3 rounded-[24px] w-[92%] m-auto"
       >
-        <!-- Nút Quay lại -->
-        <button
-          type="button"
-          class="rounded-full bg-gray-300 text-gray-700 px-2 py-1 hover:bg-gray-300 transition flex items-center w-8 h-8"
-          (click)="goBack()"
-          [ngClass]="{
-            'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600': isDark
-          }"
-        >
-          <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
-        </button>
+        <!-- Header -->
+        <header-common></header-common>
 
-        <!-- Ô tìm kiếm căn giữa -->
-        <input
-          type="text"
-          class="flex-1 border border-gray-300 rounded-[24px] px-3 py-2 mx-2"
-          [(ngModel)]="searchKeyword"
-          (ngModelChange)="onSearch()"
-          placeholder="Tìm kiếm..."
-          [ngClass]="{
-            'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600': isDark
-          }"
-        />
-        <!-- Nút Lọc -->
-        <div class="relative inline-block" (clickOutside)="hideTooltip()">
+        <!-- Mobile header bar -->
+        <div *ngIf="isMobile" class="flex items-center justify-between gap-3">
+          <!-- Nút Quay lại -->
           <button
-            nz-button
-            (click)="toggleTooltip()"
-            class="flex items-center whitespace-nowrap rounded-[24px] w-8 bg-white hover:bg-gray-100 transition-all border"
+            type="button"
+            class="rounded-full bg-gray-200 text-gray-700 px-2 py-1 hover:bg-gray-300 transition flex items-center w-8 h-8"
+            (click)="goBack()"
+            [ngClass]="{
+              'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600':
+                isDark
+            }"
           >
-            <nz-icon nzType="filter" nzTheme="outline" class="ml-2" />
+            <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
           </button>
 
-          <!-- Tooltip -->
-          <div
-            *ngIf="showTooltip"
-            class="absolute right-0 mt-2 z-50 bg-white p-3 rounded-[24px] shadow-lg border w-[300px]"
-          >
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Chọn ngày:</label
+          <!-- Ô tìm kiếm căn giữa -->
+          <div class="relative flex-1 mx-2">
+            <input
+              type="text"
+              class="flex-1 border border-gray-300 rounded-[24px] px-3 py-2 mx-2 w-full"
+              [(ngModel)]="searchKeyword"
+              placeholder="Tìm kiếm..."
+              [ngClass]="{
+                'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600':
+                  isDark
+              }"
+            />
+            <button
+              (click)="onSearch()"
+              class="absolute inset-y-0 right-3 flex items-center"
             >
-            <nz-range-picker
-              [(ngModel)]="dateRange"
-              [nzPlacement]="placement"
-              class="w-full"
-            ></nz-range-picker>
+              <svg
+                class="w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z"
+                />
+              </svg>
+            </button>
+          </div>
+          <!-- Nút Lọc -->
+          <div class="relative inline-block" (clickOutside)="hideTooltip()">
+            <button
+              nz-button
+              (click)="toggleTooltip()"
+              class="flex items-center whitespace-nowrap rounded-[24px] w-8 bg-white hover:bg-gray-100 transition-all border"
+            >
+              <nz-icon nzType="filter" nzTheme="outline" class="ml-2" />
+            </button>
 
-            <div class="flex justify-end pt-2 gap-2">
-              <button
-                nz-button
-                nzType="default"
-                class="rounded-[24px]"
-                (click)="clearDateFilter()"
+            <!-- Tooltip -->
+            <div
+              *ngIf="showTooltip"
+              class="absolute right-0 mt-2 z-50 bg-white p-3 rounded-[24px] shadow-lg border w-[300px]"
+            >
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Chọn ngày:</label
               >
-                Xóa
-              </button>
-              <button
-                nz-button
-                class="rounded-[24px]"
-                nzType="primary"
-                (click)="applyDateFilter()"
-              >
-                Áp dụng
-              </button>
+              <nz-range-picker
+                [(ngModel)]="dateRange"
+                [nzPlacement]="placement"
+                class="w-full"
+              ></nz-range-picker>
+
+              <div class="flex justify-end pt-2 gap-2">
+                <button
+                  nz-button
+                  nzType="default"
+                  class="rounded-[24px]"
+                  (click)="clearDateFilter()"
+                >
+                  Xóa
+                </button>
+                <button
+                  nz-button
+                  class="rounded-[24px]"
+                  nzType="primary"
+                  (click)="applyDateFilter()"
+                >
+                  Áp dụng
+                </button>
+              </div>
             </div>
           </div>
+          <!-- Nút Excel -->
+          <button
+            type="button"
+            class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
+          >
+            <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
+          </button>
         </div>
-        <!-- button -->
-        <button
-          type="button"
-          class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
-        >
-          <nz-icon nzType="file-excel" nzTheme="outline"></nz-icon>
-        </button>
       </div>
 
       <!-- Desktop header bar -->
       <div *ngIf="!isMobile">
+        <!-- Header -->
+        <header-common></header-common>
         <div class="mb-4 flex items-center justify-between gap-4">
           <!-- page name -->
           <h1
@@ -101,16 +127,37 @@
           </h1>
 
           <!-- Ô tìm kiếm căn giữa -->
-          <input
-            type="text"
-            class="border border-gray-300 rounded-[24px] px-3 py-2 w-[45%] mx-auto"
-            [(ngModel)]="searchKeyword"
-            (ngModelChange)="onSearch()"
-            placeholder="Tìm kiếm..."
-            [ngClass]="{
-              'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600': isDark
-            }"
-          />
+          <div class="relative flex-1 mx-2">
+            <input
+              type="text"
+              class="border border-gray-300 rounded-[24px] px-3 py-2 w-[100%] mx-auto"
+              [(ngModel)]="searchKeyword"
+              placeholder="Tìm kiếm..."
+              [ngClass]="{
+                'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600':
+                  isDark
+              }"
+            />
+
+            <button
+              (click)="onSearch()"
+              class="absolute inset-y-0 right-3 flex items-center"
+            >
+              <svg
+                class="w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z"
+                />
+              </svg>
+            </button>
+          </div>
 
           <!-- Nhóm nút -->
           <div class="flex gap-3">
@@ -196,7 +243,7 @@
       </div>
 
       <!-- Mobile Table -->
-      <div *ngIf="isMobile" class="mb-10">
+      <div *ngIf="isMobile" class="mb-10 mt-40">
         <div class="space-y-4">
           <div *ngFor="let item of listOfCurrentPageData; trackBy: trackById">
             <div
