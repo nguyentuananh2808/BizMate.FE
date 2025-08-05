@@ -1,9 +1,11 @@
+import { routes } from './../../../app.routes';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { HeaderCommonComponent } from '../../shared/header-common.component/header-common.component';
 import { BottomMenuComponent } from '../../shared/bottom-menu.component/bottom-menu.component';
 import { MenuComponent } from '../../shared/menu.component/menu.component';
 import { DarkModeToggleComponent } from '../../shared/dark-mode/pages/dark-mode-toggle.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'user-information',
@@ -19,6 +21,8 @@ import { DarkModeToggleComponent } from '../../shared/dark-mode/pages/dark-mode-
   styleUrls: ['./user-information.scss'],
 })
 export class UserInformation implements OnInit {
+  constructor(private router: Router) {}
+
   isDark = false;
 
   user: {
@@ -44,5 +48,11 @@ export class UserInformation implements OnInit {
     this.user.storeName = localStorage.getItem('store_name') ?? '';
     this.user.userId = localStorage.getItem('user_id') ?? '';
     this.user.darkMode = localStorage.getItem('darkMode') === 'true';
+  }
+
+  logout(): void {
+    localStorage.clear();
+    sessionStorage.clear();
+    this.router.navigate(['/login']);
   }
 }
