@@ -4,7 +4,8 @@
   class="fixed top-4 left-4 z-50 bg-primary-light text-white p-2 rounded-full shadow-md"
   (click)="openMobileMenu()"
 >
-  <i nz-icon nzType="menu"></i>
+  <!-- <i nz-icon nzType="menu"></i> -->
+  <img src="assets/images/logo_vuakong_light.png" alt="" class="w-5 animate-spin-slow animate-bounce" />
 </button>
 
 <!-- Overlay đen khi menu mở -->
@@ -32,7 +33,8 @@
       class="bg-primary-light hover:bg-primary-dark p-2 rounded-full"
       (click)="isMobile ? closeMobileMenu() : toggleSidebar()"
     >
-      <i nz-icon [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"></i>
+      <!-- <i nz-icon [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"></i> -->
+      <img src="assets/images/logo_vuakong_light.png" alt="" class="w-5 animate-spin-slow animate-bounce" />
     </button>
   </div>
 
@@ -44,6 +46,9 @@
         <div
           class="flex items-center gap-3 p-3 cursor-pointer hover:bg-vkDarkEnd transition rounded"
           (click)="toggleExpand(item.key)"
+          [ngClass]="{
+            'bg-vkDarkEnd': isExpanded(item.key) || activeRouteKey === item.key
+          }"
         >
           <i nz-icon [nzType]="item.icon"></i>
           <span *ngIf="!isCollapsed" class="truncate">{{ item.label }}</span>
@@ -58,8 +63,9 @@
         <ul *ngIf="isExpanded(item.key) && !isCollapsed" class="pl-6 space-y-1">
           <li
             *ngFor="let child of item.children"
-            class="flex items-center gap-2 p-2 cursor-pointer hover:bg-vkDarkEnd transition rounded"
+            class="flex items-center gap-2 p-2 cursor-pointer hover:bg-vkDarkEnd transition rounded my-1"
             (click)="handleClick(child.route)"
+            [ngClass]="{ 'bg-vkDarkEnd': activeRouteKey === child.key }"
           >
             <i nz-icon [nzType]="child.icon || 'right'"></i>
             <span class="truncate">{{ child.label }}</span>
@@ -72,6 +78,7 @@
         *ngIf="!item.children"
         class="flex items-center gap-3 p-3 cursor-pointer hover:bg-vkDarkEnd transition rounded"
         (click)="handleClick(item.route)"
+        [ngClass]="{ 'bg-vkDarkEnd': activeRouteKey === item.key }"
       >
         <i nz-icon [nzType]="item.icon"></i>
         <span *ngIf="!isCollapsed" class="truncate">{{ item.label }}</span>

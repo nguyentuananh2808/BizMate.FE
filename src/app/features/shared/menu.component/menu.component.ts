@@ -16,11 +16,32 @@ export class MenuComponent implements OnInit {
   expandedItems: Set<string> = new Set();
   isMobile = false;
   isMobileMenuOpen = false;
+  activeRouteKey: string | null = null;
 
   constructor(private router: Router) {}
 
   ngOnInit(): void {
     this.checkIsMobile();
+    const currentUrl = this.router.url;
+
+    const findParentKey = (items: any[], url: string): string | null => {
+      for (const item of items) {
+        if (item.route === url) return item.key;
+        if (item.children) {
+          const child = item.children.find((c: any) => c.route === url);
+          if (child) return item.key;
+        }
+      }
+      return null;
+    };
+
+    const activeKey = findParentKey(this.menuItems, currentUrl);
+    if (activeKey) this.expandedItems.add(activeKey);
+
+    this.activeRouteKey =
+      this.menuItems
+        .flatMap((item) => [item, ...(item.children || [])])
+        .find((i) => i.route === currentUrl)?.key || null;
   }
 
   @HostListener('window:resize')
@@ -53,10 +74,11 @@ export class MenuComponent implements OnInit {
     return this.expandedItems.has(key);
   }
 
-  handleClick(route?: string): void {
+  handleClick(route?: string, key?: string): void {
     if (route) {
+      this.activeRouteKey = key || null;
       this.router.navigate([route]);
-      if (this.isMobile) this.closeMobileMenu();
+      // if (this.isMobile) this.closeMobileMenu();
     }
   }
 
