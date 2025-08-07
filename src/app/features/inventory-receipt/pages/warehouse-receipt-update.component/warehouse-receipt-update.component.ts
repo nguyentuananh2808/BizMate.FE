@@ -151,6 +151,9 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
   }
 
   startEdit(item: InventoryDetail): void {
+    console.log("editingId",this.editingId);
+    console.log("ProductId",item.ProductId);
+    
     if (!item || !item.ProductId) {
       console.warn('startEdit called with invalid item:', item);
       return;
@@ -379,10 +382,8 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
         // this.router.navigateByUrl('/warehouse-receipt');
       },
       error: (err) => {
-        console.error(err);
-        this.toastr.error(
-          err?.error?.message || 'Câp nhật phiếu nhập thất bại!'
-        );
+        const userMessage = err.error?.Message || 'Cập nhật thất bại';
+        this.toastr.error(userMessage);
       },
     });
   }

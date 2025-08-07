@@ -4,6 +4,7 @@ import {
   ChangeDetectorRef,
   Component,
   EventEmitter,
+  Input,
   OnInit,
   Output,
 } from '@angular/core';
@@ -17,6 +18,7 @@ import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { FormsModule } from '@angular/forms';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzPaginationComponent } from 'ng-zorro-antd/pagination';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'product-popup-search',
@@ -34,6 +36,8 @@ import { NzPaginationComponent } from 'ng-zorro-antd/pagination';
   styleUrls: ['./product-popup-search.component.scss'],
 })
 export class ProductPopupSearchComponent implements OnInit {
+  @Input() shouldDisableProduct: boolean = true;
+  @Input() existingProducts: InventoryDetail[] = [];
   @Output() closePopup = new EventEmitter<void>();
   @Output() selectProducts = new EventEmitter<InventoryDetail[]>();
   isClosing = false;
@@ -50,18 +54,25 @@ export class ProductPopupSearchComponent implements OnInit {
   searchKeyword = '';
   isLoading = false;
   isMobile = window.innerWidth <= 768;
+  disabledProductIds = new Set<string>();
 
   constructor(
     private productService: ProductService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
     this.fetchData();
   }
+
   onSaveSelectedProducts(): void {
     const selectedInventoryDetails: InventoryDetail[] = this.listOfData
-      .filter((p) => this.setOfCheckedId.has(p.Id))
+      .filter(
+        (p) =>
+          this.setOfCheckedId.has(p.Id) &&
+          (!this.shouldDisableProduct || !this.disabledProductIds.has(p.Id))
+      )
       .map((p) => ({
         Id: p.Id,
         ProductId: p.Id,
@@ -71,6 +82,17 @@ export class ProductPopupSearchComponent implements OnInit {
         Quantity: 0,
         InventoryReceiptId: '',
       }));
+    console.log(selectedInventoryDetails);
+    console.log('listOfData:', this.listOfData);
+    console.log('setOfCheckedId:', this.setOfCheckedId);
+    console.log('disabledProductIds:', this.disabledProductIds);
+    // Nếu không có sản phẩm hợp lệ được chọn
+    if (selectedInventoryDetails.length === 0) {
+      // Có thể hiện thông báo nếu muốn
+      this.toastr.warning('Không có sản phẩm hợp lệ được chọn!');
+      this.closePopup.emit();
+      return;
+    }
 
     this.selectProducts.emit(selectedInventoryDetails);
     this.closePopup.emit();
@@ -96,6 +118,18 @@ export class ProductPopupSearchComponent implements OnInit {
       .SearchProduct(this.searchKeyword || null, pageSize, pageIndex, false)
       .subscribe({
         next: (res) => {
+          this.disabledProductIds.clear();
+
+          const existingIds = new Set(
+            this.existingProducts.map((p) => p.ProductId || p.Id)
+          );
+
+          for (const p of res.Products || []) {
+            if (existingIds.has(p.Id) || p.Quantity === 0) {
+              this.disabledProductIds.add(p.Id);
+            }
+          }
+
           this.originalData = res.Products || [];
           this.totalCount = res.TotalCount || 0;
 
@@ -153,9 +187,11 @@ export class ProductPopupSearchComponent implements OnInit {
     this.refreshCheckedStatus();
   }
   onAllChecked(val: boolean) {
-    this.listOfCurrentPageData.forEach((item) =>
-      this.updateCheckedSet(item.Id, val)
-    );
+    this.listOfCurrentPageData.forEach((item) => {
+      if (!this.disabledProductIds.has(item.Id)) {
+        this.updateCheckedSet(item.Id, val);
+      }
+    });
     this.refreshCheckedStatus();
   }
 

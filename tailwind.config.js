@@ -14,12 +14,13 @@ module.exports = {
           dark: "#60A5FA", // blue-400
         },
         secondary: {
-          light: "#2563EB", 
+          light: "#2563EB",
           dark: "#FFFF", // blue-600
         },
         background: {
           light: "#EFF6FF", // light blue-gray
           dark: "rgb(17 24 39)", // dark navy
+          lightblue: "rgba(171,211,249,0.76)",
         },
         "text-primary": {
           light: "#1E293B", // slate-800

@@ -322,12 +322,8 @@ export class OrderCreateComponent {
         this.router.navigateByUrl('/order');
       },
       error: (err) => {
-        console.error(err);
-        const errorMessage =
-          err?.error?.Message ||
-          err?.error?.message ||
-          'Tạo đơn hàng thất bại!';
-        this.toastr.error(errorMessage);
+        const userMessage = err.error?.Message || 'Cập nhật thất bại';
+        this.toastr.error(userMessage);
       },
     });
   }

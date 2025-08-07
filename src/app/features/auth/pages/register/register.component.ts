@@ -57,14 +57,7 @@ export class RegisterComponent {
       error: (err) => {
         this.isLoading.set(false);
 
-        const messages: Record<string, string> = {
-          EMAIL_ALREADY_EXISTS: 'Email đã tồn tại',
-          INVALID_DATA: 'Dữ liệu không hợp lệ',
-        };
-
-        const messageCode = err.error?.Message || 'UNKNOWN_ERROR';
-        const userMessage = messages[messageCode] || 'Đăng ký thất bại';
-
+        const userMessage = err.error?.Message || 'Cập nhật thất bại';
         this.toastr.error(userMessage);
       },
     });

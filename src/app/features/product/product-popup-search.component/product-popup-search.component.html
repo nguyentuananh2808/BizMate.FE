@@ -1,11 +1,11 @@
 <!-- ========== Desktop Layout ========== -->
 <div
   *ngIf="!isMobile"
-  class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[9999] transition-opacity duration-300"
+  class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[9999] transition-opacity duration-500 w-full m-auto"
   [ngClass]="{ 'opacity-100': !isClosing, 'opacity-0': isClosing }"
 >
   <div
-    class="overflow-y-auto max-h-screen bg-card-bg-light dark:bg-card-bg-dark rounded-2xl shadow-xl backdrop-blur-xl w-full max-w-2xl m-4 p-6 relative border border-white/40 transform transition-all duration-300"
+    class="overflow-y-auto max-h-[98%] max-w-[80%] bg-background-lightblue dark:bg-card-bg-dark rounded-2xl shadow-xl backdrop-blur-xl m-4 p-6 relative border border-white/40 transform transition-all duration-300"
     [ngClass]="{
       'opacity-100 scale-100': !isClosing,
       'opacity-0 scale-95': isClosing
@@ -49,7 +49,7 @@
     </div>
 
     <div
-      class="overflow-x-auto rounded-[24px] shadow-sm bg-[rgba(187,213,237,0.33)] p-3 w-full"
+      class="overflow-x-auto rounded-[24px] shadow-sm bg-background-light dark:bg-background-dark p-3 w-full"
       [ngClass]="{ 'dark:bg-gray-900': isDark }"
     >
       <nz-table
@@ -73,11 +73,12 @@
               [(nzChecked)]="checked"
               [nzIndeterminate]="indeterminate"
               (nzCheckedChange)="onAllChecked($event)"
-              [nzWidth]="'28px'"
+              [nzWidth]="'30px'"
             ></th>
-            <th [nzWidth]="'50px'">Mã sản phẩm</th>
-            <th [nzWidth]="'240px'">Tên sản phẩm</th>
+            <th [nzWidth]="'80px'">Mã sản phẩm</th>
+            <th [nzWidth]="'280px'">Tên sản phẩm</th>
             <th [nzWidth]="'60px'">Đơn vị</th>
+            <th [nzWidth]="'120px'">Số lượng tồn kho</th>
           </tr>
         </thead>
         <tbody>
@@ -90,6 +91,9 @@
               <label
                 nz-checkbox
                 [nzChecked]="setOfCheckedId.has(item.Id)"
+                [nzDisabled]="
+                  shouldDisableProduct && disabledProductIds.has(item.Id)
+                "
                 (nzCheckedChange)="onItemChecked(item.Id, $event)"
               ></label>
             </td>
@@ -102,6 +106,19 @@
               }}
             </td>
             <td>{{ item.Unit | unitText }}</td>
+            <td>
+              <span
+                class="cursor-pointer font-semibol"
+                [ngClass]="{
+                  'text-danger-light dark:text-danger-dark font-bold':
+                    item.Quantity <= 0,
+                  'text-success-light dark:text-success-dark font-medium':
+                    item.Quantity > 0
+                }"
+              >
+                {{ item.Quantity }}
+              </span>
+            </td>
           </tr>
         </tbody>
       </nz-table>
@@ -126,11 +143,11 @@
 <!-- ========== Mobile Layout ========== -->
 <div
   *ngIf="isMobile"
-  class="fixed inset-0 bg-black/40 backdrop-blur-sm flex flex-col z-[9999] transition-opacity duration-300"
+  class="fixed inset-0 bg-black/40 backdrop-blur-sm flex flex-col z-[9999] transition-opacity duration-500"
   [ngClass]="{ 'opacity-100': !isClosing, 'opacity-0': isClosing }"
 >
   <div
-    class="ml-3 mr-3 transform transition-transform duration-300bg-white dark:bg-gray-900 bg-slate-300 rounded-t-2xl p-4 overflow-y-auto mt-auto max-h-[90vh]"
+    class="ml-3 mr-3 transform transition-transform duration-300 bg-white dark:bg-gray-900 rounded-t-2xl p-4 overflow-y-auto mt-auto max-h-[90vh]"
     [ngClass]="{
       'translate-y-0': !isClosing,
       'translate-y-full': isClosing
@@ -175,9 +192,11 @@
         <label class="flex items-start gap-2">
           <input
             type="checkbox"
+            [disabled]="shouldDisableProduct && disabledProductIds.has(item.Id)"
             [checked]="setOfCheckedId.has(item.Id)"
             (change)="onItemChecked(item.Id, $event.target.checked)"
           />
+
           <div class="flex-1">
             <div
               class="font-semibold text-secondary-light dark:text-secondary-dark"
@@ -186,6 +205,19 @@
             </div>
             <div class="text-blue-400 dark:text-gray-400">
               Mã: {{ item.Code }} <br />
+              Số lượng tồn kho:
+              <span
+                class="cursor-pointer font-semibol"
+                [ngClass]="{
+                  'text-danger-light dark:text-danger-dark font-bold':
+                    item.Quantity <= 0,
+                  'text-success-light dark:text-success-dark font-medium':
+                    item.Quantity > 0
+                }"
+              >
+                {{ item.Quantity }}
+              </span>
+              <br />
               Đơn vị: {{ item.Unit | unitText }}
             </div>
           </div>
@@ -200,20 +232,22 @@
     </div>
 
     <!-- Pagination -->
-    <nz-pagination
-      *ngIf="totalCount > pageSize"
-      class="mt-4 justify-center"
-      [nzPageIndex]="pageIndex"
-      [nzTotal]="totalCount"
-      [nzPageSize]="pageSize"
-      [nzSize]="'small'"
-      [nzShowQuickJumper]="false"
-      [nzShowSizeChanger]="false"
-      (nzPageIndexChange)="onPageChange($event)"
-    ></nz-pagination>
+    <div class="flex justify-center mt-4">
+      <nz-pagination
+        *ngIf="totalCount > pageSize"
+        class="mt-4 justify-center"
+        [nzPageIndex]="pageIndex"
+        [nzTotal]="totalCount"
+        [nzPageSize]="pageSize"
+        [nzSize]="'small'"
+        [nzShowQuickJumper]="false"
+        [nzShowSizeChanger]="false"
+        (nzPageIndexChange)="onPageChange($event)"
+      ></nz-pagination>
+    </div>
 
     <!-- Buttons -->
-    <div class="mt-6 flex justify-end gap-3">
+    <div class="sticky mt-6 flex justify-end gap-3">
       <button
         class="bg-gray-400 text-white px-4 py-2 rounded-full"
         (click)="close()"
@@ -228,4 +262,5 @@
       </button>
     </div>
   </div>
+  
 </div>

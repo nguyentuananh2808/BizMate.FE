@@ -279,9 +279,10 @@ export class ProductComponent implements OnInit {
             this.toastr.success('Đã xóa thành công');
           },
           error: (error) => {
-            const errorMessage =
-              error?.error?.Message || 'Xóa thất bại. Vui lòng thử lại.';
-            this.toastr.error(errorMessage);
+              const userMessage =
+            error.error?.Message || 
+            'Xóa thất bại';
+          this.toastr.error(userMessage);
           },
         });
       },

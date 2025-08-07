@@ -134,7 +134,7 @@
                   </h3>
                   <button
                     nz-button
-                    nzType="primary"
+                    nzType="default"
                     class="rounded-[24px] h-8 px-4 text-sm"
                     (click)="addProducts()"
                   >
@@ -168,7 +168,10 @@
                       >
 
                       <ng-container
-                        *ngIf="editingId === item.Id; else displayQuantity"
+                        *ngIf="
+                          editingId === item.ProductId;
+                          else displayQuantity
+                        "
                       >
                         <input
                           type="number"
@@ -184,7 +187,6 @@
                       <ng-template #displayQuantity>
                         <span
                           class="cursor-pointer font-semibol"
-                          (click)="startEdit(item)"
                           [ngClass]="{
                             'text-danger-light dark:text-danger-dark font-bold':
                               item.Quantity <= 0,
@@ -201,6 +203,7 @@
                     <div>Đơn vị: {{ item.Unit | unitText }}</div>
                   </div>
                   <button
+                    disabled
                     class="mt-2 text-red-500 text-xs"
                     (click)="deleteItem(item)"
                   >
@@ -268,7 +271,7 @@
       <!-- desktop -->
       <div *ngIf="!isMobile">
         <div
-          class="bg-[rgba(171,211,249,0.76)] dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-3 w-full"
+          class="bg-background-lightblue dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-3 w-full"
           [ngClass]="{ 'dark:bg-gray-900': isDark }"
         >
           <div class="w-full">
@@ -331,7 +334,7 @@
                 <div class="flex justify-end">
                   <button
                     nz-button
-                    nzType="primary"
+                    nzType="default"
                     class="items-center gap-2 whitespace-nowrap rounded-[24px] h-10 mb-3"
                     (click)="addProducts()"
                   >
@@ -364,7 +367,7 @@
               >
                 <thead>
                   <tr class="text-gray-500 dark:bg-gray-700 dark:text-gray-400">
-                    <th [nzWidth]="'20px'" class="text-center"></th>
+                    <!-- <th [nzWidth]="'20px'" class="text-center"></th> -->
                     <th [nzWidth]="'20px'" class="text-center">STT</th>
                     <th [nzWidth]="'20px'"></th>
                     <th [nzWidth]="'80px'">Mã sản phẩm</th>
@@ -379,12 +382,13 @@
                     class="hover:bg-gray-50 transition-all duration-150"
                     [ngClass]="{ 'dark:hover:bg-gray-800': isDark }"
                   >
-                    <td class="text-center">
+                    <!-- <td class="text-center">
                       <label nz-checkbox></label>
-                    </td>
+                    </td> -->
                     <td class="text-center">{{ i + 1 }}</td>
                     <td class="space-x-2 flex">
                       <button
+                        disabled
                         nz-button
                         nzType="link"
                         class="text-red-600"
@@ -403,10 +407,12 @@
                         'text-success-light dark:text-success-dark font-medium':
                           item.Quantity > 0
                       }"
-                      (click)="startEdit(item)"
                     >
                       <ng-container
-                        *ngIf="editingId === item.Id; else displayQuantity"
+                        *ngIf="
+                          editingId === item.ProductId;
+                          else displayQuantity
+                        "
                       >
                         <div class="flex items-center space-x-2">
                           <input
@@ -438,6 +444,7 @@
     <bottom-menu class="mt-6"></bottom-menu>
     <product-popup-search
       *ngIf="isPopupSearchProducts"
+      [shouldDisableProduct]="false"
       (closePopup)="closeProductPopup()"
       (selectProducts)="onSelectedProducts($event)"
     ></product-popup-search>
