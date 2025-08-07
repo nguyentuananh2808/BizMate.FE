@@ -5,6 +5,7 @@ import {
   OnInit,
   ChangeDetectorRef,
 } from '@angular/core';
+import { trigger, transition, style, animate } from '@angular/animations';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
@@ -20,6 +21,20 @@ import { NzFormModule } from 'ng-zorro-antd/form';
   standalone: true,
   imports: [CommonModule, FormsModule, NzSelectModule, NzFormModule],
   templateUrl: './product-popup-create.component.html',
+  animations: [
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.95)' }),
+        animate('300ms ease-out', style({ opacity: 1, transform: 'scale(1)' })),
+      ]),
+      transition(':leave', [
+        animate(
+          '200ms ease-in',
+          style({ opacity: 0, transform: 'scale(0.90)' })
+        ),
+      ]),
+    ]),
+  ],
 })
 export class ProductPopupCreateComponent implements OnInit {
   name: string = '';
@@ -124,14 +139,7 @@ export class ProductPopupCreateComponent implements OnInit {
           this.close();
         },
         error: (err) => {
-          const code = err.error?.Message;
-          const messages: Record<string, string> = {
-            MUST_NOT_EMPTY: 'Bắt buộc nhập tên sản phẩm !',
-            COMMON_CONCURRENCY_CONFLICT:
-              'Dữ liệu đã bị thay đổi bởi người dùng khác. Vui lòng tải lại và thử lại.',
-            COMMON_DUPLICATE: 'Tên sản phẩm đã tồn tại !',
-          };
-          const userMessage = messages[code] || 'Tạo mới thất bại';
+          const userMessage = err.error?.Message || 'Cập nhật thất bại';
           this.toastr.error(userMessage);
         },
       });

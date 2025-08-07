@@ -364,8 +364,8 @@ export class OrderUpdateComponent implements OnInit {
         // this.router.navigateByUrl('/warehouse-receipt');
       },
       error: (err) => {
-        console.error(err);
-        this.toastr.error(err?.error?.message || 'Câp nhật đơn hàng thất bại!');
+        const userMessage = err.error?.Message || 'Cập nhật thất bại';
+        this.toastr.error(userMessage);
       },
     });
   }

@@ -8,6 +8,7 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
+import { trigger, transition, style, animate } from '@angular/animations';
 import { FormsModule } from '@angular/forms';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { ToastrService } from 'ngx-toastr';
@@ -22,6 +23,20 @@ import { ProductCategory } from '../../product-category/models/product-category-
   imports: [CommonModule, FormsModule, NzSelectModule],
   templateUrl: './product-popup-update.component.html',
   styleUrls: ['./product-popup-update.component.scss'],
+  animations: [
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.95)' }),
+        animate('300ms ease-out', style({ opacity: 1, transform: 'scale(1)' })),
+      ]),
+      transition(':leave', [
+        animate(
+          '200ms ease-in',
+          style({ opacity: 0, transform: 'scale(0.95)' })
+        ),
+      ]),
+    ]),
+  ],
 })
 export class ProductPopupUpdateComponent implements OnInit {
   @Input() data!: Product;
@@ -120,12 +135,12 @@ export class ProductPopupUpdateComponent implements OnInit {
         this.data.Id,
         this.data.RowVersion,
         this.data.ProductCategoryId,
-        this.data.Name,
+        this.data.Name.trim(),
         this.data.Unit,
         this.data.IsActive,
         this.data.ImageUrl,
         this.data.SupplierId,
-        this.data.Description || ''
+        this.data.Description.trim() || ''
       )
       .pipe(
         finalize(() => {
@@ -142,16 +157,9 @@ export class ProductPopupUpdateComponent implements OnInit {
           this.close();
         },
         error: (err) => {
-          const messages: Record<string, string> = {
-            MUST_NOT_EMPTY: 'Bắt nhập tên sản phẩm !',
-            COMMON_CONCURRENCY_CONFLICT:
-              'Dữ liệu đã bị thay đổi bởi người dùng khác. Vui lòng tải lại và thử lại.',
-            COMMON_DUPLICATE: 'Tên sản phẩm đã tồn tại.',
-          };
-
-          const messageCode = err.error?.Message || 'UNKNOWN_ERROR';
-          const userMessage = messages[messageCode] || 'Cập nhật thất bại';
-
+       const userMessage =
+            err.error?.Message || 
+            'Cập nhật thất bại';
           this.toastr.error(userMessage);
         },
       });

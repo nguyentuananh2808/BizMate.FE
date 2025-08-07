@@ -1,0 +1,18 @@
+@media screen and (max-width: 768px) {
+
+    ::ng-deep .ant-pagination-prev,
+    ::ng-deep .ant-pagination-next {
+        border-radius: 50%;
+        background-color: #f0f0f0;
+        margin: 12px;
+    }
+}
+
+.type {
+    position: fixed;
+    z-index: 9999;
+}
+
+.ant-pagination-item:hover a {
+    color: #f0f0f0 !important;
+}

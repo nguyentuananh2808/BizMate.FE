@@ -318,8 +318,8 @@ export class WarehouseReceiptCreateComponent {
         this.router.navigateByUrl('/warehouse-receipt');
       },
       error: (err) => {
-        console.error(err);
-        this.toastr.error(err?.error?.message || 'Tạo phiếu nhập thất bại!');
+        const userMessage = err.error?.Message || 'Cập nhật thất bại';
+        this.toastr.error(userMessage);
       },
     });
   }

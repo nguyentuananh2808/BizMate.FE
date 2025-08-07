@@ -1,4 +1,5 @@
 import { Component, Output, EventEmitter, Input } from '@angular/core';
+import { trigger, transition, style, animate } from '@angular/animations';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductCategory } from '../../models/product-category-response.model';
@@ -13,6 +14,20 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
   imports: [CommonModule, FormsModule, NzSelectModule],
   templateUrl: './product-category-detail-popup.html',
   styleUrl: './product-category-detail-popup.scss',
+  animations: [
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.95)' }),
+        animate('300ms ease-out', style({ opacity: 1, transform: 'scale(1)' })),
+      ]),
+      transition(':leave', [
+        animate(
+          '200ms ease-in',
+          style({ opacity: 0, transform: 'scale(0.95)' })
+        ),
+      ]),
+    ]),
+  ],
 })
 export class ProductCategoryDetailPopup {
   @Input() data!: ProductCategory;
@@ -38,11 +53,11 @@ export class ProductCategoryDetailPopup {
     this.productCategoryService
       .UpdateProductCategory(
         this.data.Id,
-        this.data.Code,
-        this.data.Name,
+        this.data.Code.trim(),
+        this.data.Name.trim(),
         this.data.RowVersion,
         this.data.IsActive,
-        this.data.Description || ''
+        this.data.Description.trim() || ''
       )
       .pipe(finalize(() => (this.isSaving = false)))
       .subscribe({
@@ -52,16 +67,7 @@ export class ProductCategoryDetailPopup {
           this.close();
         },
         error: (err) => {
-          const messages: Record<string, string> = {
-            MUST_NOT_EMPTY: 'Bắt nhập tên loại sản phẩm !',
-            COMMON_CONCURRENCY_CONFLICT:
-              'Dữ liệu đã bị thay đổi bởi người dùng khác. Vui lòng tải lại và thử lại.',
-              COMMON_NOT_EXIST:'Tên loại sản phẩm đã tồn tại.'
-          };
-
-          const messageCode = err.error?.Message || 'UNKNOWN_ERROR';
-          const userMessage = messages[messageCode] || 'Cập nhật thất bại';
-
+          const userMessage = err.error?.Message || 'Cập nhật thất bại';
           this.toastr.error(userMessage);
         },
       });

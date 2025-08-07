@@ -1,4 +1,4 @@
-import { CreateProductCategoryRequest } from '../../models/product-category-create-request.model';
+import { trigger, transition, style, animate } from '@angular/animations';
 import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,6 +11,20 @@ import { ProductCategoryService } from '../../services/product-category.service'
   imports: [CommonModule, FormsModule],
   templateUrl: './product-category-popup-create.component.html',
   styleUrl: './product-category-popup-create.component.scss',
+  animations: [
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.95)' }),
+        animate('300ms ease-out', style({ opacity: 1, transform: 'scale(1)' })),
+      ]),
+      transition(':leave', [
+        animate(
+          '200ms ease-in',
+          style({ opacity: 0, transform: 'scale(0.95)' })
+        ),
+      ]),
+    ]),
+  ],
 })
 export class ProductCategoryPopupCreateComponent {
   name: string = '';
@@ -44,19 +58,9 @@ export class ProductCategoryPopupCreateComponent {
           this.close();
         },
         error: (err) => {
-          const messages: Record<string, string> = {
-            MUST_NOT_EMPTY: 'Bắt buộc nhập tên loại sản phẩm !',
-            COMMON_CONCURRENCY_CONFLICT:
-              'Dữ liệu đã bị thay đổi bởi người dùng khác. Vui lòng tải lại và thử lại.',
-            COMMON_DUPLICATE: 'Tên loại sản phẩm đã tồn tại !',
-          };
-
-          const messageCode = err.error?.Message || 'UNKNOWN_ERROR';
-          const userMessage = messages[messageCode] || 'Tạo mới thất bại';
-
+          const userMessage = err.error?.Message || 'Cập nhật thất bại';
           this.toastr.error(userMessage);
         },
       });
   }
 }
-

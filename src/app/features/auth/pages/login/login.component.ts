@@ -54,14 +54,7 @@ export class LoginComponent {
       },
       error: (err) => {
         this.isLoading.set(false);
-        const messages: Record<string, string> = {
-          COMMON_NOT_EXIST: 'Tài khoản không tồn tại hoặc sai mật khẩu',
-          INVALID_CREDENTIALS: 'Email hoặc mật khẩu không đúng',
-        };
-
-        const messageCode = err.error?.Message || 'UNKNOWN_ERROR';
-        const userMessage = messages[messageCode] || 'Đăng nhập thất bại';
-
+        const userMessage = err.error?.Message || 'Cập nhật thất bại';
         this.toastr.error(userMessage);
       },
     });

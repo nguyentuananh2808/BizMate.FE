@@ -1,5 +1,6 @@
 <div
   *ngIf="data"
+  @fadeInOut
   class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[9999] transition-opacity duration-300"
   [ngClass]="{ 'opacity-100': !isClosing, 'opacity-0': isClosing }"
 >

@@ -135,7 +135,7 @@
                   </h3>
                   <button
                     nz-button
-                    nzType="primary"
+                    nzType="default"
                     class="rounded-[24px] h-8 px-4 text-sm"
                     (click)="addProducts()"
                   >
@@ -269,7 +269,7 @@
       <!-- desktop -->
       <div *ngIf="!isMobile">
         <div
-          class="bg-[rgba(171,211,249,0.76)] dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-3 w-full"
+          class="bg-background-lightblue dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-3 w-full"
           [ngClass]="{ 'dark:bg-gray-900': isDark }"
         >
           <div class="w-full">
@@ -332,7 +332,7 @@
                 <div class="flex justify-end">
                   <button
                     nz-button
-                    nzType="primary"
+                    nzType="default"
                     class="items-center gap-2 whitespace-nowrap rounded-[24px] h-10 mb-3"
                     (click)="addProducts()"
                   >
@@ -439,6 +439,7 @@
     <bottom-menu class="mt-6"></bottom-menu>
     <product-popup-search
       *ngIf="isPopupSearchProducts"
+      [shouldDisableProduct]="false"
       (closePopup)="closeProductPopup()"
       (selectProducts)="onSelectedProducts($event)"
     ></product-popup-search>
