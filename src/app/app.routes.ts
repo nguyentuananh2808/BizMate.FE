@@ -107,4 +107,12 @@ export const routes: Routes = [
       ),
     canActivate: [AuthGuard],
   },
+  {
+    path: 'customer-list',
+    loadComponent: () =>
+      import('./features/customer/customer-list/customer-list').then(
+        (m) => m.CustomerList
+      ),
+    canActivate: [AuthGuard],
+  },
 ];

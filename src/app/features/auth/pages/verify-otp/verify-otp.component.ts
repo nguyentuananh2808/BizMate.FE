@@ -46,7 +46,14 @@ export class VerifyOtpComponent {
         this.router.navigate(['/login']);
       },
       error: (err) => {
-        const userMessage = err.error?.Message || 'Cập nhật thất bại';
+         const apiMessage = err.error?.Message;
+        let userMessage = 'Cập nhật thất bại';
+
+        if (apiMessage === 'BACKEND.VALIDATION.MESSAGE.ALREADY_EXIST') {
+          userMessage = 'Email đã tồn tại trong hệ thống';
+        } else if (apiMessage) {
+          userMessage = apiMessage;
+        }
         this.toastr.error(userMessage);
       },
     });

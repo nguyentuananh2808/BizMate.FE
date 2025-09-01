@@ -129,7 +129,7 @@ export class MenuComponent implements OnInit {
       key: 'customers',
       icon: 'user',
       label: 'Khách hàng',
-      route: '/customers',
+      route: '/customer-list',
     },
     { key: 'reports', icon: 'bar-chart', label: 'Báo cáo', route: '/reports' },
   ];
