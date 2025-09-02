@@ -24,12 +24,24 @@
 
         <!-- Password -->
         <label class="text-sm text-gray-600">Mật khẩu</label>
-        <input
-          formControlName="password"
-          type="password"
-          placeholder="**********"
-          class="w-full border-b border-gray-300 focus:outline-none py-2 mb-3 placeholder-gray-400 text-sm rounded-[24px] pl-4"
-        />
+        <div class="relative w-full">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="**********"
+            class="w-full border-b border-gray-300 focus:outline-none py-2 mb-3 placeholder-gray-400 text-sm rounded-[24px] pl-4 pr-10"
+          />
+
+          <!-- Icon show/hide -->
+          <button
+            type="button"
+            (click)="showPassword = !showPassword"
+            class="absolute inset-y-0 right-3 flex items-center text-gray-500"
+          >
+            <i *ngIf="!showPassword" class="fa-regular fa-eye"></i>
+            <i *ngIf="showPassword" class="fa-regular fa-eye-slash"></i>
+          </button>
+        </div>
 
         <!-- Quên mật khẩu -->
         <div class="text-right mb-6">

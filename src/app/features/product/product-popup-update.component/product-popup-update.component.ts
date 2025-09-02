@@ -157,9 +157,21 @@ export class ProductPopupUpdateComponent implements OnInit {
           this.close();
         },
         error: (err) => {
-       const userMessage =
-            err.error?.Message || 
-            'Cập nhật thất bại';
+          const apiMessage = err.error?.Message;
+          let userMessage = 'Cập nhật thất bại';
+
+          if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_NOT_EXIST') {
+            userMessage = 'Sản phẩm không tồn tại trong hệ thống.';
+          } else if (
+            apiMessage === 'BACKEND.VALIDATION.MESSAGE.NOT_VALID_ROWVERSION'
+          ) {
+            userMessage =
+              'Dữ liệu đã được cập nhật bởi người dùng khác. Vui lòng tải lại trang để tiếp tục.';
+          } else if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_DUPLICATE') {
+            userMessage = 'Tên sản phẩm đã tồn tại.';
+          } else if (apiMessage) {
+            userMessage = apiMessage;
+          }
           this.toastr.error(userMessage);
         },
       });

@@ -33,4 +33,12 @@ export const ApiUrls = {
     create: '/inventory-receipt',
     update: '/inventory-receipt',
   },
+
+   customer: {
+    search: '/customer/search',
+    getById: (id: string) => `/customer/${id}`,
+    create: '/customer',
+    update: `/customer`,
+    delete: (id: string) => `/customer/${id}`,
+  },
 };

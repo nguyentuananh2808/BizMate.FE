@@ -35,6 +35,8 @@ export class LoginComponent {
     });
   }
   isLoading = signal(false);
+  showPassword = false;
+
   onSubmit() {
     if (this.form.invalid) return;
 
@@ -54,10 +56,9 @@ export class LoginComponent {
       },
       error: (err) => {
         this.isLoading.set(false);
-
         const apiMessage = err.error?.Message;
         const passwordErrors: string[] = err.error?.errors?.Password || [];
-        const message = passwordErrors[0]; 
+        const message = passwordErrors[0];
 
         let userMessage = 'Cập nhật thất bại';
 
@@ -72,17 +73,13 @@ export class LoginComponent {
           userMessage = `Mật khẩu phải có ít nhất 1 ký tự đặc biệt,\n
                         có ít nhất 1 ký tự viết hoa,\n
                         có ít nhất 1 số`;
-        } 
-         else if (
-          message ===
-          'BACKEND.VALIDATION.MESSAGE.MUST_HAVE_MIN_LENGTH'
+        } else if (
+          message === 'BACKEND.VALIDATION.MESSAGE.MUST_HAVE_MIN_LENGTH'
         ) {
           userMessage = `Mật khẩu ít nhất 8 ký tự`;
         } else if (apiMessage) {
           userMessage = apiMessage;
         }
-
-        this.toastr.error(userMessage);
 
         this.toastr.error(userMessage);
       },

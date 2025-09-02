@@ -136,8 +136,8 @@ export class ProductCategoryComponent implements OnInit {
         this.originalData = res.ProductCategories ?? [];
         this.listOfData = [...this.originalData];
         this.isLoading = false;
-        console.log("data:",this.listOfData);
-        
+        console.log('data:', this.listOfData);
+
         this.cdr.detectChanges();
       },
       error: () => {
@@ -231,8 +231,18 @@ export class ProductCategoryComponent implements OnInit {
             this.fetchData();
             this.toastr.success('Đã xóa thành công');
           },
-          error: () => {
-            this.toastr.error('Xóa thất bại');
+          error: (err) => {
+            const apiMessage = err.error?.Message;
+            let userMessage = 'Xóa loại sản phẩm thất bại.';
+
+            if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_NOT_EXIST') {
+              userMessage = 'Email đã tồn tại trong hệ thống';
+            } else if (apiMessage === 'BACKEND.APP_MESSAGE.RECORD_BEING_USED') {
+              userMessage = 'Loại sản phẩm được được sử dụng.';
+            } else if (apiMessage) {
+              userMessage = apiMessage;
+            }
+            this.toastr.error('Xóa loại sản phẩm thất bại.');
           },
         });
       },

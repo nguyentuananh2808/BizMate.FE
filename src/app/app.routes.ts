@@ -110,7 +110,7 @@ export const routes: Routes = [
   {
     path: 'customer-list',
     loadComponent: () =>
-      import('./features/customer/customer-list/customer-list').then(
+      import('./features/customer/pages/customer-list.component/customer-list').then(
         (m) => m.CustomerList
       ),
     canActivate: [AuthGuard],

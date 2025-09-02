@@ -53,12 +53,19 @@ export class ProductCategoryPopupCreateComponent {
       .pipe(finalize(() => (this.isSaving = false)))
       .subscribe({
         next: () => {
-          this.toastr.success('Tạo mới thành công');
+          this.toastr.success('Tạo mới loại sản phẩm thành công.');
           this.create.emit();
           this.close();
         },
         error: (err) => {
-          const userMessage = err.error?.Message || 'Cập nhật thất bại';
+               const apiMessage = err.error?.Message;
+        let userMessage = 'Tạo mới loại sản phẩm thất bại.';
+
+        if (apiMessage === 'BACKEND.VALIDATION.MESSAGE.ALREADY_EXIST') {
+          userMessage = 'Sản phẩm loại sản phẩm đã tồn tại trong hệ thống.';
+        } else if (apiMessage) {
+          userMessage = apiMessage; 
+        }
           this.toastr.error(userMessage);
         },
       });

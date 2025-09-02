@@ -1,39 +1,32 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  HostListener,
-  OnInit,
-} from '@angular/core';
-import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
-import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
-import { HeaderCommonComponent } from '../../../shared/header-common.component/header-common.component';
-import { RouterModule } from '@angular/router';
-import { NzIconModule } from 'ng-zorro-antd/icon';
-import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
-import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
-import { NzTableModule } from 'ng-zorro-antd/table';
-import { FormsModule } from '@angular/forms';
-import { CommonModule, DatePipe } from '@angular/common';
-import { Product } from '../models/product-response.model';
-import { ToastrService } from 'ngx-toastr';
-import { ProductService } from '../services/product-service';
+import { CommonModule, DatePipe } from "@angular/common";
+import { Component, ChangeDetectorRef, OnInit, HostListener } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { RouterModule } from "@angular/router";
+import { NzButtonModule } from "ng-zorro-antd/button";
+import { NzCheckboxModule } from "ng-zorro-antd/checkbox";
+import { NzDropDownModule } from "ng-zorro-antd/dropdown";
+import { NzFloatButtonModule } from "ng-zorro-antd/float-button";
+import { NzIconModule } from "ng-zorro-antd/icon";
+import { NzMenuModule } from "ng-zorro-antd/menu";
+import { NzModalModule, NzModalService } from "ng-zorro-antd/modal";
+import { NzPaginationModule } from "ng-zorro-antd/pagination";
+import { NzTableModule } from "ng-zorro-antd/table";
+import { ToastrService } from "ngx-toastr";
 import { Location } from '@angular/common';
-import * as XLSX from 'xlsx';
-import saveAs from 'file-saver';
-import { ProductPopupCreateComponent } from '../../product-popup-create.component/pages/product-popup-create.component';
-import { ProductPopupUpdateComponent } from '../../product-popup-update.component/product-popup-update.component';
-import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
-import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
-import { NzMenuModule } from 'ng-zorro-antd/menu';
-import { MenuComponent } from '../../../shared/menu.component/menu.component';
-import { NzPaginationModule } from 'ng-zorro-antd/pagination';
+import { buffer } from "rxjs";
+import { BottomMenuComponent } from "../../../shared/bottom-menu.component/bottom-menu.component";
+import { HeaderCommonComponent } from "../../../shared/header-common.component/header-common.component";
+import { MenuComponent } from "../../../shared/menu.component/menu.component";
+import { Customer } from "../../models/customer-response.model";
+import { CustomerService } from "../../services/customer-service";
+import { CustomerPopupCreateComponent } from "../customer-popup-create.component/customer-popup-create.component";
+import { CustomerPopupUpdateComponent } from "../customer-detail-popup.component/customer-popup-update.component";
+
 
 @Component({
-  selector: 'product',
-  standalone: true,
+  selector: 'customer-list',
   imports: [
-    CommonModule,
+     CommonModule,
     FormsModule,
     NzTableModule,
     NzCheckboxModule,
@@ -44,30 +37,29 @@ import { NzPaginationModule } from 'ng-zorro-antd/pagination';
     HeaderCommonComponent,
     NzModalModule,
     NzFloatButtonModule,
-    ProductPopupCreateComponent,
-    ProductPopupUpdateComponent,
-    UnitTextPipe,
     NzDropDownModule,
     NzMenuModule,
     MenuComponent,
     NzPaginationModule,
+    CustomerPopupCreateComponent,
+    CustomerPopupUpdateComponent
   ],
   providers: [DatePipe],
-  templateUrl: './product.component.html',
-  styleUrls: ['./product.component.scss'],
+  templateUrl: './customer-list.html',
+  styleUrls: ['./customer-list.scss'],
 })
-export class ProductComponent implements OnInit {
+export class CustomerList implements OnInit {
   isLoading = false;
   activeDropdown: any = null;
-  listOfData: Product[] = [];
-  originalData: Product[] = [];
-  listOfCurrentPageData: Product[] = [];
+  listOfData: Customer[] = [];
+  originalData: Customer[] = [];
+  listOfCurrentPageData: Customer[] = [];
   setOfCheckedId = new Set<string>();
   checked = false;
   indeterminate = false;
   searchKeyword = '';
   isMobile = window.innerWidth < 768;
-  selectedItem!: Product;
+  selectedItem!: Customer;
   isDark = false;
   showPopup = false;
   showPopupCreate = false;
@@ -82,7 +74,7 @@ export class ProductComponent implements OnInit {
   }
 
   constructor(
-    private productService: ProductService,
+    private CustomerService: CustomerService,
     private cdr: ChangeDetectorRef,
     private modal: NzModalService,
     private toastr: ToastrService,
@@ -109,23 +101,29 @@ export class ProductComponent implements OnInit {
   toggleDropdown(item: any) {
     this.activeDropdown = this.activeDropdown === item ? null : item;
   }
+  closeProductPopupCreate() {
+    this.showPopupCreate = false;
+    this.fetchData();
+    setTimeout(() => (this.showPopup = false), 300);
+  }
+
 
   closeDropdown() {
     this.activeDropdown = null;
   }
 
-  createProduct() {
+  createCustomer() {
     this.showPopupCreate = true;
   }
-  viewDetail(item: Product) {
+  viewDetail(item: Customer) {
     this.selectedItem = item;
     this.showPopup = true;
   }
-  closeProductDetailPopup() {
+  closeCustomerDetailPopup() {
     this.showPopup = false;
     setTimeout(() => (this.showPopup = false), 300);
   }
-  closeProductPopupCreate() {
+  closeCustomerPopupCreate() {
     this.showPopupCreate = false;
     this.fetchData();
     setTimeout(() => (this.showPopup = false), 300);
@@ -141,11 +139,11 @@ export class ProductComponent implements OnInit {
     pageSize: number = this.pageSize
   ): void {
     this.isLoading = true;
-    this.productService
-      .SearchProduct(this.searchKeyword || null, pageSize, pageIndex, undefined)
+    this.CustomerService
+      .SearchCustomer(this.searchKeyword || null, pageSize, pageIndex, undefined)
       .subscribe({
         next: (res) => {
-          this.originalData = res.Products || [];
+          this.originalData = res.Customers || [];
           this.totalCount = res.TotalCount || 0;
 
           setTimeout(() => {
@@ -211,7 +209,7 @@ export class ProductComponent implements OnInit {
     this.refreshCheckedStatus();
   }
 
-  onCurrentPageDataChange(data: readonly Product[]): void {
+  onCurrentPageDataChange(data: readonly Customer[]): void {
     this.listOfCurrentPageData = [...data];
   }
 
@@ -223,66 +221,28 @@ export class ProductComponent implements OnInit {
       this.listOfCurrentPageData.some((i) => this.setOfCheckedId.has(i.Id)) &&
       !this.checked;
   }
-  trackById(index: number, item: Product): string {
+  trackById(index: number, item: Customer): string {
     return item.Id;
   }
 
-  private saveAsExcelFile(buffer: any, fileName: string): void {
-    const data: Blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
-    });
-    saveAs(data, `${fileName}.xlsx`);
-  }
-  exportToExcel(): void {
-    const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet([]);
-    const header = [
-      'Mã sản phẩm',
-      'Tên sản phẩm',
-      'Số lượng',
-      'Đơn vị',
-      'Nhà cung cấp',
-      'Mô tả',
-      'Ngày cập nhật',
-      'Trạng thái',
-    ];
-    XLSX.utils.sheet_add_aoa(ws, [header], { origin: 'A1' });
-    const data = this.listOfData.map((i) => [
-      i.Code,
-      i.Name,
-      i.Quantity,
-      i.Name,
-      i.SupplierName,
-      i.Description || '',
-      this.datePipe.transform(i.UpdatedDate, 'dd/MM/yyyy'),
-      i.IsActive == false ? 'Hoạt động' : 'Ngưng hoạt động',
-    ]);
-    XLSX.utils.sheet_add_aoa(ws, data, { origin: -1 });
-    const wb: XLSX.WorkBook = {
-      Sheets: { 'Danh sách sản phẩm': ws },
-      SheetNames: ['Danh sách sản phẩm'],
-    };
-    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    this.saveAsExcelFile(excelBuffer, 'danh_sach_san_pham');
-  }
-
-  deleteProduct(item: Product): void {
+  deleteCustomer(item: Customer): void {
     this.modal.confirm({
-      nzTitle: `Bạn có chắc muốn xóa sản phẩm "<b>${item.Name}</b>" này ?`,
+      nzTitle: `Bạn có chắc muốn xóa khách hàng "<b>${item.Name}</b>" này ?`,
       // nzContent: `<b>${item.Name}</b> sẽ bị xóa khỏi hệ thống.`,
       nzOkText: 'Xóa',
       nzCancelText: 'Hủy',
       nzOnOk: () => {
-        this.productService.DeleteProduct(item.Id).subscribe({
+        this.CustomerService.DeleteCustomer(item.Id).subscribe({
           next: () => {
             this.fetchData();
             this.toastr.success('Đã xóa thành công');
           },
           error: (err) => {
             const apiMessage = err.error?.Message;
-            let userMessage = 'Xóa sản phẩm thất bại.';
+            let userMessage = 'Xóa khách hàng thất bại.';
 
             if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_NOT_EXIST') {
-              userMessage = 'Sản phẩm không tồn tại trong hệ thống.';
+              userMessage = 'khách hàng không tồn tại trong hệ thống.';
             } else if (apiMessage) {
               userMessage = apiMessage;
             }

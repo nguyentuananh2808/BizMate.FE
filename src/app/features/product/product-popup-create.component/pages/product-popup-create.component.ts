@@ -134,12 +134,19 @@ export class ProductPopupCreateComponent implements OnInit {
       .pipe(finalize(() => (this.isSaving = false)))
       .subscribe({
         next: () => {
-          this.toastr.success('Tạo mới thành công');
+          this.toastr.success('Tạo mới sản phẩm thành công');
           this.create.emit();
           this.close();
         },
         error: (err) => {
-          const userMessage = err.error?.Message || 'Cập nhật thất bại';
+           const apiMessage = err.error?.Message;
+        let userMessage = 'Cập nhật thất bại';
+
+        if (apiMessage === 'BACKEND.VALIDATION.MESSAGE.ALREADY_EXIST') {
+          userMessage = 'Sản phẩm đã tồn tại trong hệ thống';
+        } else if (apiMessage) {
+          userMessage = apiMessage; 
+        }
           this.toastr.error(userMessage);
         },
       });
