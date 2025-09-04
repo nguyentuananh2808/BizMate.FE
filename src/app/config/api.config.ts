@@ -41,4 +41,12 @@ export const ApiUrls = {
     update: `/customer`,
     delete: (id: string) => `/customer/${id}`,
   },
+
+  dealerLevel: {
+    search: '/dealer-level/search',
+    readById: (id: string) => `/dealer-level/${id}`,
+    create: '/dealer-level',
+    update: `/dealer-level`,
+    delete: (id: string) => `/dealer-level/${id}`,
+  },
 };

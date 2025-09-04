@@ -3,11 +3,12 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
+import { NzTableModule } from 'ng-zorro-antd/table';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [CommonModule, NzMenuModule, NzIconModule],
+  imports: [CommonModule, NzMenuModule, NzIconModule,NzTableModule],
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.scss'],
 })
@@ -108,7 +109,7 @@ export class MenuComponent implements OnInit {
         {
           key: 'product-categories',
           label: 'Danh sách loại sản phẩm',
-          icon: 'unordered-list',
+          icon: 'shopping',
           route: '/product-category',
         },
       ],
@@ -129,7 +130,21 @@ export class MenuComponent implements OnInit {
       key: 'customers',
       icon: 'user',
       label: 'Khách hàng',
-      route: '/customer-list',
+     
+      children: [
+        {
+          key: 'customer-list',
+          label: 'Danh sách khách hàng',
+          icon: 'user-add',
+           route: '/customer-list',
+        },
+        {
+          key: 'product-categories',
+          label: 'Giá sản phẩm theo đại lý',
+          icon: 'tags',
+          route: '/dealer-level',
+        },
+      ],
     },
     { key: 'reports', icon: 'bar-chart', label: 'Báo cáo', route: '/reports' },
   ];
