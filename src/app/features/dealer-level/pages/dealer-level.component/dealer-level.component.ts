@@ -189,6 +189,11 @@ export class DealerLevelComponent implements OnInit {
 
             if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_NOT_EXIST') {
               userMessage = 'Đại lý không tồn tại trong hệ thống.';
+            } else if (
+              apiMessage === 'BACKEND.APP_MESSAGE.EXIST_CUSTOMER_IN_DEALERLEVEL'
+            ) {
+              userMessage =
+                'Đại lý cấp này đang được áp dụng cho khách hàng.';
             } else if (apiMessage) {
               userMessage = apiMessage;
             }

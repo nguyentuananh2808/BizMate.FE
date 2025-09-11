@@ -82,8 +82,17 @@
                 <div class="flex justify-end">
                   <button
                     nz-button
+                    nzType="default"
+                    class="items-center gap-4 whitespace-nowrap rounded-[24px] h-10 mb-3 text-[12px] mr-1"
+                    (click)="addProducts()"
+                  >
+                    <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+                    Thêm sp
+                  </button>
+                  <button
+                    nz-button
                     nzType="primary"
-                    class="rounded-[24px] h-10 px-6"
+                    class="rounded-[24px] h-10 px-6 text-[12px]"
                     (click)="submitForm()"
                   >
                     <nz-icon nzType="save" nzTheme="outline"></nz-icon>
@@ -159,13 +168,12 @@
                       </ng-template>
                     </div>
                   </div>
-                  <!-- <button
-                    disabled
+                   <button
                     class="mt-2 text-red-500 text-xs"
                     (click)="deleteItem(item)"
                   >
                     Xóa
-                  </button> -->
+                  </button> 
                 </div>
               </div>
             </div>

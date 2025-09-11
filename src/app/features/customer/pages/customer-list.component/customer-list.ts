@@ -1,32 +1,36 @@
-import { CommonModule, DatePipe } from "@angular/common";
-import { Component, ChangeDetectorRef, OnInit, HostListener } from "@angular/core";
-import { FormsModule } from "@angular/forms";
-import { RouterModule } from "@angular/router";
-import { NzButtonModule } from "ng-zorro-antd/button";
-import { NzCheckboxModule } from "ng-zorro-antd/checkbox";
-import { NzDropDownModule } from "ng-zorro-antd/dropdown";
-import { NzFloatButtonModule } from "ng-zorro-antd/float-button";
-import { NzIconModule } from "ng-zorro-antd/icon";
-import { NzMenuModule } from "ng-zorro-antd/menu";
-import { NzModalModule, NzModalService } from "ng-zorro-antd/modal";
-import { NzPaginationModule } from "ng-zorro-antd/pagination";
-import { NzTableModule } from "ng-zorro-antd/table";
-import { ToastrService } from "ngx-toastr";
+import { CommonModule, DatePipe } from '@angular/common';
+import {
+  Component,
+  ChangeDetectorRef,
+  OnInit,
+  HostListener,
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzMenuModule } from 'ng-zorro-antd/menu';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { NzPaginationModule } from 'ng-zorro-antd/pagination';
+import { NzTableModule } from 'ng-zorro-antd/table';
+import { ToastrService } from 'ngx-toastr';
 import { Location } from '@angular/common';
-import { buffer } from "rxjs";
-import { BottomMenuComponent } from "../../../shared/bottom-menu.component/bottom-menu.component";
-import { HeaderCommonComponent } from "../../../shared/header-common.component/header-common.component";
-import { MenuComponent } from "../../../shared/menu.component/menu.component";
-import { Customer } from "../../models/customer-response.model";
-import { CustomerService } from "../../services/customer-service";
-import { CustomerPopupCreateComponent } from "../customer-popup-create.component/customer-popup-create.component";
-import { CustomerPopupUpdateComponent } from "../customer-detail-popup.component/customer-popup-update.component";
-
+import { buffer } from 'rxjs';
+import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
+import { HeaderCommonComponent } from '../../../shared/header-common.component/header-common.component';
+import { MenuComponent } from '../../../shared/menu.component/menu.component';
+import { Customer } from '../../models/customer-response.model';
+import { CustomerService } from '../../services/customer-service';
+import { CustomerPopupCreateComponent } from '../customer-popup-create.component/customer-popup-create.component';
+import { CustomerPopupUpdateComponent } from '../customer-detail-popup.component/customer-popup-update.component';
 
 @Component({
   selector: 'customer-list',
   imports: [
-     CommonModule,
+    CommonModule,
     FormsModule,
     NzTableModule,
     NzCheckboxModule,
@@ -42,7 +46,7 @@ import { CustomerPopupUpdateComponent } from "../customer-detail-popup.component
     MenuComponent,
     NzPaginationModule,
     CustomerPopupCreateComponent,
-    CustomerPopupUpdateComponent
+    CustomerPopupUpdateComponent,
   ],
   providers: [DatePipe],
   templateUrl: './customer-list.html',
@@ -107,7 +111,6 @@ export class CustomerList implements OnInit {
     setTimeout(() => (this.showPopup = false), 300);
   }
 
-
   closeDropdown() {
     this.activeDropdown = null;
   }
@@ -139,27 +142,30 @@ export class CustomerList implements OnInit {
     pageSize: number = this.pageSize
   ): void {
     this.isLoading = true;
-    this.CustomerService
-      .SearchCustomer(this.searchKeyword || null, pageSize, pageIndex, undefined)
-      .subscribe({
-        next: (res) => {
-          this.originalData = res.Customers || [];
-          this.totalCount = res.TotalCount || 0;
+    this.CustomerService.SearchCustomer(
+      this.searchKeyword || null,
+      pageSize,
+      pageIndex,
+      undefined
+    ).subscribe({
+      next: (res) => {
+        this.originalData = res.Customers || [];
+        this.totalCount = res.TotalCount || 0;
 
-          setTimeout(() => {
-            this.listOfData = [...this.originalData].sort((a, b) =>
-              a.Code.localeCompare(b.Code)
-            );
+        setTimeout(() => {
+          this.listOfData = [...this.originalData].sort((a, b) =>
+            a.Code.localeCompare(b.Code)
+          );
 
-            if (this.isMobile) {
-              this.listOfCurrentPageData = [...this.listOfData];
-            }
-            this.isLoading = false;
-            this.cdr.detectChanges();
-          });
-        },
-        error: () => (this.isLoading = false),
-      });
+          if (this.isMobile) {
+            this.listOfCurrentPageData = [...this.listOfData];
+          }
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        });
+      },
+      error: () => (this.isLoading = false),
+    });
   }
 
   onSearch(): void {
