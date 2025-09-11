@@ -14,6 +14,9 @@ import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs';
 import { Customer } from '../../models/customer-response.model';
 import { CustomerService } from '../../services/customer-service';
+import { DealerLevel } from '../../../dealer-level/models/dealer-level.model';
+import { DealerLevelSearchRequest } from '../../../dealer-level/models/dealer-level-search-request.model';
+import { DealerLevelService } from '../../../dealer-level/services/dealer-level-service';
 
 @Component({
   selector: 'customer-popup-update',
@@ -40,8 +43,10 @@ export class CustomerPopupUpdateComponent implements OnInit {
   @Input() data!: Customer;
   @Output() closePopup = new EventEmitter<void>();
   @Output() update = new EventEmitter<void>();
-
+  dealerLevelId: string = '';
+  dealerLevels: DealerLevel[] = [];
   searchTerm: string = '';
+  filteredDealerLevels: DealerLevel[] = [];
   showDropdown: boolean = false;
   isClosing = false;
   isSaving = false;
@@ -49,11 +54,62 @@ export class CustomerPopupUpdateComponent implements OnInit {
   constructor(
     private customerService: CustomerService,
     private toastr: ToastrService,
+    private dealerLevelService: DealerLevelService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-  
+    this.loadDealerLevels();
+  }
+
+  private loadDealerLevels(): void {
+    const payload: DealerLevelSearchRequest = {
+      keySearch: '',
+      pageIndex: 1,
+      pageSize: 50,
+    };
+
+    this.dealerLevelService.SearchDealerLevel(payload).subscribe({
+      next: (res) => {
+        this.dealerLevels = res.DealerLevels || [];
+        this.filteredDealerLevels = [...this.dealerLevels];
+
+        // 👉 Set giá trị mặc định khi mở popup
+        if (this.data.DealerLevelId) {
+          const selected = this.dealerLevels.find(
+            (dl) => dl.Id === this.data.DealerLevelId
+          );
+          if (selected) {
+            this.searchTerm = selected.Name;
+            this.dealerLevelId = selected.Id;
+          }
+        }
+
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.toastr.error('Không thể load cấp đại lý');
+      },
+    });
+  }
+
+  filterDealerLevel(): void {
+    const term = this.searchTerm.toLowerCase();
+    this.filteredDealerLevels = this.dealerLevels.filter((dl) =>
+      dl.Name.toLowerCase().includes(term)
+    );
+
+    const matched = this.dealerLevels.find(
+      (dl) => dl.Name.toLowerCase() === term
+    );
+    if (!matched) this.dealerLevelId = '';
+  }
+
+  selectDealerLevel(dl: DealerLevel): void {
+    this.dealerLevelId = dl.Id;
+    this.searchTerm = dl.Name;
+    this.showDropdown = false;
+    this.data.DealerLevelId = dl.Id;
   }
 
   close() {
@@ -63,6 +119,17 @@ export class CustomerPopupUpdateComponent implements OnInit {
       this.closePopup.emit();
       this.isClosing = false;
       this.cdr.detectChanges();
+    }, 200);
+  }
+  onBlur(): void {
+    setTimeout(() => {
+      this.showDropdown = false;
+
+      const match = this.dealerLevels.find((dl) => dl.Name === this.searchTerm);
+      if (!match) {
+        this.dealerLevelId = '';
+        this.searchTerm = '';
+      }
     }, 200);
   }
 
@@ -78,7 +145,8 @@ export class CustomerPopupUpdateComponent implements OnInit {
         this.data.Phone.trim(),
         this.data.Address.trim(),
         this.data.RowVersion,
-        this.data.IsActive
+        this.data.IsActive,
+        this.data.DealerLevelId
       )
       .pipe(
         finalize(() => {

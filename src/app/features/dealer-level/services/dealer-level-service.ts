@@ -6,8 +6,10 @@ import { DealerLevelSearchResponse } from '../models/dealer-level-search-respons
 import { DealerLevelSearchRequest } from '../models/dealer-level-search-request.model';
 import { DealerLevelUpdateRequest } from '../models/dealer-level-update-request.model';
 import { DealerLevelCreateRequest } from '../models/dealer-level-create-request.model';
-import { DealerLevelReadById, DealerLevelReadByIdWrapper } from '../models/dealer-level-detail.models';
-
+import {
+  DealerLevelReadById,
+  DealerLevelReadByIdWrapper,
+} from '../models/dealer-level-detail.models';
 
 @Injectable({ providedIn: 'root' })
 export class DealerLevelService {
@@ -20,7 +22,6 @@ export class DealerLevelService {
       keySearch: request.keySearch,
       pageIndex: request.pageIndex,
       pageSize: request.pageSize,
-
     };
     return this.http.post<DealerLevelSearchResponse>(
       `${ApiUrls.baseUrl}${ApiUrls.dealerLevel.search}`,
@@ -28,7 +29,9 @@ export class DealerLevelService {
     );
   };
 
-  ReadByIdDealerLevel = (id: string): Observable<DealerLevelReadByIdWrapper> => {
+  ReadByIdDealerLevel = (
+    id: string
+  ): Observable<DealerLevelReadByIdWrapper> => {
     return this.http.get<DealerLevelReadByIdWrapper>(
       `${ApiUrls.baseUrl}${ApiUrls.dealerLevel.readById}/${id}`
     );
@@ -50,7 +53,7 @@ export class DealerLevelService {
     );
   };
 
-    DeleteDealerLevel(id: string): Observable<any> {
+  DeleteDealerLevel(id: string): Observable<any> {
     return this.http.delete<any>(
       `${ApiUrls.baseUrl}${ApiUrls.dealerLevel.delete(id)}`
     );

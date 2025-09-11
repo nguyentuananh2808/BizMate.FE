@@ -5,7 +5,7 @@ import {
   OnInit,
   ChangeDetectorRef,
 } from '@angular/core';
-import {CustomerService} from '../../services/customer-service'
+import { CustomerService } from '../../services/customer-service';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,6 +14,9 @@ import { ToastrService } from 'ngx-toastr';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { Customer } from '../../models/customer-response.model';
+import { DealerLevelService } from '../../../dealer-level/services/dealer-level-service';
+import { DealerLevelSearchRequest } from '../../../dealer-level/models/dealer-level-search-request.model';
+import { DealerLevel } from '../../../dealer-level/models/dealer-level.model';
 
 @Component({
   selector: 'customer-popup-create',
@@ -40,9 +43,9 @@ export class CustomerPopupCreateComponent implements OnInit {
   phone: string = '';
   address: string = '';
   dealerLevelId: string = '';
-
+  dealerLevels: DealerLevel[] = [];
   searchTerm: string = '';
-  filteredCategories: Customer[] = [];
+  filteredDealerLevels: DealerLevel[] = [];
   showDropdown: boolean = false;
 
   @Output() closePopupCreate = new EventEmitter<void>();
@@ -53,58 +56,63 @@ export class CustomerPopupCreateComponent implements OnInit {
 
   constructor(
     private customerService: CustomerService,
+    private dealerLevelService: DealerLevelService,
     private toastr: ToastrService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    //this.loadCategories();
+    this.loadDealerLevels();
   }
 
-//   private loadCategories(): void {
-//     this.customerService.SearchCustomer().subscribe({
-//       next: (res) => {
-//         this.categories = (res.Customers || []).filter(
-//           (cat) => cat.IsActive == false
-//         );
-//         this.filteredCategories = [...this.categories];
-//         console.log('Categories loaded:', this.categories);
-//         this.cdr.detectChanges();
-//       },
-//       error: () => {
-//         this.toastr.error('Không thể load loại sản phẩm');
-//       },
-//     });
-//   }
-//   filterCategories(): void {
-//     const term = this.searchTerm.toLowerCase();
-//     this.filteredCategories = this.categories.filter((cat) =>
-//       cat.Name.toLowerCase().includes(term)
-//     );
+  private loadDealerLevels(): void {
+    const payload: DealerLevelSearchRequest = {
+      keySearch: '',
+      pageIndex: 1,
+      pageSize: 50,
+    };
 
-//     const matched = this.categories.find(
-//       (cat) => cat.Name.toLowerCase() === term
-//     );
-//     if (!matched) this.CustomerId = '';
-//   }
+    this.dealerLevelService.SearchDealerLevel(payload).subscribe({
+      next: (res) => {
+        this.dealerLevels = (res.DealerLevels || []);
+        this.filteredDealerLevels = [...this.dealerLevels];
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.toastr.error('Không thể load cấp đại lý');
+      },
+    });
+  }
 
-//   selectCategory(cat: Customer): void {
-//     this.CustomerId = cat.Id;
-//     this.searchTerm = cat.Name;
-//     this.showDropdown = false;
-//   }
+  filterDealerLevel(): void {
+    const term = this.searchTerm.toLowerCase();
+    this.filteredDealerLevels = this.dealerLevels.filter((dl) =>
+      dl.Name.toLowerCase().includes(term)
+    );
 
-//   onBlur(): void {
-//     setTimeout(() => {
-//       this.showDropdown = false;
+    const matched = this.dealerLevels.find(
+      (dl) => dl.Name.toLowerCase() === term
+    );
+    if (!matched) this.dealerLevelId = '';
+  }
 
-//       const match = this.categories.find((cat) => cat.Name === this.searchTerm);
-//       if (!match) {
-//         this.CustomerId = '';
-//         this.searchTerm = '';
-//       }
-//     }, 200);
-//   }
+  selectDealerLevel(dl: DealerLevel): void {
+    this.dealerLevelId = dl.Id;
+    this.searchTerm = dl.Name;
+    this.showDropdown = false;
+  }
+
+  onBlur(): void {
+    setTimeout(() => {
+      this.showDropdown = false;
+
+      const match = this.dealerLevels.find((dl) => dl.Name === this.searchTerm);
+      if (!match) {
+        this.dealerLevelId = '';
+        this.searchTerm = '';
+      }
+    }, 200);
+  }
 
   close(): void {
     this.closePopupCreate.emit();
@@ -113,14 +121,9 @@ export class CustomerPopupCreateComponent implements OnInit {
   onSubmit(): void {
     if (this.isSaving) return;
 
-
     this.isSaving = true;
     this.customerService
-      .CreateCustomer(
-        this.name,
-        this.phone,
-        this.address
-      )
+      .CreateCustomer(this.name, this.phone, this.address)
       .pipe(finalize(() => (this.isSaving = false)))
       .subscribe({
         next: () => {
@@ -129,14 +132,14 @@ export class CustomerPopupCreateComponent implements OnInit {
           this.close();
         },
         error: (err) => {
-           const apiMessage = err.error?.Message;
-        let userMessage = 'Cập nhật thất bại';
+          const apiMessage = err.error?.Message;
+          let userMessage = 'Cập nhật thất bại';
 
-        if (apiMessage === 'BACKEND.VALIDATION.MESSAGE.ALREADY_EXIST') {
-          userMessage = 'Khách hàng đã tồn tại trong hệ thống';
-        } else if (apiMessage) {
-          userMessage = apiMessage; 
-        }
+          if (apiMessage === 'BACKEND.VALIDATION.MESSAGE.ALREADY_EXIST') {
+            userMessage = 'Khách hàng đã tồn tại trong hệ thống';
+          } else if (apiMessage) {
+            userMessage = apiMessage;
+          }
           this.toastr.error(userMessage);
         },
       });
