@@ -120,7 +120,7 @@ export class DealerLevelComponent implements OnInit {
   viewDetail(item: DealerLevel) {
     this.selectedItem = item;
     this.showPopup = true;
-    this.router.navigate(['/order-update', item.Id]);
+    this.router.navigate(['/dealer-level-update', item.Id]);
   }
   closeDealerLevelDetailPopup() {
     this.showPopup = false;
@@ -137,10 +137,10 @@ export class DealerLevelComponent implements OnInit {
   }
   fetchData(
     pageIndex: number = this.pageIndex,
-    pageSize: number = this.pageSize,
+    pageSize: number = this.pageSize
   ): void {
     this.isLoading = true;
-   
+
     const request: DealerLevelSearchRequest = {
       pageIndex: pageIndex,
       pageSize: pageSize,
@@ -171,7 +171,33 @@ export class DealerLevelComponent implements OnInit {
     this.fetchData(this.pageIndex, this.pageSize);
     this.cdr.detectChanges();
   }
+  deleteDealerLevel(item: DealerLevel): void {
+    this.modal.confirm({
+      nzTitle: `Bạn có chắc muốn xóa khách hàng "<b>${item.Name}</b>" này ?`,
+      // nzContent: `<b>${item.Name}</b> sẽ bị xóa khỏi hệ thống.`,
+      nzOkText: 'Xóa',
+      nzCancelText: 'Hủy',
+      nzOnOk: () => {
+        this.DealerLevelService.DeleteDealerLevel(item.Id).subscribe({
+          next: () => {
+            this.fetchData();
+            this.toastr.success('Đã xóa thành công');
+          },
+          error: (err) => {
+            const apiMessage = err.error?.Message;
+            let userMessage = 'Xóa khách hàng thất bại.';
 
+            if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_NOT_EXIST') {
+              userMessage = 'Đại lý không tồn tại trong hệ thống.';
+            } else if (apiMessage) {
+              userMessage = apiMessage;
+            }
+            this.toastr.error(userMessage);
+          },
+        });
+      },
+    });
+  }
   listOfSelection = [
     {
       text: 'Chọn tất cả hàng',
@@ -239,10 +265,7 @@ export class DealerLevelComponent implements OnInit {
   applyDateFilter() {
     console.log('Áp dụng filter:', this.dateRange);
     this.hideTooltip();
-    this.fetchData(
-      this.pageIndex,
-      this.pageSize,
-    );
+    this.fetchData(this.pageIndex, this.pageSize);
   }
 
   clearDateFilter() {

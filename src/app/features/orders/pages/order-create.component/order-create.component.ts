@@ -55,6 +55,7 @@ export class OrderCreateComponent {
   orderForm: FormGroup;
   isDark = false;
   dateToday = new Date();
+  existingProductIds: string[] = [];
   isPopupSearchProducts = false;
   indeterminate = false;
   isSubmitting = false;

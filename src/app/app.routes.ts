@@ -1,3 +1,4 @@
+import { DealerLevel } from './features/dealer-level/models/dealer-level.model';
 import { DealerLevelCreateComponent } from './features/dealer-level/pages/dealer-level-create.component/dealer-level-create.component';
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth-guard';
@@ -132,6 +133,16 @@ export const routes: Routes = [
       import('./features/dealer-level/pages/dealer-level-create.component/dealer-level-create.component').then(
         (m) => m.DealerLevelCreateComponent
       ),
+    canActivate: [AuthGuard],
+  },
+
+ 
+  {
+    path: 'dealer-level-update/:id',
+    loadComponent: () =>
+      import(
+        './features/dealer-level/pages/dealer-level-update.component/dealer-level-update.component'
+      ).then((m) => m.DealerLevelUpdateComponent),
     canActivate: [AuthGuard],
   },
 ];

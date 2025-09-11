@@ -37,7 +37,8 @@ import { ToastrService } from 'ngx-toastr';
 })
 export class ProductPopupSearchComponent implements OnInit {
   @Input() shouldDisableProduct: boolean = true;
-  @Input() existingProducts: InventoryDetail[] = [];
+  @Input() ProductQuantity: boolean = true;
+  @Input() existingProducts: string[] = [];
   @Output() closePopup = new EventEmitter<void>();
   @Output() selectProducts = new EventEmitter<InventoryDetail[]>();
   isClosing = false;
@@ -55,7 +56,6 @@ export class ProductPopupSearchComponent implements OnInit {
   isLoading = false;
   isMobile = window.innerWidth <= 768;
   disabledProductIds = new Set<string>();
-
   constructor(
     private productService: ProductService,
     private cdr: ChangeDetectorRef,
@@ -120,17 +120,24 @@ export class ProductPopupSearchComponent implements OnInit {
         next: (res) => {
           this.disabledProductIds.clear();
 
-          const existingIds = new Set(
-            this.existingProducts.map((p) => p.ProductId || p.Id)
-          );
+          const existingIds = new Set(this.existingProducts);
 
-          for (const p of res.Products || []) {
-            if (existingIds.has(p.Id) || p.Quantity === 0) {
-              this.disabledProductIds.add(p.Id);
+          // Lọc sản phẩm trước khi bind vào listOfData
+          let products = (res.Products || []).filter((p) => {
+            // Nếu đã có trong existingProducts → ẩn
+            if (existingIds.has(p.Id)) {
+              return false;
             }
-          }
 
-          this.originalData = res.Products || [];
+            // Nếu ProductQuantity = false và Quantity = 0 → ẩn
+            if (!this.ProductQuantity && p.Quantity === 0) {
+              return false;
+            }
+
+            return true;
+          });
+
+          this.originalData = products;
           this.totalCount = res.TotalCount || 0;
 
           setTimeout(() => {
@@ -188,9 +195,9 @@ export class ProductPopupSearchComponent implements OnInit {
   }
   onAllChecked(val: boolean) {
     this.listOfCurrentPageData.forEach((item) => {
-      if (!this.disabledProductIds.has(item.Id)) {
-        this.updateCheckedSet(item.Id, val);
-      }
+      //   if (!this.disabledProductIds.has(item.Id)) {
+      this.updateCheckedSet(item.Id, val);
+      // }
     });
     this.refreshCheckedStatus();
   }

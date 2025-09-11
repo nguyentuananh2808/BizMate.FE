@@ -2,11 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiUrls } from '../../../config/api.config';
-import { InventoryReadById } from '../../inventory-receipt/models/warehouse-receipt-detail.model';
 import { DealerLevelSearchResponse } from '../models/dealer-level-search-response.model';
 import { DealerLevelSearchRequest } from '../models/dealer-level-search-request.model';
 import { DealerLevelUpdateRequest } from '../models/dealer-level-update-request.model';
 import { DealerLevelCreateRequest } from '../models/dealer-level-create-request.model';
+import { DealerLevelReadById, DealerLevelReadByIdWrapper } from '../models/dealer-level-detail.models';
 
 
 @Injectable({ providedIn: 'root' })
@@ -28,8 +28,8 @@ export class DealerLevelService {
     );
   };
 
-  ReadByIdDealerLevel = (id: string): Observable<InventoryReadById> => {
-    return this.http.get<InventoryReadById>(
+  ReadByIdDealerLevel = (id: string): Observable<DealerLevelReadByIdWrapper> => {
+    return this.http.get<DealerLevelReadByIdWrapper>(
       `${ApiUrls.baseUrl}${ApiUrls.dealerLevel.readById}/${id}`
     );
   };
@@ -49,4 +49,10 @@ export class DealerLevelService {
       createDealerLevelRequestRequest
     );
   };
+
+    DeleteDealerLevel(id: string): Observable<any> {
+    return this.http.delete<any>(
+      `${ApiUrls.baseUrl}${ApiUrls.dealerLevel.delete(id)}`
+    );
+  }
 }

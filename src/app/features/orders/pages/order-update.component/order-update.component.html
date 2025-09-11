@@ -466,7 +466,8 @@
     <product-popup-search
       *ngIf="isPopupSearchProducts"
       [shouldDisableProduct]="true"
-      [existingProducts]="listOfData"
+      [existingProducts]="existingProductIds"
+      [ProductQuantity]="false"
       (closePopup)="closeProductPopup()"
       (selectProducts)="onSelectedProducts($event)"
     ></product-popup-search>

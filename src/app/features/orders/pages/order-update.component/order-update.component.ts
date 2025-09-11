@@ -75,6 +75,7 @@ export class OrderUpdateComponent implements OnInit {
   editingId: string | null = null;
   editingQuantity: number | null = null;
   inputError = false;
+  existingProductIds: string[] = [];
   allData: any[] = [];
   message: any;
   searchKeyword = '';
@@ -116,7 +117,9 @@ export class OrderUpdateComponent implements OnInit {
       this.getWarehouseReceiptDetail(this.id);
     }
   }
-
+  updateExistingProductIds(): void {
+    this.existingProductIds = this.listOfData.map((item) => item.ProductId);
+  }
   getWarehouseReceiptDetail(id: string): void {
     this.receiptService.ReadByIdWarehouseReceipt(id).subscribe({
       next: (res) => {
@@ -129,6 +132,7 @@ export class OrderUpdateComponent implements OnInit {
 
         // Gán dữ liệu sản phẩm
         this.listOfData = res.InventoryDetails || [];
+        this.updateExistingProductIds();
         this.allData = [...this.listOfData];
         this.rowVersion = res.RowVersion;
 
@@ -204,6 +208,8 @@ export class OrderUpdateComponent implements OnInit {
         this.listOfData = this.listOfData.filter(
           (item) => item.Id !== itemToDelete.Id
         );
+        this.updateExistingProductIds();
+
         this.cdr.detectChanges();
       },
     });
@@ -213,6 +219,7 @@ export class OrderUpdateComponent implements OnInit {
     this.searchKeyword = this.searchKeyword.trim().toLowerCase();
     if (!this.searchKeyword) {
       this.listOfData = [...this.allData];
+      this.updateExistingProductIds();
     } else {
       console.log('allData :', this.allData);
 
@@ -221,6 +228,7 @@ export class OrderUpdateComponent implements OnInit {
           String(value).toLowerCase().includes(this.searchKeyword)
         )
       );
+      this.updateExistingProductIds();
     }
     this.cdr.detectChanges();
   }
@@ -232,12 +240,12 @@ export class OrderUpdateComponent implements OnInit {
     }
 
     this.listOfData = [...this.listOfData, ...productList];
-
     this.listOfData = this.listOfData.filter(
       (item, index, self) => index === self.findIndex((t) => t.Id === item.Id)
     );
 
     this.listOfData.sort((a, b) => a.ProductCode.localeCompare(b.ProductCode));
+    this.updateExistingProductIds();
 
     this.allData = [...this.listOfData];
 
@@ -254,6 +262,7 @@ export class OrderUpdateComponent implements OnInit {
         })
       );
     }
+    this.updateExistingProductIds();
 
     this.orderForm.updateValueAndValidity();
     this.cdr.detectChanges();

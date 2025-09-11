@@ -240,7 +240,7 @@
                 <div class="relative">
                   <button
                     class="icon-button text-xl text-secondary-light dark:text-secondary-dark"
-                    (click)="toggleDropdown(item)"
+                    (click)="toggleDropdown(item)" (mouseenter)="toggleDropdown(item)"
                   >
                     ⋮
                   </button>
@@ -256,6 +256,12 @@
                       <nz-icon nzType="edit" nzTheme="outline"></nz-icon>
                       Chi tiết
                     </button>
+                     <button
+                    class="flex items-center gap-2 text-red-600 dark:text-red-400 text-sm px-2 py-1 w-full"
+                    (click)="deleteDealerLevel(item)"
+                  >
+                    <nz-icon nzType="delete" nzTheme="outline"></nz-icon> Xóa
+                  </button>
                   </div>
                 </div>
               </div>
@@ -322,7 +328,7 @@
               >
                 <td class="text-center">{{ i + 1 }}</td>
                 <td class="relative">
-                  <button class="icon-button" (click)="toggleDropdown(item)">
+                  <button class="icon-button" (mouseenter)="toggleDropdown(item)" (click)="toggleDropdown(item)">
                     ⋮
                   </button>
                   <div
@@ -332,6 +338,9 @@
                   >
                     <div class="dropdown-item" (click)="viewDetail(item)">
                       <nz-icon nzType="edit" nzTheme="outline"></nz-icon>
+                    </div>
+                     <div class="dropdown-item" (click)="deleteDealerLevel(item)">
+                      <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
                     </div>
                   </div>
                 </td>

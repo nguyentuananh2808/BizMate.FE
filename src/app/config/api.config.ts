@@ -34,7 +34,7 @@ export const ApiUrls = {
     update: '/inventory-receipt',
   },
 
-   customer: {
+  customer: {
     search: '/customer/search',
     getById: (id: string) => `/customer/${id}`,
     create: '/customer',
@@ -44,9 +44,15 @@ export const ApiUrls = {
 
   dealerLevel: {
     search: '/dealer-level/search',
-    readById: (id: string) => `/dealer-level/${id}`,
+    readById: `/dealer-level`,
     create: '/dealer-level',
     update: `/dealer-level`,
     delete: (id: string) => `/dealer-level/${id}`,
+  },
+
+  dealerPrice: {
+    create: '/dealer-price',
+    update: `/dealer-price`,
+    delete: (id: string) => `/dealer-price/${id}`,
   },
 };

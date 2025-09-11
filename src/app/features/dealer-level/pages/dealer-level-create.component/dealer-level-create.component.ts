@@ -112,9 +112,10 @@ export class DealerLevelCreateComponent {
     };
 
     this.dealerLevelService.CreateDealerLevel(payload).subscribe({
-      next: () => {
+      next: (res) => {
         this.toastr.success('Tạo cấp đại lý thành công!');
-        this.router.navigateByUrl('/DealerLevelUpdate');
+        const id = res.Id;
+         this.router.navigateByUrl(`/dealer-level-update/${id}`);
       },
       error: (err) => {
         const userMessage = err.error?.Message || 'Tạo cấp đại lý thất bại';
