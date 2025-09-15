@@ -10,8 +10,10 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { HeaderCommonComponent } from '../../../shared/header-common.component/header-common.component';
+import { NzInputModule } from 'ng-zorro-antd/input';
 import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
 import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -26,14 +28,26 @@ import { NgxPrintModule } from 'ngx-print';
 import { InventoryDetail } from '../../../inventory-receipt/models/warehouse-receipt-detail.model';
 import { WarehouseReceiptService } from '../../../inventory-receipt/services/warehouse-receipt.service';
 import { CreateReceiptRequestRequest } from '../../../inventory-receipt/models/warehouse-receipt-create.model';
+import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
+import { debounceTime, distinctUntilChanged, filter, switchMap } from 'rxjs';
+import { Subject, of } from 'rxjs';
+import { CustomerService } from '../../../customer/services/customer-service';
+import {
+  Customer,
+  CustomerResponse,
+} from '../../../customer/models/customer-response.model';
+import { PricePipe } from '../../../../shared/pipes/price-pice';
 
 @Component({
   standalone: true,
   selector: 'order-create',
   imports: [
     NgxPrintModule,
+    NzInputModule,
+    NzAutocompleteModule,
     CommonModule,
     FormsModule,
+    NzTableModule,
     NzTableModule,
     NzCheckboxModule,
     NzButtonModule,
@@ -43,15 +57,22 @@ import { CreateReceiptRequestRequest } from '../../../inventory-receipt/models/w
     ReactiveFormsModule,
     HeaderCommonComponent,
     NzModalModule,
+    NzTableModule,
     NzFloatButtonModule,
     UnitTextPipe,
     ProductPopupSearchComponent,
     MenuComponent,
+    PricePipe,
+    NzTabsModule,
   ],
   templateUrl: './order-create.component.html',
   styleUrls: ['./order-create.component.scss'],
 })
 export class OrderCreateComponent {
+  selectedTabIndex = 0;
+  searchCustomerKeyword = '';
+  customers: Customer[] = [];
+  private searchSubject = new Subject<string>();
   orderForm: FormGroup;
   isDark = false;
   dateToday = new Date();
@@ -63,13 +84,18 @@ export class OrderCreateComponent {
   checked = false;
   setOfCheckedId = new Set<string>();
   isMobile = window.innerWidth < 768;
-  listOfData: InventoryDetail[] = [];
+  listOfData: (InventoryDetail & {
+    SalePrice?: number;
+    TotalPrice?: number;
+  })[] = [];
+  totalAmount: number = 0;
   listOfCurrentPageData: Product[] = [];
   editingId: string | null = null;
   editingQuantity: number | null = null;
   inputError = false;
   allData: any[] = [];
   message: any;
+  selectedCustomer!: Customer | string;
   searchKeyword = '';
   customer = {
     name: '',
@@ -80,6 +106,7 @@ export class OrderCreateComponent {
 
   constructor(
     private location: Location,
+    private customerService: CustomerService,
     private fb: FormBuilder,
     private toastr: ToastrService,
     private modal: NzModalService,
@@ -92,8 +119,25 @@ export class OrderCreateComponent {
       phoneNumber: [''],
       deliveryAddress: [''],
       description: [''],
+      customerSearch: [''],
       details: this.fb.array([], Validators.required),
     });
+    this.orderForm
+      .get('customerSearch')
+      ?.valueChanges.pipe(
+        debounceTime(400),
+        distinctUntilChanged(),
+        filter(
+          (keyword: any) => typeof keyword === 'string' && keyword.length >= 2
+        ),
+        switchMap((keyword: string) =>
+          this.customerService.SearchCustomer(keyword, 10, 1, false)
+        )
+      )
+      .subscribe((res: CustomerResponse) => {
+        this.customers = res.Customers || [];
+        this.cdr.detectChanges();
+      });
 
     this.addProduct();
   }
@@ -113,11 +157,56 @@ export class OrderCreateComponent {
       this.listOfData.some((item) => item.Quantity <= 0)
     );
   }
+  onTabChange(index: number): void {
+    this.selectedTabIndex = index;
+    console.log('Tab changed:', index);
+  }
+
+  onCustomerSelected(customer: Customer) {
+    if (!customer) return;
+
+    this.orderForm.patchValue({
+      customerName: customer.Name,
+      phoneNumber: customer.Phone,
+      deliveryAddress: customer.Address,
+    });
+
+    console.log('Selected customer:', customer);
+  }
+
+  onSearchCustomer(keyword: string): void {
+    this.searchSubject.next(keyword);
+
+    if (!keyword) {
+      this.orderForm.patchValue({
+        customerName: '',
+        phoneNumber: '',
+        deliveryAddress: '',
+      });
+    }
+  }
+
+  selectCustomer(customer: Customer): void {
+    if (!customer) return;
+    this.orderForm.patchValue({
+      customerName: customer.Name,
+      phoneNumber: customer.Phone,
+      deliveryAddress: customer.Address,
+      description: '',
+    });
+    this.customer = {
+      name: customer.Name,
+      phone: customer.Phone,
+      address: customer.Address,
+      description: '',
+    };
+  }
 
   startEdit(item: InventoryDetail): void {
     this.editingId = item.Id;
     this.editingQuantity = item.Quantity;
   }
+
   onPrint() {
     const { customerName, phoneNumber, description, deliveryAddress } =
       this.orderForm.value;
@@ -136,22 +225,39 @@ export class OrderCreateComponent {
       this.showPrint = false;
     }, 100);
   }
-  saveEdit(item: InventoryDetail): void {
+
+  // Hàm tính tổng tiền
+  updateTotalAmount() {
+    this.totalAmount = this.listOfData.reduce(
+      (sum, item) => sum + (item.TotalPrice ?? 0),
+      0
+    );
+  }
+
+  saveEdit(
+    item: InventoryDetail & { SalePrice?: number; TotalPrice?: number }
+  ): void {
     if (this.editingQuantity === null || this.editingQuantity < 1) {
       this.inputError = true;
-      // Tự động bỏ hiệu ứng sau khi shake xong
-      setTimeout(() => {
-        this.inputError = false;
-      }, 300);
-
+      setTimeout(() => (this.inputError = false), 300);
       return;
     }
 
+    // Cập nhật số lượng
     item.Quantity = this.editingQuantity;
+
+    // Tính lại thành tiền
+    item.TotalPrice = (item.SalePrice ?? 0) * item.Quantity;
+
     this.editingId = null;
     this.editingQuantity = null;
-  }
 
+    // 👉 Cập nhật tổng tiền đơn hàng
+    this.updateTotalAmount();
+
+    // Cập nhật lại UI
+    this.cdr.detectChanges();
+  }
   stopEdit(): void {
     this.editingId = null;
   }
@@ -165,6 +271,10 @@ export class OrderCreateComponent {
         this.listOfData = this.listOfData.filter(
           (item) => item.Id !== itemToDelete.Id
         );
+
+        // 👉 Tính lại tổng sau khi xóa
+        this.updateTotalAmount();
+
         this.cdr.detectChanges();
       },
     });
@@ -193,31 +303,25 @@ export class OrderCreateComponent {
     }
 
     this.listOfData = [...this.listOfData, ...productList];
-
+    this.existingProductIds = this.listOfData.map((p) => p.Id);
+    // Loại bỏ trùng
     this.listOfData = this.listOfData.filter(
       (item, index, self) => index === self.findIndex((t) => t.Id === item.Id)
     );
-
-    this.listOfData.sort((a, b) => a.ProductCode.localeCompare(b.ProductCode));
+    console.log('productList:', productList);
+    console.log('check:', this.listOfData);
+    // Gán SalePrice (giá bán), Quantity mặc định = 1 nếu chưa có
+    this.listOfData = this.listOfData.map((item) => ({
+      ...item,
+      Quantity: item.Quantity && item.Quantity > 0 ? item.Quantity : 1,
+      SalePrice: item.SalePrice ?? 0,
+      TotalPrice:
+        (item.SalePrice ?? 0) *
+        (item.Quantity && item.Quantity > 0 ? item.Quantity : 1),
+    }));
 
     this.allData = [...this.listOfData];
-
-    this.details.clear();
-
-    for (const item of this.listOfData) {
-      this.details.push(
-        this.fb.group({
-          productId: [item.ProductId ?? item.Id, Validators.required],
-          quantity: [
-            item.Quantity > 0 ? item.Quantity : 1,
-            [Validators.required, Validators.min(1)],
-          ],
-        })
-      );
-    }
-
-    this.orderForm.updateValueAndValidity();
-    this.cdr.detectChanges();
+    this.updateTotalAmount();
     this.closeProductPopup();
   }
 
@@ -302,30 +406,30 @@ export class OrderCreateComponent {
     return item.Id;
   }
 
-  submitForm(): void {
-    const formValues = this.orderForm.value;
+  //  submitForm(): void {
+  //   const formValues = this.orderForm.value;
 
-    const payload: CreateReceiptRequestRequest = {
-      type: 2, //phiếu xuất
-      customerName: formValues.customerName,
-      customerPhone: formValues.phoneNumber,
-      deliveryAddress: formValues.deliveryAddress,
-      description: formValues.description,
-      details: this.listOfData.map((item) => ({
-        productId: item.ProductId ?? item.Id,
-        quantity: item.Quantity,
-      })),
-    };
+  //   const payload: CreateReceiptRequestRequest = {
+  //     customerName: formValues.customerName,
+  //     customerPhone: formValues.phoneNumber,
+  //     deliveryAddress: formValues.deliveryAddress,
+  //     description: formValues.description,
+  //     details: this.listOfData.map((item) => ({
+  //       productId: item.ProductId ?? item.Id,
+  //       quantity: item.Quantity,
+  //       salePrice: item.SalePrice ?? 0,
+  //       totalPrice: item.TotalPrice ?? 0,
+  //     })),
+  //   };
 
-    this.receiptService.CreateWarehouseReceipt(payload).subscribe({
-      next: () => {
-        this.toastr.success('Tạo đơn hàng thành công!');
-        this.router.navigateByUrl('/order');
-      },
-      error: (err) => {
-        const userMessage = err.error?.Message || 'Cập nhật thất bại';
-        this.toastr.error(userMessage);
-      },
-    });
-  }
+  //   this.receiptService.CreateWarehouseReceipt(payload).subscribe({
+  //     next: () => {
+  //       this.toastr.success('Tạo đơn hàng thành công!');
+  //       this.router.navigateByUrl('/order');
+  //     },
+  //     error: (err) => {
+  //       const userMessage = err.error?.Message || 'Cập nhật thất bại';
+  //       this.toastr.error(userMessage);
+  //     },
+  //   });
 }

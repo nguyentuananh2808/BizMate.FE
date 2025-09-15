@@ -15,6 +15,9 @@ export const ApiUrls = {
     update: '/product',
     delete: (id: string) => `/product/${id}`,
   },
+  status: {
+    getByGroup: '/status/getbygroup',
+  },
   auth: {
     login: '/auth/login',
     register: '/user/register',
@@ -28,10 +31,10 @@ export const ApiUrls = {
   },
 
   order: {
-    search: '/inventory-receipt/search',
-    readById: '/inventory-receipt',
-    create: '/inventory-receipt',
-    update: '/inventory-receipt',
+    search: '/order/search',
+    readById: '/order',
+    create: '/order',
+    update: '/order',
   },
 
   customer: {

@@ -67,7 +67,7 @@
             >
               <form [formGroup]="orderForm" class="space-y-4">
                 <h2 class="text-secondary-light dark:text-secondary-dark">
-                  Ngày xuất : {{ dateToday | date : "dd/MM/yyyy" }}
+                  Ngày tạo đơn : {{ dateToday | date : "dd/MM/yyyy" }}
                 </h2>
                 <!-- Các input -->
                 <div>
@@ -129,7 +129,6 @@
                     nzType="primary"
                     class="rounded-[24px] h-10 px-6"
                     [disabled]="isSubmitting || isSubmitDisabled"
-                    (click)="submitForm()"
                   >
                     <nz-icon nzType="save" nzTheme="outline"></nz-icon>
                     <span *ngIf="isSubmitting">Đang tạo...</span>
@@ -175,12 +174,13 @@
                   </div>
                   <div class="text-secondary-light dark:text-secondary-dark">
                     <div>Mã: {{ item.ProductCode }}</div>
+
+                    <!-- Số lượng -->
                     <div class="flex items-center gap-2">
                       <label
                         class="text-secondary-light dark:text-secondary-dark mb-0"
                         >SL:</label
                       >
-
                       <ng-container
                         *ngIf="editingId === item.Id; else displayQuantity"
                       >
@@ -194,7 +194,6 @@
                           (keydown.enter)="saveEdit(item)"
                         />
                       </ng-container>
-
                       <ng-template #displayQuantity>
                         <span
                           class="cursor-pointer font-semibol"
@@ -211,8 +210,15 @@
                         </span>
                       </ng-template>
                     </div>
-
                     <div>Đơn vị: {{ item.Unit | unitText }}</div>
+
+                    <!-- Đơn giá -->
+                    <div>Đơn giá: {{ item.SalePrice ?? 0 | price }}</div>
+
+                    <!-- Thành tiền -->
+                    <div class="font-semibold text-green-400">
+                      Thành tiền: {{ item.TotalPrice ?? 0 | price }}
+                    </div>
                   </div>
                   <button
                     class="mt-2 text-red-500 text-xs"
@@ -220,6 +226,14 @@
                   >
                     Xóa
                   </button>
+                </div>
+
+                <!-- Tổng tiền -->
+                <div
+                  *ngIf="listOfData.length > 0"
+                  class="mt-3 text-right font-bold text-lg text-secondary-light dark:text-secondary-dark"
+                >
+                  Tổng đơn hàng: {{ totalAmount ?? 0 | price }}
                 </div>
               </div>
             </div>
@@ -288,32 +302,67 @@
           <div class="w-full">
             <div class="flex items-center justify-between px-3 pt-3">
               <h2 class="text-secondary-light dark:text-secondary-dark">
-                Ngày xuất : {{ dateToday | date : "dd/MM/yyyy" }}
+                Ngày tạo đơn : {{ dateToday | date : "dd/MM/yyyy" }}
               </h2>
             </div>
 
             <form [formGroup]="orderForm" class="space-y-6 pl-3 pt-3">
               <div class="grid grid-cols-2 gap-4">
+                <!-- Cột 1: Khách hàng -->
+                <div>
+                  <!-- Hàng label -->
+                  <div class="flex items-center justify-between">
+                    <nz-tabset
+                      [(nzSelectedIndex)]="selectedTabIndex"
+                      (nzSelectedIndexChange)="onTabChange($event)"
+                      class="ml-3 -mt-2 text-secondary-light dark:text-secondary-dark"
+                      nzSize="small"
+                    >
+                      <nz-tab nzTitle="Khách lẻ"></nz-tab>
+                      <nz-tab nzTitle="Đại lý"></nz-tab>
+                    </nz-tabset>
+                  </div>
+
+                  <!-- Input theo tab -->
+                  <ng-container [ngSwitch]="selectedTabIndex">
+                    <input
+                      *ngSwitchCase="0"
+                      formControlName="customerName"
+                      class="input-style mt-2"
+                      placeholder="Nhập tên khách hàng..."
+                    />
+
+                    <div *ngSwitchCase="1">
+                      <input
+                        formControlName="customerSearch"
+                        [nzAutocomplete]="auto"
+                        class="input-style mt-2"
+                        placeholder="Tìm kiếm khách hàng..."
+                      />
+                      <nz-autocomplete #auto>
+                        <nz-auto-option
+                          *ngFor="let customer of customers"
+                          [nzValue]="customer"
+                          [nzLabel]="customer.Name"
+                          (selectionChange)="onCustomerSelected(customer)"
+                        >
+                          {{ customer.Name }}
+                        </nz-auto-option>
+                      </nz-autocomplete>
+                    </div>
+                  </ng-container>
+                </div>
+
+                <!-- Cột 2: Số điện thoại -->
                 <div>
                   <label
                     class="block mb-1 text-secondary-light dark:text-secondary-dark"
                   >
-                    Tên khách hàng
+                    Số điện thoại
                   </label>
                   <input
-                    formControlName="customerName"
-                    class="input-style"
-                    placeholder="Nhập tên khách hàng..."
-                  />
-                </div>
-                <div>
-                  <label
-                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                    >Số điện thoại</label
-                  >
-                  <input
                     formControlName="phoneNumber"
-                    class="input-style"
+                    class="input-style mt-[28px]"
                     placeholder="Nhập số điện thoại..."
                   />
                 </div>
@@ -373,7 +422,6 @@
                       nzType="primary"
                       class="rounded-[24px] h-10 px-6"
                       [disabled]="isSubmitting || isSubmitDisabled"
-                      (click)="submitForm()"
                     >
                       <nz-icon nzType="save" nzTheme="outline"></nz-icon>
                       <span *ngIf="isSubmitting">Đang tạo...</span>
@@ -392,24 +440,19 @@
               >
                 <thead>
                   <tr class="text-gray-500 dark:bg-gray-700 dark:text-gray-400">
-                    <!-- <th [nzWidth]="'20px'" class="text-center"></th> -->
                     <th [nzWidth]="'20px'" class="text-center">STT</th>
                     <th [nzWidth]="'20px'"></th>
                     <th [nzWidth]="'80px'">Mã sản phẩm</th>
-                    <th [nzWidth]="'240px'">Tên sản phẩm</th>
+                    <th [nzWidth]="'180px'">Tên sản phẩm</th>
                     <th [nzWidth]="'80px'">Đơn vị</th>
-                    <th [nzWidth]="'50px'">Số lượng xuất</th>
+                    <th [nzWidth]="'50px'">Số lượng</th>
+                    <th [nzWidth]="'80px'">Đơn giá</th>
+                    <th [nzWidth]="'80px'">Thành tiền</th>
                   </tr>
                 </thead>
+
                 <tbody>
-                  <tr
-                    *ngFor="let item of listOfData; let i = index"
-                    class="hover:bg-gray-50 transition-all duration-150"
-                    [ngClass]="{ 'dark:hover:bg-gray-800': isDark }"
-                  >
-                    <!-- <td class="text-center">
-                      <label nz-checkbox></label>
-                    </td> -->
+                  <tr *ngFor="let item of listOfData; let i = index">
                     <td class="text-center">{{ i + 1 }}</td>
                     <td class="space-x-2 flex">
                       <button
@@ -424,6 +467,8 @@
                     <td>{{ item.ProductCode }}</td>
                     <td>{{ item.ProductName }}</td>
                     <td>{{ item.Unit | unitText }}</td>
+
+                    <!-- Quantity -->
                     <td
                       [ngClass]="{
                         'text-danger-light dark:text-danger-dark font-bold':
@@ -453,9 +498,22 @@
                         <span class="cursor-pointer">{{ item.Quantity }}</span>
                       </ng-template>
                     </td>
+
+                    <!-- Đơn giá -->
+                    <td>{{ item.SalePrice ?? 0 | price }}</td>
+
+                    <!-- Thành tiền -->
+                    <td class="font-semibold text-green-400">
+                      {{ item.TotalPrice ?? 0 | price }}
+                    </td>
                   </tr>
                 </tbody>
               </nz-table>
+              <div
+                class="text-right text-xl mr-6 font-bold mt-4 text-secondary-light dark:text-secondary-dark"
+              >
+                Tổng hóa đơn: {{ totalAmount ?? 0 | price }}
+              </div>
             </form>
           </div>
         </div>

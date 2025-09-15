@@ -80,12 +80,10 @@ export class ProductPopupSearchComponent implements OnInit {
         ProductCode: p.Code,
         Unit: p.Unit,
         Quantity: 0,
+        SalePrice: p.SalePrice,
         InventoryReceiptId: '',
       }));
-    console.log(selectedInventoryDetails);
-    console.log('listOfData:', this.listOfData);
-    console.log('setOfCheckedId:', this.setOfCheckedId);
-    console.log('disabledProductIds:', this.disabledProductIds);
+
     // Nếu không có sản phẩm hợp lệ được chọn
     if (selectedInventoryDetails.length === 0) {
       // Có thể hiện thông báo nếu muốn
@@ -118,26 +116,26 @@ export class ProductPopupSearchComponent implements OnInit {
       .SearchProduct(this.searchKeyword || null, pageSize, pageIndex, false)
       .subscribe({
         next: (res) => {
+          console.log('API raw response:', res);
+          console.log('Products[0]:', res.Products?.[0]);
           this.disabledProductIds.clear();
 
           const existingIds = new Set(this.existingProducts);
 
           // Lọc sản phẩm trước khi bind vào listOfData
-          let products = (res.Products || []).filter((p) => {
-            // Nếu đã có trong existingProducts → ẩn
-            if (existingIds.has(p.Id)) {
-              return false;
-            }
-
-            // Nếu ProductQuantity = false và Quantity = 0 → ẩn
-            if (!this.ProductQuantity && p.Quantity === 0) {
-              return false;
-            }
-
-            return true;
-          });
+          let products = (res.Products || []).reduce((acc, p) => {
+            if (existingIds.has(p.Id)) return acc;
+            if (!this.ProductQuantity && p.Quantity === 0) return acc;
+            acc.push(p); // giữ nguyên object p (không mất SalePrice)
+            return acc;
+          }, [] as Product[]);
 
           this.originalData = products;
+          console.log('res product:', res.Products);
+          console.log('products:', products);
+
+          this.listOfData = products;
+          console.log('listOfData:', this.listOfData);
           this.totalCount = res.TotalCount || 0;
 
           setTimeout(() => {

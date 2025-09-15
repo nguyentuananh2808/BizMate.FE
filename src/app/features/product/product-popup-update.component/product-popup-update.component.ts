@@ -95,7 +95,6 @@ export class ProductPopupUpdateComponent implements OnInit {
 
   selectCategory(cat: ProductCategory): void {
     this.data.ProductCategoryId = cat.Id;
-    console.log('catID 1:', cat.Id);
     this.searchTerm = cat.Name;
     this.showDropdown = false;
   }
@@ -138,6 +137,7 @@ export class ProductPopupUpdateComponent implements OnInit {
         this.data.Name.trim(),
         this.data.Unit,
         this.data.IsActive,
+        this.data.SalePrice ?? 0, 
         this.data.ImageUrl,
         this.data.SupplierId,
         this.data.Description.trim() || ''

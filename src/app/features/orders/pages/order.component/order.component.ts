@@ -7,6 +7,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
@@ -18,12 +19,14 @@ import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
 import { ToastrService } from 'ngx-toastr';
 import { Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { WarehouseReceiptService } from '../../../inventory-receipt/services/warehouse-receipt.service';
 import { MenuComponent } from '../../../shared/menu.component/menu.component';
 import { NzPaginationComponent } from 'ng-zorro-antd/pagination';
-import { WarehouseReceipt } from '../../../inventory-receipt/models/warehouse-receipt.model';
-import { SearchWarehouseRequest } from '../../../inventory-receipt/models/warehouse-receipt-search-request.model';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+import { OrderService } from '../../services/order.service';
+import { SearchOrderRequest } from '../../models/search-order-request.model';
+import { OrderDto } from '../../models/order-dto.model';
+import { StatusService } from '../../../status/services/status.service';
+import { StatusDto } from '../../../status/models/status-dto.model';
 
 @Component({
   selector: 'order',
@@ -33,6 +36,7 @@ import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
     FormsModule,
     NzTableModule,
     NzCheckboxModule,
+    NzSelectModule,
     NzButtonModule,
     BottomMenuComponent,
     NzIconModule,
@@ -50,15 +54,15 @@ import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 export class OrderComponent implements OnInit {
   isLoading = false;
   activeDropdown: any = null;
-  listOfData: WarehouseReceipt[] = [];
-  originalData: WarehouseReceipt[] = [];
-  listOfCurrentPageData: WarehouseReceipt[] = [];
+  listOfData: OrderDto[] = [];
+  originalData: OrderDto[] = [];
+  listOfCurrentPageData: OrderDto[] = [];
   setOfCheckedId = new Set<string>();
   checked = false;
   indeterminate = false;
   searchKeyword = '';
   isMobile = window.innerWidth < 768;
-  selectedItem!: WarehouseReceipt;
+  selectedItem!: OrderDto;
   isDark = false;
   showPopup = false;
   showPopupCreate = false;
@@ -67,8 +71,11 @@ export class OrderComponent implements OnInit {
   pageSize = 10;
   pageIndex = 1;
   totalCount = 0;
+  statuses: string[] = [];
   showTooltip = false;
   dateRange: [Date, Date] | null = null;
+  statusList: StatusDto[] = [];
+  selectedStatuses: string[] = [];
   placement: 'bottomLeft' | 'bottomRight' = 'bottomLeft';
 
   @HostListener('window:resize', ['$event'])
@@ -77,7 +84,8 @@ export class OrderComponent implements OnInit {
   }
 
   constructor(
-    private WarehouseReceiptService: WarehouseReceiptService,
+    private orderService: OrderService,
+    private statusService: StatusService,
     private cdr: ChangeDetectorRef,
     private modal: NzModalService,
     private toastr: ToastrService,
@@ -93,8 +101,21 @@ export class OrderComponent implements OnInit {
   ngOnInit(): void {
     this.checkIsMobile();
     window.addEventListener('resize', () => this.checkIsMobile());
+    this.loadStatuses();
     this.fetchData();
   }
+
+  loadStatuses() {
+    this.statusService.SearchStatus('Order').subscribe({
+      next: (res) => {
+        this.statusList = res.Statuses;
+        this.statuses = this.statusList.map((s) => s.Id);
+        console.log('statuses111:', this.statuses);
+      },
+      error: (err) => console.error(err),
+    });
+  }
+
   checkIsMobile() {
     this.isMobile = window.innerWidth <= 768;
     if (this.isMobile) {
@@ -113,19 +134,19 @@ export class OrderComponent implements OnInit {
     this.activeDropdown = null;
   }
 
-  createWarehouseReceipt() {
+  createOrder() {
     this.showPopupCreate = true;
   }
-  viewDetail(item: WarehouseReceipt) {
+  viewDetail(item: OrderDto) {
     this.selectedItem = item;
     this.showPopup = true;
     this.router.navigate(['/order-update', item.Id]);
   }
-  closeWarehouseReceiptDetailPopup() {
+  closeOrderDetailPopup() {
     this.showPopup = false;
     setTimeout(() => (this.showPopup = false), 300);
   }
-  closeWarehouseReceiptPopupCreate() {
+  closeOrderPopupCreate() {
     this.showPopupCreate = false;
     this.fetchData();
     setTimeout(() => (this.showPopup = false), 300);
@@ -141,30 +162,50 @@ export class OrderComponent implements OnInit {
     dateTo?: Date
   ): void {
     this.isLoading = true;
+    // Lấy ngày đầu tháng hiện tại (00:00:00.000)
     const fromDate = dateFrom
       ? new Date(dateFrom.setHours(0, 0, 0, 0))
-      : undefined;
+      : new Date(
+          new Date().getFullYear(),
+          new Date().getMonth(),
+          1,
+          0,
+          0,
+          0,
+          0
+        );
+
+    // Lấy ngày cuối tháng hiện tại (23:59:59.999)
     const toDate = dateTo
       ? new Date(dateTo.setHours(23, 59, 59, 999))
-      : undefined;
-    const request: SearchWarehouseRequest = {
+      : new Date(
+          new Date().getFullYear(),
+          new Date().getMonth() + 1,
+          0,
+          23,
+          59,
+          59,
+          999
+        );
+
+    const request: SearchOrderRequest = {
       pageIndex: pageIndex,
       pageSize: pageSize,
       keySearch: this.searchKeyword.trim(),
-      type: 2, //phiếu xuất
       dateFrom: fromDate,
       dateTo: toDate,
+      statusIds: this.statuses,
     };
 
-    this.WarehouseReceiptService.SearchWarehouseReceipt(request).subscribe({
+    this.orderService.SearchOrder(request).subscribe({
       next: (res) => {
-        this.originalData = (res.InventoryReceipts || []).map((item) => ({
+        this.originalData = (res.Orders || []).map((item) => ({
           ...item,
           CreatedDate: new Date(item.CreatedDate),
-          
+
           UpdatedDate: new Date(item.UpdatedDate),
         }));
-        console.log("data",this.originalData);
+        console.log('data', this.originalData);
         this.totalCount = res.TotalCount || 0;
 
         this.listOfData = [...this.originalData].sort((a, b) =>
@@ -225,7 +266,7 @@ export class OrderComponent implements OnInit {
     );
     this.refreshCheckedStatus();
   }
-  onCurrentPageDataChange(data: readonly WarehouseReceipt[]) {
+  onCurrentPageDataChange(data: readonly OrderDto[]) {
     this.listOfCurrentPageData = [...data];
     this.refreshCheckedStatus();
   }
@@ -237,7 +278,7 @@ export class OrderComponent implements OnInit {
       this.listOfCurrentPageData.some((i) => this.setOfCheckedId.has(i.Id)) &&
       !this.checked;
   }
-  trackById(index: number, item: WarehouseReceipt): string {
+  trackById(index: number, item: OrderDto): string {
     return item.Id;
   }
 
@@ -262,6 +303,7 @@ export class OrderComponent implements OnInit {
 
   clearDateFilter() {
     this.dateRange = null;
+    this.selectedStatuses = [];
     this.hideTooltip();
     this.fetchData(this.pageIndex, this.pageSize);
   }

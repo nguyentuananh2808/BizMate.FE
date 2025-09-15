@@ -21,7 +21,7 @@ export class ProductService {
       keySearch,
       pageIndex,
       pageSize,
-      isActive
+      isActive,
     };
     console.log('keyseach: ', keySearch);
 
@@ -38,6 +38,7 @@ export class ProductService {
     Name: string,
     Unit: number,
     IsActive: boolean,
+    SalePrice: number,
     ImageUrl?: string,
     SupplierId?: string,
     Description?: string
@@ -51,6 +52,7 @@ export class ProductService {
       SupplierId,
       RowVersion,
       IsActive,
+      SalePrice,
       Description,
     };
     console.log('payload:', ProductCategoryId);
@@ -64,12 +66,14 @@ export class ProductService {
     name: string,
     productCategoryId: string,
     unit: number,
+    salePrice: number,
     imageUrl: string,
     description: string
   ): Observable<any> {
     const body: ProductCreateRequest = {
       name,
       productCategoryId,
+      salePrice,
       unit,
       imageUrl,
       description,

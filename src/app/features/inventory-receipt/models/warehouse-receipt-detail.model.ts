@@ -23,4 +23,6 @@ export interface InventoryDetail {
   ProductCode: string;
   Unit: number;
   Quantity: number;
+  SalePrice?: number;
+  Available?: number;
 }

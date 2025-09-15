@@ -140,12 +140,32 @@ export class WarehouseReceiptComponent implements OnInit {
     dateTo?: Date
   ): void {
     this.isLoading = true;
+    // Lấy ngày đầu tháng hiện tại (00:00:00.000)
     const fromDate = dateFrom
       ? new Date(dateFrom.setHours(0, 0, 0, 0))
-      : undefined;
+      : new Date(
+          new Date().getFullYear(),
+          new Date().getMonth(),
+          1,
+          0,
+          0,
+          0,
+          0
+        );
+
+    // Lấy ngày cuối tháng hiện tại (23:59:59.999)
     const toDate = dateTo
       ? new Date(dateTo.setHours(23, 59, 59, 999))
-      : undefined;
+      : new Date(
+          new Date().getFullYear(),
+          new Date().getMonth() + 1,
+          0,
+          23,
+          59,
+          59,
+          999
+        );
+
     const request: SearchWarehouseRequest = {
       pageIndex: pageIndex,
       pageSize: pageSize,

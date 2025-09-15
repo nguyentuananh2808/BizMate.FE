@@ -14,6 +14,8 @@ export interface Product {
   IsActive: boolean;
   CreatedDate: Date;
   UpdatedDate: Date;
+  SalePrice?: number;
+  Available?: number;
 }
 
 export interface ProductResponse {

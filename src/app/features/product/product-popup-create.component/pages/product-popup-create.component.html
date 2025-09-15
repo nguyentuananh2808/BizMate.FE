@@ -36,6 +36,7 @@
           type="text"
           name="name"
           [(ngModel)]="name"
+          placeholder="Nhập tên sản phẩm..."
           required
           class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-info-light dark:focus:ring-info-dark"
         />
@@ -98,6 +99,34 @@
         </select>
       </div>
 
+      <!-- Giá -->
+      <div class="w-full">
+        <label
+          for="salePrice"
+          class="block text-sm font-semibold mb-2 text-text-secondary-light dark:text-text-secondary-dark"
+        >
+          Giá bán lẻ
+        </label>
+        <div
+          class="flex items-center rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus-within:ring-2 focus-within:ring-info-light dark:focus-within:ring-info-dark"
+        >
+          <input
+            id="salePrice"
+            type="number"
+            name="salePrice"
+            [(ngModel)]="salePrice"
+            required
+            placeholder="Nhập giá..."
+            class="w-full px-4 py-2 rounded-l-lg bg-transparent text-neutral-900 dark:text-neutral-100 focus:outline-none"
+          />
+          <span
+            class="w-32 px-3 py-2 text-sm text-neutral-600 dark:text-neutral-300 border-l border-neutral-300 dark:border-neutral-600"
+          >
+            .000 vnđ
+          </span>
+        </div>
+      </div>
+
       <!-- Mô tả -->
       <div>
         <label
@@ -109,6 +138,7 @@
           name="description"
           rows="4"
           [(ngModel)]="description"
+          placeholder="Mô tả..."
           class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
         ></textarea>
       </div>
