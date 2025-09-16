@@ -336,15 +336,19 @@
                       <input
                         formControlName="customerSearch"
                         [nzAutocomplete]="auto"
-                        class="input-style mt-2"
+                        [(ngModel)]="searchCustomerKeyword"
+                        (ngModelChange)="onSearchCustomer($event)"
                         placeholder="Tìm kiếm khách hàng..."
+                        class="input-style mt-2"
                       />
-                      <nz-autocomplete #auto>
+
+                      <nz-autocomplete
+                        #auto
+                        (selectionChange)="onCustomerSelected($event.nzValue)"
+                      >
                         <nz-auto-option
                           *ngFor="let customer of customers"
                           [nzValue]="customer"
-                          [nzLabel]="customer.Name"
-                          (selectionChange)="onCustomerSelected(customer)"
                         >
                           {{ customer.Name }}
                         </nz-auto-option>

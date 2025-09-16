@@ -160,29 +160,39 @@ export class OrderCreateComponent {
   onTabChange(index: number): void {
     this.selectedTabIndex = index;
     console.log('Tab changed:', index);
+
+    this.orderForm.patchValue({
+      customerName: '',
+      phoneNumber: '',
+      deliveryAddress: '',
+      customerSearch: '',
+    });
   }
 
-  onCustomerSelected(customer: Customer) {
+  onCustomerSelected(customer: Customer): void {
     if (!customer) return;
+
+    console.log('Selected customer:', customer);
 
     this.orderForm.patchValue({
       customerName: customer.Name,
-      phoneNumber: customer.Phone,
-      deliveryAddress: customer.Address,
+      phoneNumber: customer.Phone ?? '',
+      deliveryAddress: customer.Address ?? '',
+      customerSearch: customer.Name,
     });
 
-    console.log('Selected customer:', customer);
+    this.customer = {
+      name: customer.Name,
+      phone: customer.Phone ?? '',
+      address: customer.Address ?? '',
+      description: '',
+    };
   }
 
   onSearchCustomer(keyword: string): void {
     this.searchSubject.next(keyword);
-
     if (!keyword) {
-      this.orderForm.patchValue({
-        customerName: '',
-        phoneNumber: '',
-        deliveryAddress: '',
-      });
+      this.customers = [];
     }
   }
 
