@@ -3,9 +3,11 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiUrls } from '../../../config/api.config';
 import { SearchOrderRequest } from '../models/search-order-request.model';
-import { OrderDto } from '../models/order-dto.model';
+import { GetOrderResponse, OrderDto } from '../models/order-dto.model';
 import { UpdateOrderRequest } from '../models/update-order-request.model';
 import { GetOrdersResponse } from '../models/order-search-response.model';
+import { CreateOrderRequest } from '../models/create-order-request.model';
+import { UpdateStatusOrderRequest } from '../models/update-status-order-request.model';
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
@@ -26,8 +28,8 @@ export class OrderService {
     );
   };
 
-  ReadByIdOrder = (id: string): Observable<OrderDto> => {
-    return this.http.get<OrderDto>(
+  ReadByIdOrder = (id: string): Observable<GetOrderResponse> => {
+    return this.http.get<GetOrderResponse>(
       `${ApiUrls.baseUrl}${ApiUrls.order.readById}/${id}`
     );
   };
@@ -39,8 +41,15 @@ export class OrderService {
     );
   }
 
+UpdateStatusOrder(body: UpdateStatusOrderRequest): Observable<any> {
+    return this.http.put<any>(
+      `${ApiUrls.baseUrl}${ApiUrls.order.updateStatus}`,
+      body
+    );
+  }
+
   CreateOrder = (
-    createReceiptRequestRequest: UpdateOrderRequest
+    createReceiptRequestRequest: CreateOrderRequest
   ): Observable<any> => {
     return this.http.post<any>(
       `${ApiUrls.baseUrl}${ApiUrls.order.create}`,

@@ -1,6 +1,14 @@
-import { BaseCoreRespone } from "../../shared/models/base-core-response.model";
-import { StatusDto } from "../../status/models/status-dto.model";
+import { BaseCoreRespone } from '../../shared/models/base-core-response.model';
+import { StatusDto } from '../../status/models/status-dto.model';
 
+export interface GetOrderResponse {
+  Order: OrderWrapper;  
+}
+
+export interface OrderWrapper {
+  Order: OrderDto;      
+  Success: boolean;
+}
 export interface OrderDto extends BaseCoreRespone {
   OrderDate: Date;
   CustomerType: number;
@@ -10,8 +18,9 @@ export interface OrderDto extends BaseCoreRespone {
   DeliveryAddress: string;
   TotalAmount: number;
   StatusId: string;
-  Statuses:StatusDto;
-  OrderDetailDtos: OrderDetailDto[];
+  StatusName: string;
+  Status: StatusDto;
+  Details: OrderDetailDto[];
 }
 
 export interface OrderDetailDto {

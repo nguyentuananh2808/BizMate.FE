@@ -1,3 +1,4 @@
+import { OrderService } from './../../services/order.service';
 import { Product } from '../../../product/product.component/models/product-response.model';
 import { CommonModule, Location } from '@angular/common';
 import {
@@ -32,14 +33,26 @@ import { InventoryDetail } from '../../../inventory-receipt/models/warehouse-rec
 import { WarehouseReceiptService } from '../../../inventory-receipt/services/warehouse-receipt.service';
 import { CreateReceiptRequestRequest } from '../../../inventory-receipt/models/warehouse-receipt-create.model';
 import { UpdateReceiptRequestRequest } from '../../../inventory-receipt/models/warehouse-receipt-update.model';
+import { UpdateOrderRequest } from '../../models/update-order-request.model';
+import { PricePipe } from '../../../../shared/pipes/price-pice';
+import { Customer } from '../../../customer/models/customer-response.model';
+import { Subject } from 'rxjs';
+import { NzTabsModule } from 'ng-zorro-antd/tabs';
+import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { StatusColorPipe } from '../../../../shared/pipes/status-color.pipe';
+import { UpdateStatusOrderRequest } from '../../models/update-status-order-request.model';
 
 @Component({
   standalone: true,
   selector: 'order-update',
   imports: [
     NgxPrintModule,
+    NzInputModule,
+    NzAutocompleteModule,
     CommonModule,
     FormsModule,
+    NzTableModule,
     NzTableModule,
     NzCheckboxModule,
     NzButtonModule,
@@ -49,20 +62,31 @@ import { UpdateReceiptRequestRequest } from '../../../inventory-receipt/models/w
     ReactiveFormsModule,
     HeaderCommonComponent,
     NzModalModule,
+    NzTableModule,
     NzFloatButtonModule,
     UnitTextPipe,
     ProductPopupSearchComponent,
     MenuComponent,
+    PricePipe,
+    NzTabsModule,
+    StatusColorPipe,
   ],
   templateUrl: './order-update.component.html',
   styleUrls: ['./order-update.component.scss'],
 })
 export class OrderUpdateComponent implements OnInit {
+  id: string = '';
+  statusName: string = '';
+  rowVersion: string = '';
+  statusId: string = '';
+  selectedTabIndex = 0;
+  searchCustomerKeyword = '';
+  customers: Customer[] = [];
+  private searchSubject = new Subject<string>();
   orderForm: FormGroup;
   isDark = false;
-  id: string = '';
-  rowVersion: string = '';
   dateToday = new Date();
+  existingProductIds: string[] = [];
   isPopupSearchProducts = false;
   indeterminate = false;
   isSubmitting = false;
@@ -70,16 +94,21 @@ export class OrderUpdateComponent implements OnInit {
   checked = false;
   setOfCheckedId = new Set<string>();
   isMobile = window.innerWidth < 768;
-  listOfData: InventoryDetail[] = [];
+  listOfData: (InventoryDetail & {
+    SalePrice?: number;
+    TotalPrice?: number;
+  })[] = [];
+  totalAmount: number = 0;
   listOfCurrentPageData: Product[] = [];
   editingId: string | null = null;
   editingQuantity: number | null = null;
   inputError = false;
-  existingProductIds: string[] = [];
   allData: any[] = [];
   message: any;
+  selectedCustomer!: Customer | string;
   searchKeyword = '';
   customer = {
+    id: '',
     name: '',
     phone: '',
     address: '',
@@ -93,7 +122,7 @@ export class OrderUpdateComponent implements OnInit {
     private modal: NzModalService,
     private cdr: ChangeDetectorRef,
     private router: ActivatedRoute,
-    private receiptService: WarehouseReceiptService
+    private orderService: OrderService
   ) {
     this.orderForm = this.fb.group({
       customerName: [''],
@@ -114,30 +143,313 @@ export class OrderUpdateComponent implements OnInit {
   ngOnInit(): void {
     this.id = this.router.snapshot.paramMap.get('id')!;
     if (this.id) {
-      this.getWarehouseReceiptDetail(this.id);
+      this.getOrderDetail(this.id);
     }
   }
+
+  statusActions: Record<
+    string,
+    { type: string; label: string; icon: string; class: string }[]
+  > = {
+    Nháp: [
+      {
+        type: 'create',
+        label: 'Tạo mới',
+        icon: 'plus-circle',
+        class: 'bg-blue-500 hover:bg-blue-600 text-white',
+      },
+      {
+        type: 'cancel',
+        label: 'Hủy',
+        icon: 'close-circle',
+        class: 'bg-red-500 hover:bg-red-600 text-white',
+      },
+    ],
+    Hủy: [
+      {
+        type: 'create',
+        label: 'Tạo mới',
+        icon: 'plus-circle',
+        class: 'bg-blue-500 hover:bg-blue-600 text-white',
+      },
+      {
+        type: 'cancel',
+        label: 'Hủy',
+        icon: 'close-circle',
+        class: 'bg-red-500 hover:bg-red-600 text-white',
+      },
+    ],
+    'Tạo mới': [
+      {
+        type: 'packing',
+        label: 'Bắt đầu đóng hàng',
+        icon: 'gift',
+        class: 'bg-green-500 hover:bg-green-600 text-white hover:text-white',
+      },
+      {
+        type: 'cancel',
+        label: 'Hủy',
+        icon: 'close-circle',
+        class: 'bg-red-500 hover:bg-red-600 text-white hover:text-white',
+      },
+    ],
+    'Đang đóng hàng': [
+      {
+        type: 'donePacking',
+        label: 'Đã đóng hàng',
+        icon: 'check-circle',
+        class: 'bg-purple-500 hover:bg-purple-600 text-white hover:text-white',
+      },
+      {
+        type: 'cancel',
+        label: 'Hủy',
+        icon: 'close-circle',
+        class: 'bg-red-500 hover:bg-red-600 text-white hover:text-white',
+      },
+    ],
+    'Đã đóng hàng': [
+      {
+        type: 'finish',
+        label: 'Hoàn thành',
+        icon: 'check-circle',
+        class: 'bg-green-600 hover:bg-green-700 text-white hover:text-white',
+      },
+      {
+        type: 'cancel',
+        label: 'Hủy',
+        icon: 'close-circle',
+        class: 'bg-red-500 hover:bg-red-600 text-white hover:text-white',
+      },
+    ],
+    'Hoàn thành': [],
+  };
+
+  // Xử lý hành động
+  handleAction(action: string): void {
+    switch (action) {
+      case 'create':
+        this.createOrder();
+        break;
+      case 'packing':
+        this.packingOrder();
+        break;
+      case 'donePacking':
+        this.completePacking();
+        break;
+      case 'finish':
+        this.finishOrder();
+        break;
+      case 'cancel':
+        this.cancelOrder();
+        break;
+    }
+  }
+
+  createOrder(): void {
+    const payload: UpdateStatusOrderRequest = {
+      Id: this.id,
+      RowVersion: this.rowVersion,
+      StatusCode: 'NEW',
+      StatusId: this.statusId,
+    };
+    this.orderService.UpdateStatusOrder(payload).subscribe({
+      next: () => {
+        this.toastr.success('Cập nhật trạng thái đơn hàng thành công!');
+        this.cdr.detectChanges();
+        this.getOrderDetail(this.id);
+      },
+      error: (err) => {
+        console.error('Lỗi khi gọi ReadByIdWarehouseReceipt:', err);
+        this.toastr.error('Cập nhật trạng thái đơn hàng thất bại!');
+      },
+    });
+  }
+
+  finishOrder(): void {
+    const payload: UpdateStatusOrderRequest = {
+      Id: this.id,
+      RowVersion: this.rowVersion,
+      StatusCode: 'COMPLETED',
+      StatusId: this.statusId,
+    };
+    this.orderService.UpdateStatusOrder(payload).subscribe({
+      next: () => {
+        this.toastr.success('Cập nhật trạng thái đơn hàng thành công!');
+        this.cdr.detectChanges();
+        this.getOrderDetail(this.id);
+      },
+      error: (err) => {
+        console.error('Lỗi khi gọi ReadByIdWarehouseReceipt:', err);
+        this.toastr.error('Cập nhật trạng thái đơn hàng thất bại!');
+      },
+    });
+  }
+
+  cancelOrder(): void {
+    const payload: UpdateStatusOrderRequest = {
+      Id: this.id,
+      RowVersion: this.rowVersion,
+      StatusCode: 'CANCELLED',
+      StatusId: this.statusId,
+    };
+    this.orderService.UpdateStatusOrder(payload).subscribe({
+      next: () => {
+        this.toastr.success('Cập nhật trạng thái đơn hàng thành công!');
+        this.cdr.detectChanges();
+        this.getOrderDetail(this.id);
+      },
+      error: (err) => {
+        console.error('Lỗi khi gọi ReadByIdWarehouseReceipt:', err);
+        this.toastr.error('Cập nhật trạng thái đơn hàng thất bại!');
+      },
+    });
+  }
+
+  completePacking(): void {
+    const payload: UpdateStatusOrderRequest = {
+      Id: this.id,
+      RowVersion: this.rowVersion,
+      StatusCode: 'PACKED',
+      StatusId: this.statusId,
+    };
+    this.orderService.UpdateStatusOrder(payload).subscribe({
+      next: () => {
+        this.toastr.success('Cập nhật trạng thái đơn hàng thành công!');
+        this.cdr.detectChanges();
+        this.getOrderDetail(this.id);
+      },
+      error: (err) => {
+        console.error('Lỗi khi gọi ReadByIdWarehouseReceipt:', err);
+        this.toastr.error('Cập nhật trạng thái đơn hàng thất bại!');
+      },
+    });
+  }
+
+  packingOrder(): void {
+    const payload: UpdateStatusOrderRequest = {
+      Id: this.id,
+      RowVersion: this.rowVersion,
+      StatusCode: 'PACKING',
+      StatusId: this.statusId,
+    };
+    this.orderService.UpdateStatusOrder(payload).subscribe({
+      next: () => {
+        this.toastr.success('Cập nhật trạng thái đơn hàng thành công!');
+        this.cdr.detectChanges();
+        this.getOrderDetail(this.id);
+      },
+      error: (err) => {
+        console.error('Lỗi khi gọi ReadByIdWarehouseReceipt:', err);
+        this.toastr.error('Cập nhật trạng thái đơn hàng thất bại!');
+      },
+    });
+  }
+
+  onCustomerSelected(customer: Customer | undefined): void {
+    if (!customer) {
+      return;
+    }
+
+    this.orderForm.patchValue({
+      customerName: customer.Name ?? '',
+      phoneNumber: customer.Phone ?? '',
+      deliveryAddress: customer.Address ?? '',
+      customerSearch: customer.Name ?? '',
+    });
+
+    this.customer = {
+      id: customer.Id,
+      name: customer.Name ?? '',
+      phone: customer.Phone ?? '',
+      address: customer.Address ?? '',
+      description: '',
+    };
+  }
+
+  onSearchCustomer(keyword: string): void {
+    this.searchSubject.next(keyword);
+    if (!keyword) {
+      this.customers = [];
+    }
+  }
+
+  selectCustomer(customer: Customer): void {
+    if (!customer) return;
+    this.orderForm.patchValue({
+      customerName: customer.Name,
+      phoneNumber: customer.Phone,
+      deliveryAddress: customer.Address,
+      description: '',
+    });
+    this.customer = {
+      id: customer.Id,
+      name: customer.Name,
+      phone: customer.Phone,
+      address: customer.Address,
+      description: '',
+    };
+  }
+
+  onTabChange(index: number): void {
+    this.selectedTabIndex = index;
+    console.log('Tab changed:', index);
+
+    this.orderForm.patchValue({
+      customerName: '',
+      phoneNumber: '',
+      deliveryAddress: '',
+      customerSearch: '',
+    });
+  }
+
   updateExistingProductIds(): void {
     this.existingProductIds = this.listOfData.map((item) => item.ProductId);
   }
-  getWarehouseReceiptDetail(id: string): void {
-    this.receiptService.ReadByIdWarehouseReceipt(id).subscribe({
+  getOrderDetail(id: string): void {
+    this.orderService.ReadByIdOrder(id).subscribe({
       next: (res) => {
+        console.log('ReadByIdOrder:', res.Order.Order);
+
+        this.rowVersion = res.Order.Order.RowVersion;
+        this.existingProductIds = res.Order.Order.Details.map(
+          (d: any) => d.ProductId
+        );
+        this.statusId = res.Order.Order.StatusId;
+        this.statusName = res.Order.Order.StatusName;
+        (this.totalAmount = res.Order.Order.TotalAmount),
+          console.log('this.totalAmount:', this.totalAmount);
+
         this.orderForm.patchValue({
-          customerName: res.CustomerName || '',
-          phoneNumber: res.CustomerPhone || '',
-          deliveryAddress: res.DeliveryAddress || '',
-          description: res.Description || '',
+          customerName: res.Order.Order.CustomerName || '',
+          phoneNumber: res.Order.Order.CustomerPhone || '',
+          deliveryAddress: res.Order.Order.DeliveryAddress || '',
+          description: res.Order.Order.Description || '',
         });
 
-        // Gán dữ liệu sản phẩm
-        this.listOfData = res.InventoryDetails || [];
-        this.updateExistingProductIds();
-        this.allData = [...this.listOfData];
-        this.rowVersion = res.RowVersion;
+        // ======= ĐỒNG BỘ DETAILS FORMARRAY =======
+        const detailsFormArray = this.orderForm.get('details') as FormArray;
+        detailsFormArray.clear();
+        console.log(res.Order.Order.Details);
 
-        // Gán ngày
-        this.dateToday = res.Date || new Date();
+        (res.Order.Order.Details || []).forEach((item: any) => {
+          const detailGroup = this.fb.group({
+            Id: [item.Id],
+            ProductId: [item.ProductId],
+            ProductName: [item.ProductName],
+            ProductCode: [item.ProductCode],
+            Unit: [item.Unit],
+            Quantity: [item.Quantity],
+            SalePrice: [item.UnitPrice],
+            TotalPrice: [item.Total],
+          });
+          detailsFormArray.push(detailGroup);
+          console.log('Pushed detail', detailGroup.value);
+        });
+
+        // listOfData = sync với formArray
+        this.listOfData = detailsFormArray.controls.map((c) => c.value);
+        console.log('listOfData:', this.listOfData);
+
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -166,6 +478,7 @@ export class OrderUpdateComponent implements OnInit {
       this.orderForm.value;
 
     this.customer = {
+      id: '',
       name: customerName,
       phone: phoneNumber,
       address: deliveryAddress,
@@ -284,6 +597,7 @@ export class OrderUpdateComponent implements OnInit {
         quantity: [1, [Validators.required, Validators.min(1)]],
       })
     );
+     this.editingQuantity = 1; 
   }
 
   removeProduct(index: number): void {
@@ -353,24 +667,24 @@ export class OrderUpdateComponent implements OnInit {
   submitForm(): void {
     const formValues = this.orderForm.value;
 
-    const payload: UpdateReceiptRequestRequest = {
-      id: this.id,
-      type: 2, //phiếu xuất
-      supplierName: '',
-      customerName: formValues.customerName,
-      customerPhone: formValues.phoneNumber,
-      rowVersion: this.rowVersion,
-      description: formValues.description,
-      details: this.listOfData.map((item) => ({
-        productId: item.ProductId ?? item.Id,
-        quantity: item.Quantity,
+    const payload: UpdateOrderRequest = {
+      Id: this.id,
+      StatusId: this.statusId,
+      RowVersion: this.rowVersion,
+      CustomerType: this.selectedTabIndex === 0 ? 1 : 2,
+      CustomerName: formValues.customerName,
+      CustomerPhone: formValues.phoneNumber,
+      DeliveryAddress: formValues.deliveryAddress,
+      Description: formValues.description,
+      Details: this.listOfData.map((item) => ({
+        ProductId: item.ProductId ?? item.Id,
+        Quantity: item.Quantity,
       })),
     };
 
-    this.receiptService.UpdateWarehouseReceipt(payload).subscribe({
+    this.orderService.UpdateOrder(payload).subscribe({
       next: () => {
-        this.toastr.success('Câp nhật đơn hàng thành công!');
-        // this.router.navigateByUrl('/warehouse-receipt');
+        this.toastr.success('Cập nhật đơn hàng thành công!');
       },
       error: (err) => {
         const userMessage = err.error?.Message || 'Cập nhật thất bại';

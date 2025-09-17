@@ -124,15 +124,30 @@
                 </div>
 
                 <div class="flex justify-end">
+                  <!-- Lưu nháp -->
+                  <button
+                    nz-button
+                    nzType="default"
+                    class="rounded-[24px] h-10 px-6 bg-green-400 hover:bg-green-500 text-white"
+                    [disabled]="isSubmitting || isSubmitDisabled"
+                    (click)="submitForm(true)"
+                  >
+                    <nz-icon nzType="save" nzTheme="outline"></nz-icon>
+                    <span *ngIf="isSubmitting">Đang lưu...</span>
+                    <span *ngIf="!isSubmitting">Lưu nháp</span>
+                  </button>
+
+                  <!-- Tạo đơn hàng -->
                   <button
                     nz-button
                     nzType="primary"
                     class="rounded-[24px] h-10 px-6"
                     [disabled]="isSubmitting || isSubmitDisabled"
+                    (click)="submitForm(false)"
                   >
                     <nz-icon nzType="save" nzTheme="outline"></nz-icon>
                     <span *ngIf="isSubmitting">Đang tạo...</span>
-                    <span *ngIf="!isSubmitting">Tạo phiếu</span>
+                    <span *ngIf="!isSubmitting">Tạo đơn hàng</span>
                   </button>
                 </div>
               </form>
@@ -306,7 +321,11 @@
               </h2>
             </div>
 
-            <form [formGroup]="orderForm" class="space-y-6 pl-3 pt-3">
+            <form
+              [formGroup]="orderForm"
+              class="space-y-6 pl-3 pt-3"
+              *ngIf="customer"
+            >
               <div class="grid grid-cols-2 gap-4">
                 <!-- Cột 1: Khách hàng -->
                 <div>
@@ -421,15 +440,30 @@
                   </button>
 
                   <div class="flex justify-end ml-2">
+                    <!-- Lưu nháp -->
+                    <button
+                      nz-button
+                      nzType="default"
+                      class="rounded-[24px] h-10 px-6 bg-green-400 hover:bg-green-500 text-white"
+                      [disabled]="isSubmitting || isSubmitDisabled"
+                      (click)="submitForm(true)"
+                    >
+                      <nz-icon nzType="save" nzTheme="outline"></nz-icon>
+                      <span *ngIf="isSubmitting">Đang lưu...</span>
+                      <span *ngIf="!isSubmitting">Lưu nháp</span>
+                    </button>
+
+                    <!-- Tạo đơn hàng -->
                     <button
                       nz-button
                       nzType="primary"
-                      class="rounded-[24px] h-10 px-6"
+                      class="rounded-[24px] h-10 px-6 ml-2"
                       [disabled]="isSubmitting || isSubmitDisabled"
+                      (click)="submitForm(false)"
                     >
                       <nz-icon nzType="save" nzTheme="outline"></nz-icon>
                       <span *ngIf="isSubmitting">Đang tạo...</span>
-                      <span *ngIf="!isSubmitting">Tạo phiếu</span>
+                      <span *ngIf="!isSubmitting">Tạo đơn hàng</span>
                     </button>
                   </div>
                 </div>

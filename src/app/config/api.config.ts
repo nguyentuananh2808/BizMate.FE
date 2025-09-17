@@ -35,6 +35,7 @@ export const ApiUrls = {
     readById: '/order',
     create: '/order',
     update: '/order',
+    updateStatus: '/order/update_status',
   },
 
   customer: {

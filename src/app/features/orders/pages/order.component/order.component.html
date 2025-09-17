@@ -138,7 +138,7 @@
       <!-- Desktop header bar -->
       <div *ngIf="!isMobile">
         <!-- Header -->
-        <header-common  class="z-[9999]"></header-common>
+        <header-common class="z-[9999]"></header-common>
         <div class="mb-4 flex items-center justify-between gap-4">
           <!-- page name -->
           <h1
@@ -398,14 +398,14 @@
               >
                 <th [nzWidth]="'20px'" class="text-center">STT</th>
                 <th [nzWidth]="'40px'"></th>
-                <th [nzWidth]="'120px'">Mã</th>
-                <th [nzWidth]="'120px'">Khách hàng</th>
+                <th [nzWidth]="'100px'">Mã</th>
+                <th [nzWidth]="'220px'">Khách hàng</th>
                 <th [nzWidth]="'120px'">SĐT</th>
                 <th [nzWidth]="'180px'">Địa chỉ</th>
                 <th [nzWidth]="'180px'">Trạng thái</th>
                 <th [nzWidth]="'180px'">Mô tả</th>
                 <th [nzWidth]="'120px'">Ngày tạo</th>
-                <th [nzWidth]="'120px'">Ngày cập nhật</th>
+                <!-- <th [nzWidth]="'120px'">Ngày cập nhật</th> -->
               </tr>
             </thead>
 
@@ -449,6 +449,15 @@
                       : item.DeliveryAddress
                   }}
                 </td>
+                <td class="text-center">
+                  <span
+                    class="px-3 py-1 rounded-full text-sm font-medium"
+                    [ngClass]="item.StatusName | statusColor"
+                  >
+                    {{ item.StatusName }}
+                  </span>
+                </td>
+
                 <td>
                   {{
                     item.Description && item.Description.length > 34
@@ -456,9 +465,8 @@
                       : item.Description
                   }}
                 </td>
-                <td>{{ item.Statuses.Name }}</td>
                 <td>{{ item.CreatedDate | date : "dd/MM/yyyy" }}</td>
-                <td>{{ item.UpdatedDate | date : "dd/MM/yyyy" }}</td>
+                <!-- <td>{{ item.UpdatedDate | date : "dd/MM/yyyy" }}</td> -->
               </tr>
             </tbody>
           </nz-table>

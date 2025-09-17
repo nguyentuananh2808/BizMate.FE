@@ -37,6 +37,8 @@ import {
   CustomerResponse,
 } from '../../../customer/models/customer-response.model';
 import { PricePipe } from '../../../../shared/pipes/price-pice';
+import { CreateOrderRequest } from '../../models/create-order-request.model';
+import { OrderService } from '../../services/order.service';
 
 @Component({
   standalone: true,
@@ -98,6 +100,7 @@ export class OrderCreateComponent {
   selectedCustomer!: Customer | string;
   searchKeyword = '';
   customer = {
+    id: '',
     name: '',
     phone: '',
     address: '',
@@ -112,7 +115,7 @@ export class OrderCreateComponent {
     private modal: NzModalService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private receiptService: WarehouseReceiptService
+    private orderService: OrderService
   ) {
     this.orderForm = this.fb.group({
       customerName: [''],
@@ -169,20 +172,21 @@ export class OrderCreateComponent {
     });
   }
 
-  onCustomerSelected(customer: Customer): void {
-    if (!customer) return;
-
-    console.log('Selected customer:', customer);
+  onCustomerSelected(customer: Customer | undefined): void {
+    if (!customer) {
+      return;
+    }
 
     this.orderForm.patchValue({
-      customerName: customer.Name,
+      customerName: customer.Name ?? '',
       phoneNumber: customer.Phone ?? '',
       deliveryAddress: customer.Address ?? '',
-      customerSearch: customer.Name,
+      customerSearch: customer.Name ?? '',
     });
 
     this.customer = {
-      name: customer.Name,
+      id: customer.Id,
+      name: customer.Name ?? '',
       phone: customer.Phone ?? '',
       address: customer.Address ?? '',
       description: '',
@@ -205,6 +209,7 @@ export class OrderCreateComponent {
       description: '',
     });
     this.customer = {
+      id: customer.Id,
       name: customer.Name,
       phone: customer.Phone,
       address: customer.Address,
@@ -222,6 +227,7 @@ export class OrderCreateComponent {
       this.orderForm.value;
 
     this.customer = {
+      id: '',
       name: customerName,
       phone: phoneNumber,
       address: deliveryAddress,
@@ -416,30 +422,40 @@ export class OrderCreateComponent {
     return item.Id;
   }
 
-  //  submitForm(): void {
-  //   const formValues = this.orderForm.value;
+  submitForm(isDraft: boolean): void {
+    const formValues = this.orderForm.value;
 
-  //   const payload: CreateReceiptRequestRequest = {
-  //     customerName: formValues.customerName,
-  //     customerPhone: formValues.phoneNumber,
-  //     deliveryAddress: formValues.deliveryAddress,
-  //     description: formValues.description,
-  //     details: this.listOfData.map((item) => ({
-  //       productId: item.ProductId ?? item.Id,
-  //       quantity: item.Quantity,
-  //       salePrice: item.SalePrice ?? 0,
-  //       totalPrice: item.TotalPrice ?? 0,
-  //     })),
-  //   };
+    const payload: CreateOrderRequest = {
+      CustomerId: this.selectedTabIndex === 1 ? this.customer.id : undefined,
+      CustomerType: this.selectedTabIndex === 0 ? 1 : 2,
+      IsDraft: isDraft,
+      CustomerName: formValues.customerName,
+      CustomerPhone: formValues.phoneNumber,
+      DeliveryAddress: formValues.deliveryAddress,
+      Description: formValues.description,
+      TotalAmount: this.totalAmount,
+      Details: this.listOfData.map((item) => ({
+        ProductId: item.ProductId ?? item.Id,
+        Quantity: item.Quantity,
+        UnitPrice: item.SalePrice ?? 0,
+      })),
+    };
 
-  //   this.receiptService.CreateWarehouseReceipt(payload).subscribe({
-  //     next: () => {
-  //       this.toastr.success('Tạo đơn hàng thành công!');
-  //       this.router.navigateByUrl('/order');
-  //     },
-  //     error: (err) => {
-  //       const userMessage = err.error?.Message || 'Cập nhật thất bại';
-  //       this.toastr.error(userMessage);
-  //     },
-  //   });
+    this.isSubmitting = true;
+    this.orderService.CreateOrder(payload).subscribe({
+      next: () => {
+        this.toastr.success(
+          isDraft ? 'Lưu nháp thành công!' : 'Tạo đơn hàng thành công!'
+        );
+        this.router.navigateByUrl('/order');
+      },
+      error: (err) => {
+        const userMessage = err.error?.Message || 'Cập nhật thất bại';
+        this.toastr.error(userMessage);
+      },
+      complete: () => {
+        this.isSubmitting = false;
+      },
+    });
+  }
 }

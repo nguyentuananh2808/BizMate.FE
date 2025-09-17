@@ -27,6 +27,7 @@ import { SearchOrderRequest } from '../../models/search-order-request.model';
 import { OrderDto } from '../../models/order-dto.model';
 import { StatusService } from '../../../status/services/status.service';
 import { StatusDto } from '../../../status/models/status-dto.model';
+import { StatusColorPipe } from '../../../../shared/pipes/status-color.pipe';
 
 @Component({
   selector: 'order',
@@ -46,6 +47,7 @@ import { StatusDto } from '../../../status/models/status-dto.model';
     NzFloatButtonModule,
     MenuComponent,
     NzPaginationComponent,
+    StatusColorPipe,
   ],
   templateUrl: './order.component.html',
   styleUrls: ['./order.component.scss'],
