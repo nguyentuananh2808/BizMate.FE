@@ -24,10 +24,10 @@ export const ApiUrls = {
     verifyOtp: '/user/verify',
   },
   warehouseReceipt: {
-    search: '/inventory-receipt/search',
-    readById: '/inventory-receipt',
-    create: '/inventory-receipt',
-    update: '/inventory-receipt',
+    search: '/import-receipt/search',
+    readById: '/import-receipt',
+    create: '/import-receipt',
+    update: '/import-receipt',
   },
 
   order: {

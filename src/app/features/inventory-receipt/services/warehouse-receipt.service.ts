@@ -19,10 +19,9 @@ export class WarehouseReceiptService {
       keySearch: request.keySearch,
       pageIndex: request.pageIndex,
       pageSize: request.pageSize,
-      type: request.type,
       dateFrom: request.dateFrom,
       dateTo: request.dateTo,
-      statusCode: request.statusCode,
+      statusIds: request.statusIds,
     };
     return this.http.post<WarehouseReceiptSearchResponse>(
       `${ApiUrls.baseUrl}${ApiUrls.warehouseReceipt.search}`,

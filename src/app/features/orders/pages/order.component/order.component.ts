@@ -161,7 +161,8 @@ export class OrderComponent implements OnInit {
     pageIndex: number = this.pageIndex,
     pageSize: number = this.pageSize,
     dateFrom?: Date,
-    dateTo?: Date
+    dateTo?: Date,
+    statuses?: string[] 
   ): void {
     this.isLoading = true;
     // Lấy ngày đầu tháng hiện tại (00:00:00.000)
@@ -196,7 +197,7 @@ export class OrderComponent implements OnInit {
       keySearch: this.searchKeyword.trim(),
       dateFrom: fromDate,
       dateTo: toDate,
-      statusIds: this.statuses,
+      statusIds: statuses,
     };
 
     this.orderService.SearchOrder(request).subscribe({
@@ -293,13 +294,17 @@ export class OrderComponent implements OnInit {
   }
 
   applyDateFilter() {
-    console.log('Áp dụng filter:', this.dateRange);
+     console.log('Áp dụng filter:', {
+    dateRange: this.dateRange,
+    statuses: this.selectedStatuses
+  });
     this.hideTooltip();
     this.fetchData(
       this.pageIndex,
       this.pageSize,
       this.dateRange?.[0],
-      this.dateRange?.[1]
+      this.dateRange?.[1],
+      this.selectedStatuses
     );
   }
 
