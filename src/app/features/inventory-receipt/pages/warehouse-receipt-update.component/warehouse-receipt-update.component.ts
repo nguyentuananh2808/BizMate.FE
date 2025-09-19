@@ -32,6 +32,9 @@ import { NgxPrintModule } from 'ngx-print';
 import { ProductPopupSearchComponent } from '../../../product/product-popup-search.component/product-popup-search.component';
 import { MenuComponent } from '../../../shared/menu.component/menu.component';
 import { InventoryDetail } from '../../models/warehouse-receipt-detail.model';
+import { UpdateStatusOrderRequest } from '../../../orders/models/update-status-order-request.model';
+import { UpdateStatusWarehouseReceiptRequest } from '../../models/update-status-model';
+import { StatusColorPipe } from '../../../../shared/pipes/status-color.pipe';
 
 @Component({
   selector: 'warehouse-receipt-update',
@@ -46,6 +49,7 @@ import { InventoryDetail } from '../../models/warehouse-receipt-detail.model';
     NzIconModule,
     RouterModule,
     ReactiveFormsModule,
+    StatusColorPipe,
     HeaderCommonComponent,
     NzModalModule,
     NzFloatButtonModule,
@@ -64,6 +68,8 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
   isDark = false;
   dateToday = new Date();
   isPopupSearchProducts = false;
+  statusName: string = '';
+  existingProductIds: string[] = [];
   indeterminate = false;
   isSubmitting = false;
   showPrint = false;
@@ -72,6 +78,7 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
   isMobile = window.innerWidth < 768;
   listOfData: InventoryDetail[] = [];
   listOfCurrentPageData: Product[] = [];
+  importCode: string = '';
   editingId: string | null = null;
   editingQuantity: number | null = null;
   inputError = false;
@@ -80,7 +87,7 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
   searchKeyword = '';
   supplier = {
     name: '',
-    phone: '',
+    deliveryAddress: '',
     description: '',
   };
 
@@ -95,7 +102,7 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
   ) {
     this.receiptForm = this.fb.group({
       supplierName: [''],
-      phoneNumber: [''],
+      deliveryAddress: [''],
       description: [''],
       details: this.fb.array([], Validators.required),
     });
@@ -115,22 +122,50 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
     }
   }
 
+  finishOrder(): void {
+    const payload: UpdateStatusWarehouseReceiptRequest = {
+      Id: this.id,
+      RowVersion: this.rowVersion,
+      CodeStatus: 'APPROVED',
+    };
+    this.receiptService.UpdateStatusWarehouseReceipt(payload).subscribe({
+      next: () => {
+        this.toastr.success('Cập nhật trạng thái đơn hàng thành công!');
+        this.cdr.detectChanges();
+        this.getWarehouseReceiptDetail(this.id);
+      },
+      error: (err) => {
+        console.error('Lỗi khi gọi ReadByIdWarehouseReceipt:', err);
+        this.toastr.error('Cập nhật trạng thái đơn hàng thất bại!');
+      },
+    });
+  }
+  updateExistingProductIds(): void {
+    this.existingProductIds = this.listOfData.map((item) => item.ProductId);
+  }
+
   getWarehouseReceiptDetail(id: string): void {
     this.receiptService.ReadByIdWarehouseReceipt(id).subscribe({
       next: (res) => {
         this.receiptForm.patchValue({
-          supplierName: res.SupplierName || '',
-          phoneNumber: res.CustomerPhone || '',
-          description: res.Description || '',
+          supplierName: res.ImportReceipt.ImportReceipt.SupplierName || '',
+          deliveryAddress:
+            res.ImportReceipt.ImportReceipt.DeliveryAddress || '',
+          description: res.ImportReceipt.ImportReceipt.Description || '',
         });
-
+        this.existingProductIds = res.ImportReceipt.ImportReceipt.Details.map(
+          (d: any) => d.ProductId
+        );
+        this.statusName = res.ImportReceipt.ImportReceipt.StatusName;
+        this.importCode = res.ImportReceipt.ImportReceipt.Code;
         // Gán dữ liệu sản phẩm
-        this.listOfData = res.InventoryDetails || [];
+        this.listOfData = res.ImportReceipt.ImportReceipt.Details || [];
         this.allData = [...this.listOfData];
-        this.rowVersion = res.RowVersion;
+        this.rowVersion = res.ImportReceipt.ImportReceipt.RowVersion;
 
         // Gán ngày
-        this.dateToday = res.Date || new Date();
+        this.dateToday =
+          res.ImportReceipt.ImportReceipt.CreatedDate || new Date();
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -150,27 +185,18 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
     );
   }
 
+  
   startEdit(item: InventoryDetail): void {
-    console.log("editingId",this.editingId);
-    console.log("ProductId",item.ProductId);
-    
-    if (!item || !item.ProductId) {
-      console.warn('startEdit called with invalid item:', item);
-      return;
-    }
-
-    if (this.editingId === item.ProductId) return;
-
-    this.editingId = item.ProductId;
+    this.editingId = item.Id;
     this.editingQuantity = item.Quantity;
   }
-
   onPrint() {
-    const { supplierName, phoneNumber, description } = this.receiptForm.value;
+    const { supplierName, deliveryAddress, description } =
+      this.receiptForm.value;
 
     this.supplier = {
       name: supplierName,
-      phone: phoneNumber,
+      deliveryAddress: deliveryAddress,
       description: description,
     };
 
@@ -205,6 +231,7 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
     this.searchKeyword = this.searchKeyword.trim().toLowerCase();
     if (!this.searchKeyword) {
       this.listOfData = [...this.allData];
+      this.updateExistingProductIds();
     } else {
       console.log('allData :', this.allData);
       this.listOfData = this.allData.filter((item) =>
@@ -212,6 +239,7 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
           String(value).toLowerCase().includes(this.searchKeyword)
         )
       );
+      this.updateExistingProductIds();
     }
     this.cdr.detectChanges();
   }
@@ -226,6 +254,7 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
           (item) => item.ProductId !== itemToDelete.ProductId
         );
         console.log('Sau khi xóa:', this.listOfData);
+        this.updateExistingProductIds();
         this.cdr.detectChanges();
       },
     });
@@ -233,6 +262,7 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
 
   onSelectedProducts(productList: InventoryDetail[]) {
     if (!productList || productList.length === 0) {
+      this.updateExistingProductIds();
       this.closeProductPopup();
       return;
     }
@@ -364,13 +394,13 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
 
     const payload: UpdateReceiptRequestRequest = {
       id: this.id,
-      type: 1, //phiếu nhập
       supplierName: formValues.supplierName,
-      customerName: '',
-      customerPhone: formValues.phoneNumber,
+      IsDraft: false,
+      IsCancelled: false,
       rowVersion: this.rowVersion,
+      deliveryAddress: formValues.deliveryAddress,
       description: formValues.description,
-      details: this.listOfData.map((item) => ({
+      Details: this.listOfData.map((item) => ({
         productId: item.ProductId ?? item.Id,
         quantity: item.Quantity,
       })),
@@ -380,6 +410,7 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
       next: () => {
         this.toastr.success('Câp nhật phiếu nhập thành công!');
         // this.router.navigateByUrl('/warehouse-receipt');
+        this.getWarehouseReceiptDetail(this.id);
       },
       error: (err) => {
         const userMessage = err.error?.Message || 'Cập nhật thất bại';

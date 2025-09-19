@@ -443,7 +443,6 @@ export class OrderUpdateComponent implements OnInit {
         this.statusId = res.Order.Order.StatusId;
         this.statusName = res.Order.Order.StatusName;
         (this.totalAmount = res.Order.Order.TotalAmount),
-          console.log('this.totalAmount:', this.totalAmount);
 
         this.orderForm.patchValue({
           customerName: res.Order.Order.CustomerName || '',

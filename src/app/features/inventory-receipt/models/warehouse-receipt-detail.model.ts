@@ -1,19 +1,18 @@
 import { BaseCoreRespone } from '../../shared/models/base-core-response.model';
 
-export interface InventoryReadById extends BaseCoreRespone {
-  Id: string;
-  Date: Date;
-  InventoryCode: string;
+export interface InventoryReadById {
+    ImportReceipt: {
+    ImportReceipt: ImportReceipt; 
+    Success: boolean;
+  };
+}
+export interface ImportReceipt extends BaseCoreRespone {
   SupplierName: string;
-  CustomerName: string;
   DeliveryAddress: string;
-  Type: number;
   Description: string;
-  CustomerPhone: string;
-  CreatedDate: Date;
-  UpdatedDate: Date;
+  StatusName:string;
   RowVersion: string;
-  InventoryDetails: InventoryDetail[];
+  Details: InventoryDetail[];
 }
 export interface InventoryDetail {
   Id: string;

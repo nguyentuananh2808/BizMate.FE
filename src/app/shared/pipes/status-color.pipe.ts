@@ -17,6 +17,8 @@ export class StatusColorPipe implements PipeTransform {
         return 'bg-green-100 text-green-700 border border-green-300';
       case 'Hủy':
         return 'bg-red-100 text-red-700 border border-red-300';
+      case 'Đã duyệt':
+        return 'bg-green-700 text-white border border-green-900';
       default:
         return 'bg-gray-100 text-gray-700 border border-gray-300';
     }

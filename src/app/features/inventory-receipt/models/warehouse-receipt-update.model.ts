@@ -5,12 +5,11 @@ export interface UpdateReceiptDetailRequest {
 
 export interface UpdateReceiptRequestRequest {
   id: string;
-  type: number;
   supplierName: string;
-  customerName?: string;
-  customerPhone?: string;
   deliveryAddress?: string;
+  IsDraft: boolean;
+  IsCancelled: boolean;
   description?: string;
   rowVersion: string;
-  details: UpdateReceiptDetailRequest[];
+  Details: UpdateReceiptDetailRequest[];
 }

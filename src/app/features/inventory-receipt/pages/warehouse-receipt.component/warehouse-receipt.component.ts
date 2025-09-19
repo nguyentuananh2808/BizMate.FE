@@ -107,7 +107,7 @@ export class WarehouseReceiptComponent implements OnInit {
   }
 
   loadStatuses() {
-    this.statusService.SearchStatus('Order').subscribe({
+    this.statusService.SearchStatus('ImportReceipt').subscribe({
       next: (res) => {
         this.statusList = res.Statuses;
         this.statuses = this.statusList.map((s) => s.Id);

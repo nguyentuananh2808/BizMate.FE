@@ -28,6 +28,7 @@ export const ApiUrls = {
     readById: '/import-receipt',
     create: '/import-receipt',
     update: '/import-receipt',
+    updateStatus: '/import-receipt/update_status',
   },
 
   order: {

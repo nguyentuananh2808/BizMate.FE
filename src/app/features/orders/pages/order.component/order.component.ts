@@ -202,6 +202,8 @@ export class OrderComponent implements OnInit {
 
     this.orderService.SearchOrder(request).subscribe({
       next: (res) => {
+        
+        
         this.originalData = (res.Orders || []).map((item) => ({
           ...item,
           CreatedDate: new Date(item.CreatedDate),
