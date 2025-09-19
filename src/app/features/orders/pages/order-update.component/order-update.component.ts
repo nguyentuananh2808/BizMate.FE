@@ -30,18 +30,25 @@ import { MenuComponent } from '../../../shared/menu.component/menu.component';
 import { ToastrService } from 'ngx-toastr';
 import { NgxPrintModule } from 'ngx-print';
 import { InventoryDetail } from '../../../inventory-receipt/models/warehouse-receipt-detail.model';
-import { WarehouseReceiptService } from '../../../inventory-receipt/services/warehouse-receipt.service';
-import { CreateReceiptRequestRequest } from '../../../inventory-receipt/models/warehouse-receipt-create.model';
-import { UpdateReceiptRequestRequest } from '../../../inventory-receipt/models/warehouse-receipt-update.model';
 import { UpdateOrderRequest } from '../../models/update-order-request.model';
 import { PricePipe } from '../../../../shared/pipes/price-pice';
-import { Customer } from '../../../customer/models/customer-response.model';
+import {
+  Customer,
+  CustomerResponse,
+} from '../../../customer/models/customer-response.model';
 import { Subject } from 'rxjs';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { StatusColorPipe } from '../../../../shared/pipes/status-color.pipe';
 import { UpdateStatusOrderRequest } from '../../models/update-status-order-request.model';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  switchMap,
+} from 'rxjs/operators';
+import { CustomerService } from '../../../customer/services/customer-service';
 
 @Component({
   standalone: true,
@@ -68,14 +75,15 @@ import { UpdateStatusOrderRequest } from '../../models/update-status-order-reque
     ProductPopupSearchComponent,
     MenuComponent,
     PricePipe,
-    NzTabsModule,
     StatusColorPipe,
+    NzTabsModule,
   ],
   templateUrl: './order-update.component.html',
   styleUrls: ['./order-update.component.scss'],
 })
 export class OrderUpdateComponent implements OnInit {
   id: string = '';
+  orderCode: string = '';
   statusName: string = '';
   rowVersion: string = '';
   statusId: string = '';
@@ -122,15 +130,33 @@ export class OrderUpdateComponent implements OnInit {
     private modal: NzModalService,
     private cdr: ChangeDetectorRef,
     private router: ActivatedRoute,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private customerService: CustomerService
   ) {
     this.orderForm = this.fb.group({
       customerName: [''],
       phoneNumber: [''],
       deliveryAddress: [''],
       description: [''],
+      customerSearch: [''],
       details: this.fb.array([], Validators.required),
     });
+    this.orderForm
+      .get('customerSearch')
+      ?.valueChanges.pipe(
+        debounceTime(400),
+        distinctUntilChanged(),
+        filter(
+          (keyword: any) => typeof keyword === 'string' && keyword.length >= 2
+        ),
+        switchMap((keyword: string) =>
+          this.customerService.SearchCustomer(keyword, 10, 1, false)
+        )
+      )
+      .subscribe((res: CustomerResponse) => {
+        this.customers = res.Customers || [];
+        this.cdr.detectChanges();
+      });
 
     this.addProduct();
   }
@@ -409,7 +435,7 @@ export class OrderUpdateComponent implements OnInit {
     this.orderService.ReadByIdOrder(id).subscribe({
       next: (res) => {
         console.log('ReadByIdOrder:', res.Order.Order);
-
+        this.orderCode = res.Order.Order.Code;
         this.rowVersion = res.Order.Order.RowVersion;
         this.existingProductIds = res.Order.Order.Details.map(
           (d: any) => d.ProductId
@@ -492,20 +518,38 @@ export class OrderUpdateComponent implements OnInit {
       this.showPrint = false;
     }, 100);
   }
-  saveEdit(item: InventoryDetail): void {
+
+  // Hàm tính tổng tiền
+  updateTotalAmount() {
+    this.totalAmount = this.listOfData.reduce(
+      (sum, item) => sum + (item.TotalPrice ?? 0),
+      0
+    );
+  }
+
+  saveEdit(
+    item: InventoryDetail & { SalePrice?: number; TotalPrice?: number }
+  ): void {
     if (this.editingQuantity === null || this.editingQuantity < 1) {
       this.inputError = true;
-      // Tự động bỏ hiệu ứng sau khi shake xong
-      setTimeout(() => {
-        this.inputError = false;
-      }, 300);
-
+      setTimeout(() => (this.inputError = false), 300);
       return;
     }
 
+    // Cập nhật số lượng
     item.Quantity = this.editingQuantity;
+
+    // Tính lại thành tiền
+    item.TotalPrice = (item.SalePrice ?? 0) * item.Quantity;
+
     this.editingId = null;
     this.editingQuantity = null;
+
+    // 👉 Cập nhật tổng tiền đơn hàng
+    this.updateTotalAmount();
+
+    // Cập nhật lại UI
+    this.cdr.detectChanges();
   }
 
   stopEdit(): void {
@@ -553,32 +597,25 @@ export class OrderUpdateComponent implements OnInit {
     }
 
     this.listOfData = [...this.listOfData, ...productList];
+    this.existingProductIds = this.listOfData.map((p) => p.Id);
+    // Loại bỏ trùng
     this.listOfData = this.listOfData.filter(
       (item, index, self) => index === self.findIndex((t) => t.Id === item.Id)
     );
-
-    this.listOfData.sort((a, b) => a.ProductCode.localeCompare(b.ProductCode));
-    this.updateExistingProductIds();
+    console.log('productList:', productList);
+    console.log('check:', this.listOfData);
+    // Gán SalePrice (giá bán), Quantity mặc định = 1 nếu chưa có
+    this.listOfData = this.listOfData.map((item) => ({
+      ...item,
+      Quantity: item.Quantity && item.Quantity > 0 ? item.Quantity : 1,
+      SalePrice: item.SalePrice ?? 0,
+      TotalPrice:
+        (item.SalePrice ?? 0) *
+        (item.Quantity && item.Quantity > 0 ? item.Quantity : 1),
+    }));
 
     this.allData = [...this.listOfData];
-
-    this.details.clear();
-
-    for (const item of this.listOfData) {
-      this.details.push(
-        this.fb.group({
-          productId: [item.ProductId ?? item.Id, Validators.required],
-          quantity: [
-            item.Quantity > 0 ? item.Quantity : 1,
-            [Validators.required, Validators.min(1)],
-          ],
-        })
-      );
-    }
-    this.updateExistingProductIds();
-
-    this.orderForm.updateValueAndValidity();
-    this.cdr.detectChanges();
+    this.updateTotalAmount();
     this.closeProductPopup();
   }
 
@@ -597,7 +634,7 @@ export class OrderUpdateComponent implements OnInit {
         quantity: [1, [Validators.required, Validators.min(1)]],
       })
     );
-     this.editingQuantity = 1; 
+    this.editingQuantity = 1;
   }
 
   removeProduct(index: number): void {
@@ -685,6 +722,7 @@ export class OrderUpdateComponent implements OnInit {
     this.orderService.UpdateOrder(payload).subscribe({
       next: () => {
         this.toastr.success('Cập nhật đơn hàng thành công!');
+        this.getOrderDetail(this.id);
       },
       error: (err) => {
         const userMessage = err.error?.Message || 'Cập nhật thất bại';

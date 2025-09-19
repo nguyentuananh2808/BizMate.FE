@@ -301,6 +301,10 @@
         >
           <div class="w-full">
             <div class="flex items-center justify-between px-3 pt-3">
+              <!-- mã đơn hàng -->
+              <h2 class="text-secondary-light dark:text-secondary-dark">
+                Mã đơn hàng : {{ orderCode }}
+              </h2>
               <!-- Ngày tạo đơn -->
               <h2 class="text-secondary-light dark:text-secondary-dark">
                 Ngày tạo đơn : {{ dateToday | date : "dd/MM/yyyy" }}
@@ -563,7 +567,7 @@
 
     <!-- Bottom menu -->
     <bottom-menu class="mt-6"></bottom-menu>
-   <product-popup-search
+    <product-popup-search
       *ngIf="isPopupSearchProducts"
       [shouldDisableProduct]="true"
       [existingProducts]="existingProductIds"

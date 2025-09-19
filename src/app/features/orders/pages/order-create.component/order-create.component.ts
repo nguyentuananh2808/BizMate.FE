@@ -26,8 +26,6 @@ import { MenuComponent } from '../../../shared/menu.component/menu.component';
 import { ToastrService } from 'ngx-toastr';
 import { NgxPrintModule } from 'ngx-print';
 import { InventoryDetail } from '../../../inventory-receipt/models/warehouse-receipt-detail.model';
-import { WarehouseReceiptService } from '../../../inventory-receipt/services/warehouse-receipt.service';
-import { CreateReceiptRequestRequest } from '../../../inventory-receipt/models/warehouse-receipt-create.model';
 import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
 import { debounceTime, distinctUntilChanged, filter, switchMap } from 'rxjs';
 import { Subject, of } from 'rxjs';
