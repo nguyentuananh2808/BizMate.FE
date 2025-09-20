@@ -37,6 +37,8 @@ import {
 import { PricePipe } from '../../../../shared/pipes/price-pice';
 import { CreateOrderRequest } from '../../models/create-order-request.model';
 import { OrderService } from '../../services/order.service';
+import { DealerLevelService } from '../../../dealer-level/services/dealer-level-service';
+import { DealerPriceDetail } from '../../../dealer-level/models/dealer-level-detail.models';
 
 @Component({
   standalone: true,
@@ -113,7 +115,8 @@ export class OrderCreateComponent {
     private modal: NzModalService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private dealerLevelService: DealerLevelService
   ) {
     this.orderForm = this.fb.group({
       customerName: [''],
@@ -170,6 +173,24 @@ export class OrderCreateComponent {
     });
   }
 
+  private applyDealerLevelPrices(dealerPrices: DealerPriceDetail[]): void {
+    const priceMap = new Map(dealerPrices.map((p) => [p.ProductId, p.Price]));
+
+    this.listOfData = this.listOfData.map((item) => {
+      const newPrice =
+        priceMap.get(item.ProductId ?? item.Id) ?? item.SalePrice ?? 0;
+      return {
+        ...item,
+        SalePrice: newPrice,
+        TotalPrice: newPrice * (item.Quantity > 0 ? item.Quantity : 1),
+      };
+    });
+
+    this.allData = [...this.listOfData];
+    this.updateTotalAmount();
+    this.cdr.detectChanges();
+  }
+
   onCustomerSelected(customer: Customer | undefined): void {
     if (!customer) {
       return;
@@ -189,6 +210,21 @@ export class OrderCreateComponent {
       address: customer.Address ?? '',
       description: '',
     };
+    //  Nếu customer có DealerLevelId thì gọi API lấy giá
+    if (customer.DealerLevelId) {
+      this.dealerLevelService
+        .ReadByIdDealerLevel(customer.DealerLevelId)
+        .subscribe({
+          next: (res) => {
+            const dealerPrices =
+              res.DealerLevel.DealerPriceForDealerLevel || [];
+            this.applyDealerLevelPrices(dealerPrices);
+          },
+          error: (err) => {
+            console.error('Load dealer level failed:', err);
+          },
+        });
+    }
   }
 
   onSearchCustomer(keyword: string): void {
