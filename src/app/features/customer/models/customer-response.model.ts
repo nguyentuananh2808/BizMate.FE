@@ -12,6 +12,10 @@ export interface Customer {
   UpdatedDate: Date;
 }
 
+export interface CustomerReadByIdResponse {
+  Customer: Customer;
+}
+
 export interface CustomerResponse {
   Customers: Customer[];
   TotalCount: number;

@@ -49,6 +49,8 @@ import {
   switchMap,
 } from 'rxjs/operators';
 import { CustomerService } from '../../../customer/services/customer-service';
+import { DealerLevelService } from '../../../dealer-level/services/dealer-level-service';
+import { DealerPriceDetail } from '../../../dealer-level/models/dealer-level-detail.models';
 
 @Component({
   standalone: true,
@@ -87,6 +89,7 @@ export class OrderUpdateComponent implements OnInit {
   statusName: string = '';
   rowVersion: string = '';
   statusId: string = '';
+  dealerLevelId: string = '';
   selectedTabIndex = 0;
   searchCustomerKeyword = '';
   customers: Customer[] = [];
@@ -95,6 +98,7 @@ export class OrderUpdateComponent implements OnInit {
   isDark = false;
   dateToday = new Date();
   existingProductIds: string[] = [];
+  customerType: number = 1;
   isPopupSearchProducts = false;
   indeterminate = false;
   isSubmitting = false;
@@ -107,7 +111,8 @@ export class OrderUpdateComponent implements OnInit {
     TotalPrice?: number;
   })[] = [];
   totalAmount: number = 0;
-  listOfCurrentPageData: Product[] = [];
+  customerId:string='';
+    listOfCurrentPageData: Product[] = [];
   editingId: string | null = null;
   editingQuantity: number | null = null;
   inputError = false;
@@ -131,7 +136,8 @@ export class OrderUpdateComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private router: ActivatedRoute,
     private orderService: OrderService,
-    private customerService: CustomerService
+    private customerService: CustomerService,
+    private dealerLevelService: DealerLevelService
   ) {
     this.orderForm = this.fb.group({
       customerName: [''],
@@ -371,6 +377,24 @@ export class OrderUpdateComponent implements OnInit {
     });
   }
 
+  private applyDealerLevelPrices(dealerPrices: DealerPriceDetail[]): void {
+    const priceMap = new Map(dealerPrices.map((p) => [p.ProductId, p.Price]));
+
+    this.listOfData = this.listOfData.map((item) => {
+      const newPrice =
+        priceMap.get(item.ProductId ?? item.Id) ?? item.SalePrice ?? 0;
+      return {
+        ...item,
+        SalePrice: newPrice,
+        TotalPrice: newPrice * (item.Quantity > 0 ? item.Quantity : 1),
+      };
+    });
+
+    this.allData = [...this.listOfData];
+    this.updateTotalAmount();
+    this.cdr.detectChanges();
+  }
+
   onCustomerSelected(customer: Customer | undefined): void {
     if (!customer) {
       return;
@@ -390,7 +414,26 @@ export class OrderUpdateComponent implements OnInit {
       address: customer.Address ?? '',
       description: '',
     };
+
+    //  Nếu customer có DealerLevelId thì gọi API lấy giá
+    if (customer.DealerLevelId) {
+      this.dealerLevelService
+        .ReadByIdDealerLevel(customer.DealerLevelId)
+        .subscribe({
+          next: (res) => {
+            const dealerPrices =
+              res.DealerLevel.DealerPriceForDealerLevel || [];
+            this.dealerLevelId = res.DealerLevel.Id;
+            this.applyDealerLevelPrices(dealerPrices);
+          },
+          error: (err) => {
+            console.error('Load dealer level failed:', err);
+          },
+        });
+    }
   }
+
+
 
   onSearchCustomer(keyword: string): void {
     this.searchSubject.next(keyword);
@@ -434,22 +477,45 @@ export class OrderUpdateComponent implements OnInit {
   getOrderDetail(id: string): void {
     this.orderService.ReadByIdOrder(id).subscribe({
       next: (res) => {
-        console.log('ReadByIdOrder:', res.Order.Order);
+        console.log("res.Order.Order",res.Order.Order);
+        
+        this.customerType = res.Order.Order.CustomerType;
+        if (res.Order.Order.CustomerType === 2) {
+          this.orderForm.get('customerName')?.disable();
+          this.orderForm.get('phoneNumber')?.disable();
+          this.orderForm.get('deliveryAddress')?.disable();
+        }
+        //  gọi thêm API để lấy DealerLevelId từ Customer
+        if (res.Order.Order.CustomerId) {
+          this.customerService.ReadByIdCustomer(res.Order.Order.CustomerId).subscribe({
+            next: (cusRes) => {
+              this.dealerLevelId = cusRes.Customer.DealerLevelId ?? '';
+              console.log('cusRes:', cusRes);
+              console.log('cusRes.Customer.DealerLevelId:', cusRes.Customer.DealerLevelId);
+            },
+            error: (err) => {
+              console.error('Load customer failed:', err);
+            },
+          });
+        
+      }
+
         this.orderCode = res.Order.Order.Code;
         this.rowVersion = res.Order.Order.RowVersion;
         this.existingProductIds = res.Order.Order.Details.map(
           (d: any) => d.ProductId
         );
+        this.customerId = res.Order.Order.CustomerId;
+
         this.statusId = res.Order.Order.StatusId;
         this.statusName = res.Order.Order.StatusName;
         (this.totalAmount = res.Order.Order.TotalAmount),
-
-        this.orderForm.patchValue({
-          customerName: res.Order.Order.CustomerName || '',
-          phoneNumber: res.Order.Order.CustomerPhone || '',
-          deliveryAddress: res.Order.Order.DeliveryAddress || '',
-          description: res.Order.Order.Description || '',
-        });
+          this.orderForm.patchValue({
+            customerName: res.Order.Order.CustomerName || '',
+            phoneNumber: res.Order.Order.CustomerPhone || '',
+            deliveryAddress: res.Order.Order.DeliveryAddress || '',
+            description: res.Order.Order.Description || '',
+          });
 
         // ======= ĐỒNG BỘ DETAILS FORMARRAY =======
         const detailsFormArray = this.orderForm.get('details') as FormArray;
@@ -595,15 +661,16 @@ export class OrderUpdateComponent implements OnInit {
       return;
     }
 
+    // Gộp sản phẩm mới vào list
     this.listOfData = [...this.listOfData, ...productList];
     this.existingProductIds = this.listOfData.map((p) => p.Id);
-    // Loại bỏ trùng
+
+    // Loại bỏ trùng sản phẩm
     this.listOfData = this.listOfData.filter(
       (item, index, self) => index === self.findIndex((t) => t.Id === item.Id)
     );
-    console.log('productList:', productList);
-    console.log('check:', this.listOfData);
-    // Gán SalePrice (giá bán), Quantity mặc định = 1 nếu chưa có
+
+    // Set giá mặc định (trước khi check DealerLevel)
     this.listOfData = this.listOfData.map((item) => ({
       ...item,
       Quantity: item.Quantity && item.Quantity > 0 ? item.Quantity : 1,
@@ -612,9 +679,33 @@ export class OrderUpdateComponent implements OnInit {
         (item.SalePrice ?? 0) *
         (item.Quantity && item.Quantity > 0 ? item.Quantity : 1),
     }));
+console.log("this.dealerLevelId",this.dealerLevelId);
 
-    this.allData = [...this.listOfData];
-    this.updateTotalAmount();
+    // ✅ Nếu customerType = 2 (Đại lý) thì lấy bảng giá DealerLevel
+    if (this.customerType === 2 && this.dealerLevelId) {
+      this.dealerLevelService
+        .ReadByIdDealerLevel(this.dealerLevelId)
+        .subscribe({
+          next: (res) => {
+            const dealerPrices =
+              res.DealerLevel.DealerPriceForDealerLevel || [];
+              console.log("res.DealerLevel.DealerPriceForDealerLevel",res.DealerLevel.DealerPriceForDealerLevel);
+              
+            this.applyDealerLevelPrices(dealerPrices); // đã có sẵn
+            this.allData = [...this.listOfData];
+            this.updateTotalAmount();
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            console.error('Load dealer level failed:', err);
+          },
+        });
+    } else {
+      // Nếu khách lẻ thì giữ nguyên giá
+      this.allData = [...this.listOfData];
+      this.updateTotalAmount();
+    }
+
     this.closeProductPopup();
   }
 
@@ -701,7 +792,7 @@ export class OrderUpdateComponent implements OnInit {
   }
 
   submitForm(): void {
-    const formValues = this.orderForm.value;
+    const formValues = this.orderForm.getRawValue();
 
     const payload: UpdateOrderRequest = {
       Id: this.id,

@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { ApiUrls } from '../../../config/api.config';
-import { Customer, CustomerResponse } from '../models/customer-response.model';
+import { Customer, CustomerReadByIdResponse, CustomerResponse } from '../models/customer-response.model';
 import { CustomerUpdateRequest } from '../models/customer-update-request.model';
 import { CreateCustomerRequest } from '../models/cutomer-create-request.model';
 import { CustomerSearchRequest } from '../models/customer-request-search.model';
@@ -75,6 +75,12 @@ export class CustomerService {
   DeleteCustomer(id: string): Observable<any> {
     return this.http.delete<any>(
       `${ApiUrls.baseUrl}${ApiUrls.customer.delete(id)}`
+    );
+  }
+
+   ReadByIdCustomer(id: string): Observable<CustomerReadByIdResponse> {
+    return this.http.get<CustomerReadByIdResponse>(
+      `${ApiUrls.baseUrl}${ApiUrls.customer.getById(id)}`
     );
   }
 }

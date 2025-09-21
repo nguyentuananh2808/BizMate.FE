@@ -164,13 +164,42 @@ export class OrderCreateComponent {
   onTabChange(index: number): void {
     this.selectedTabIndex = index;
     console.log('Tab changed:', index);
-
+    if (index === 1) {
+      this.orderForm.get('phoneNumber')?.disable();
+      this.orderForm.get('deliveryAddress')?.disable();
+    } else {
+      this.orderForm.get('phoneNumber')?.enable();
+      this.orderForm.get('deliveryAddress')?.enable();
+      this.resetProductPricesToDefault();
+    }
     this.orderForm.patchValue({
       customerName: '',
       phoneNumber: '',
       deliveryAddress: '',
       customerSearch: '',
     });
+  }
+
+  private resetProductPricesToDefault(): void {
+    this.listOfData = this.listOfData.map((raw) => {
+      const itemAny = raw as any;
+      const basePrice =
+        itemAny.OriginalSalePrice ??
+        itemAny.UnitPrice ??
+        itemAny.SalePrice ??
+        0;
+      const qty = raw.Quantity > 0 ? raw.Quantity : 1;
+
+      return {
+        ...raw,
+        SalePrice: basePrice,
+        TotalPrice: basePrice * qty,
+      };
+    });
+
+    this.allData = [...this.listOfData];
+    this.updateTotalAmount();
+    this.cdr.detectChanges();
   }
 
   private applyDealerLevelPrices(dealerPrices: DealerPriceDetail[]): void {
@@ -210,6 +239,7 @@ export class OrderCreateComponent {
       address: customer.Address ?? '',
       description: '',
     };
+
     //  Nếu customer có DealerLevelId thì gọi API lấy giá
     if (customer.DealerLevelId) {
       this.dealerLevelService
@@ -457,7 +487,7 @@ export class OrderCreateComponent {
   }
 
   submitForm(isDraft: boolean): void {
-    const formValues = this.orderForm.value;
+    const formValues = this.orderForm.getRawValue();
 
     const payload: CreateOrderRequest = {
       CustomerId: this.selectedTabIndex === 1 ? this.customer.id : undefined,

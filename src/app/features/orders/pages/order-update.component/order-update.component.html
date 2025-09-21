@@ -72,20 +72,20 @@
                 <!-- Các input -->
                 <div>
                   <label
-                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
+                    class="block  text-secondary-light dark:text-secondary-dark"
                   >
                     Tên khách hàng
                   </label>
                   <input
                     formControlName="customerName"
-                    class="input-style w-full"
-                    placeholder="Nhập tên khách hàng..."
+                    class="input-style"
+                    placeholder="Nhập Tên khách hàng..."
                   />
                 </div>
 
                 <div>
                   <label
-                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
+                    class="block text-secondary-light dark:text-secondary-dark"
                   >
                     Số điện thoại
                   </label>
@@ -250,7 +250,7 @@
           <h1
             class="text-secondary-light dark:text-secondary-dark text-xl font-bold"
           >
-            Tạo đơn hàng
+            Cập nhật đơn hàng
           </h1>
 
           <!-- Ô tìm kiếm căn giữa -->
@@ -325,53 +325,17 @@
               *ngIf="customer"
             >
               <div class="grid grid-cols-2 gap-4">
-                <!-- Cột 1: Khách hàng -->
                 <div>
-                  <!-- Hàng label -->
-                  <div class="flex items-center justify-between">
-                    <nz-tabset
-                      [(nzSelectedIndex)]="selectedTabIndex"
-                      (nzSelectedIndexChange)="onTabChange($event)"
-                      class="ml-3 -mt-2 text-secondary-light dark:text-secondary-dark"
-                      nzSize="small"
-                    >
-                      <nz-tab nzTitle="Khách lẻ"></nz-tab>
-                      <nz-tab nzTitle="Đại lý"></nz-tab>
-                    </nz-tabset>
-                  </div>
-
-                  <!-- Input theo tab -->
-                  <ng-container [ngSwitch]="selectedTabIndex">
-                    <input
-                      *ngSwitchCase="0"
-                      formControlName="customerName"
-                      class="input-style mt-2"
-                      placeholder="Nhập tên khách hàng..."
-                    />
-
-                    <div *ngSwitchCase="1">
-                      <input
-                        formControlName="customerSearch"
-                        [nzAutocomplete]="auto"
-                        [(ngModel)]="searchCustomerKeyword"
-                        (ngModelChange)="onSearchCustomer($event)"
-                        placeholder="Tìm kiếm khách hàng..."
-                        class="input-style mt-2"
-                      />
-
-                      <nz-autocomplete
-                        #auto
-                        (selectionChange)="onCustomerSelected($event.nzValue)"
-                      >
-                        <nz-auto-option
-                          *ngFor="let customer of customers"
-                          [nzValue]="customer"
-                        >
-                          {{ customer.Name }}
-                        </nz-auto-option>
-                      </nz-autocomplete>
-                    </div>
-                  </ng-container>
+                  <label
+                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
+                  >
+                    Tên khách hàng
+                  </label>
+                  <input
+                    formControlName="customerName"
+                    class="input-style mt-[28px]"
+                    placeholder="Nhập Tên khách hàng..."
+                  />
                 </div>
 
                 <!-- Cột 2: Số điện thoại -->
