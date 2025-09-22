@@ -179,9 +179,9 @@ export class OrderCreateComponent {
       this.applyOriginalProductPrices();
     }
     this.orderForm.patchValue({
-      customerName: '',
+      customerName: '',   
       phoneNumber: '',
-      deliveryAddress: '',
+      deliveryAddress: '', 
       customerSearch: '',
     });
   }

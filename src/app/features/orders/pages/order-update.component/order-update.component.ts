@@ -457,6 +457,7 @@ export class OrderUpdateComponent implements OnInit {
     };
   }
 
+  //đổi tab
   onTabChange(index: number): void {
     this.selectedTabIndex = index;
     console.log('Tab changed:', index);
