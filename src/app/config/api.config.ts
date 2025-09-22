@@ -14,6 +14,7 @@ export const ApiUrls = {
     create: '/product',
     update: '/product',
     delete: (id: string) => `/product/${id}`,
+    readById: (id: string) => `/product/${id}`,
   },
   status: {
     getByGroup: '/status/getbygroup',

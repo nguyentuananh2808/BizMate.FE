@@ -3,6 +3,7 @@ export interface UpdateOrderRequest {
   RowVersion: string;
   CustomerType: number;
   DeliveryAddress: string;
+  CustomerId: string;
   CustomerPhone: string;
   CustomerName: string;
   Description: string;

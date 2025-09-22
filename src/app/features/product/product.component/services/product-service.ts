@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Product, ProductResponse } from '../models/product-response.model';
+import { Product, ProductReadByIdResponse, ProductResponse } from '../models/product-response.model';
 import { ApiUrls } from '../../../../config/api.config';
 import { ProductSearchRequest } from '../models/product-search-request.model';
 import { ProductCreateRequest } from '../models/product-create-request.model';
@@ -89,4 +89,11 @@ export class ProductService {
       `${ApiUrls.baseUrl}${ApiUrls.product.delete(id)}`
     );
   }
+    ReadById(id: string): Observable<ProductReadByIdResponse> {
+    return this.http.get<ProductReadByIdResponse>(
+      `${ApiUrls.baseUrl}${ApiUrls.product.readById(id)}`
+    );
+  }
 }
+
+

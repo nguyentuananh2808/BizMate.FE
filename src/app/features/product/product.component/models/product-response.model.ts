@@ -17,7 +17,9 @@ export interface Product {
   SalePrice?: number;
   Available?: number;
 }
-
+export interface ProductReadByIdResponse {
+  Product: Product;
+}
 export interface ProductResponse {
   Products: Product[];
   TotalCount: number;

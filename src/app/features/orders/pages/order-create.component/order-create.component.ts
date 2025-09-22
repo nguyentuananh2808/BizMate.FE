@@ -35,10 +35,12 @@ import {
   CustomerResponse,
 } from '../../../customer/models/customer-response.model';
 import { PricePipe } from '../../../../shared/pipes/price-pice';
+import { forkJoin } from 'rxjs';
 import { CreateOrderRequest } from '../../models/create-order-request.model';
 import { OrderService } from '../../services/order.service';
 import { DealerLevelService } from '../../../dealer-level/services/dealer-level-service';
 import { DealerPriceDetail } from '../../../dealer-level/models/dealer-level-detail.models';
+import { ProductService } from '../../../product/product.component/services/product-service';
 
 @Component({
   standalone: true,
@@ -77,7 +79,10 @@ export class OrderCreateComponent {
   private searchSubject = new Subject<string>();
   orderForm: FormGroup;
   isDark = false;
+  customerId: string = '';
   dateToday = new Date();
+  dealerLevelId: string = '';
+  customerType: number = 1;
   existingProductIds: string[] = [];
   isPopupSearchProducts = false;
   indeterminate = false;
@@ -115,6 +120,7 @@ export class OrderCreateComponent {
     private modal: NzModalService,
     private cdr: ChangeDetectorRef,
     private router: Router,
+    private productService: ProductService,
     private orderService: OrderService,
     private dealerLevelService: DealerLevelService
   ) {
@@ -170,7 +176,7 @@ export class OrderCreateComponent {
     } else {
       this.orderForm.get('phoneNumber')?.enable();
       this.orderForm.get('deliveryAddress')?.enable();
-      this.resetProductPricesToDefault();
+      this.applyOriginalProductPrices();
     }
     this.orderForm.patchValue({
       customerName: '',
@@ -179,27 +185,45 @@ export class OrderCreateComponent {
       customerSearch: '',
     });
   }
+  private applyOriginalProductPrices(): void {
+    if (!this.listOfData || this.listOfData.length === 0) {
+      return;
+    }
 
-  private resetProductPricesToDefault(): void {
-    this.listOfData = this.listOfData.map((raw) => {
-      const itemAny = raw as any;
-      const basePrice =
-        itemAny.OriginalSalePrice ??
-        itemAny.UnitPrice ??
-        itemAny.SalePrice ??
-        0;
-      const qty = raw.Quantity > 0 ? raw.Quantity : 1;
+    // Tạo danh sách request lấy chi tiết sản phẩm theo Id
+    const requests = this.listOfData.map((item) =>
+      this.productService.ReadById(item.ProductId ?? item.Id)
+    );
 
-      return {
-        ...raw,
-        SalePrice: basePrice,
-        TotalPrice: basePrice * qty,
-      };
+    // Gọi tất cả request song song
+    forkJoin(requests).subscribe({
+      next: (products) => {
+        // Cập nhật lại giá cho từng sản phẩm
+        this.listOfData = this.listOfData.map((item, idx) => {
+          const product = products[idx];
+          const basePrice = product.Product.SalePrice ?? 0;
+          const qty = item.Quantity > 0 ? item.Quantity : 1;
+          console.log('product', product);
+          console.log('basePrice', basePrice);
+
+          return {
+            ...item,
+            SalePrice: basePrice,
+            TotalPrice: basePrice * qty,
+          };
+        });
+
+        // Cập nhật data và tổng tiền
+        this.allData = [...this.listOfData];
+        this.updateTotalAmount();
+
+        // Cập nhật lại UI
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('❌ Lấy giá sản phẩm thất bại:', err);
+      },
     });
-
-    this.allData = [...this.listOfData];
-    this.updateTotalAmount();
-    this.cdr.detectChanges();
   }
 
   private applyDealerLevelPrices(dealerPrices: DealerPriceDetail[]): void {
@@ -239,21 +263,45 @@ export class OrderCreateComponent {
       address: customer.Address ?? '',
       description: '',
     };
+    this.customerId = customer.Id;
 
-    //  Nếu customer có DealerLevelId thì gọi API lấy giá
-    if (customer.DealerLevelId) {
-      this.dealerLevelService
-        .ReadByIdDealerLevel(customer.DealerLevelId)
-        .subscribe({
-          next: (res) => {
-            const dealerPrices =
-              res.DealerLevel.DealerPriceForDealerLevel || [];
-            this.applyDealerLevelPrices(dealerPrices);
-          },
-          error: (err) => {
-            console.error('Load dealer level failed:', err);
-          },
-        });
+    if (this.customerId) {
+      this.customerService.ReadByIdCustomer(this.customerId).subscribe({
+        next: (cusRes) => {
+          this.dealerLevelId = cusRes.Customer.DealerLevelId ?? '';
+          console.log('cusRes:', cusRes);
+
+          if (this.dealerLevelId) {
+            this.dealerLevelService
+              .ReadByIdDealerLevel(this.dealerLevelId)
+              .subscribe({
+                next: (res) => {
+                  const dealerPrices =
+                    res.DealerLevel.DealerPriceForDealerLevel || [];
+                  console.log(
+                    'res.DealerLevel.DealerPriceForDealerLevel',
+                    res.DealerLevel.DealerPriceForDealerLevel
+                  );
+
+                  this.applyDealerLevelPrices(dealerPrices);
+                  this.allData = [...this.listOfData];
+                  this.updateTotalAmount();
+                  this.cdr.detectChanges();
+                },
+                error: (err) => {
+                  console.error('Load dealer level failed:', err);
+                },
+              });
+          } else {
+            // Khách lẻ thì giữ nguyên giá
+            this.allData = [...this.listOfData];
+            this.updateTotalAmount();
+          }
+        },
+        error: (err) => {
+          console.error('Load customer failed:', err);
+        },
+      });
     }
   }
 
@@ -400,9 +448,32 @@ export class OrderCreateComponent {
         (item.Quantity && item.Quantity > 0 ? item.Quantity : 1),
     }));
 
-    this.allData = [...this.listOfData];
-    this.updateTotalAmount();
-    this.closeProductPopup();
+    if (this.customerType === 2 && this.dealerLevelId) {
+      this.dealerLevelService
+        .ReadByIdDealerLevel(this.dealerLevelId)
+        .subscribe({
+          next: (res) => {
+            const dealerPrices =
+              res.DealerLevel.DealerPriceForDealerLevel || [];
+            console.log(
+              'res.DealerLevel.DealerPriceForDealerLevel',
+              res.DealerLevel.DealerPriceForDealerLevel
+            );
+
+            this.applyDealerLevelPrices(dealerPrices);
+            this.allData = [...this.listOfData];
+            this.updateTotalAmount();
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            console.error('Load dealer level failed:', err);
+          },
+        });
+    } else {
+      // Nếu khách lẻ thì giữ nguyên giá
+      this.allData = [...this.listOfData];
+      this.updateTotalAmount();
+    }
   }
 
   closeProductPopup(): void {

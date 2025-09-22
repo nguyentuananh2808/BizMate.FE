@@ -111,8 +111,8 @@ export class OrderUpdateComponent implements OnInit {
     TotalPrice?: number;
   })[] = [];
   totalAmount: number = 0;
-  customerId:string='';
-    listOfCurrentPageData: Product[] = [];
+  customerId: string = '';
+  listOfCurrentPageData: Product[] = [];
   editingId: string | null = null;
   editingQuantity: number | null = null;
   inputError = false;
@@ -433,8 +433,6 @@ export class OrderUpdateComponent implements OnInit {
     }
   }
 
-
-
   onSearchCustomer(keyword: string): void {
     this.searchSubject.next(keyword);
     if (!keyword) {
@@ -477,8 +475,8 @@ export class OrderUpdateComponent implements OnInit {
   getOrderDetail(id: string): void {
     this.orderService.ReadByIdOrder(id).subscribe({
       next: (res) => {
-        console.log("res.Order.Order",res.Order.Order);
-        
+        console.log('res.Order.Order', res.Order.Order);
+        this.customerId = res.Order.Order.CustomerId;
         this.customerType = res.Order.Order.CustomerType;
         if (res.Order.Order.CustomerType === 2) {
           this.orderForm.get('customerName')?.disable();
@@ -486,19 +484,21 @@ export class OrderUpdateComponent implements OnInit {
           this.orderForm.get('deliveryAddress')?.disable();
         }
         //  gọi thêm API để lấy DealerLevelId từ Customer
-        if (res.Order.Order.CustomerId) {
-          this.customerService.ReadByIdCustomer(res.Order.Order.CustomerId).subscribe({
+        if (this.customerId) {
+          this.customerService.ReadByIdCustomer(this.customerId).subscribe({
             next: (cusRes) => {
               this.dealerLevelId = cusRes.Customer.DealerLevelId ?? '';
               console.log('cusRes:', cusRes);
-              console.log('cusRes.Customer.DealerLevelId:', cusRes.Customer.DealerLevelId);
+              console.log(
+                'cusRes.Customer.DealerLevelId:',
+                cusRes.Customer.DealerLevelId
+              );
             },
             error: (err) => {
               console.error('Load customer failed:', err);
             },
           });
-        
-      }
+        }
 
         this.orderCode = res.Order.Order.Code;
         this.rowVersion = res.Order.Order.RowVersion;
@@ -679,7 +679,7 @@ export class OrderUpdateComponent implements OnInit {
         (item.SalePrice ?? 0) *
         (item.Quantity && item.Quantity > 0 ? item.Quantity : 1),
     }));
-console.log("this.dealerLevelId",this.dealerLevelId);
+    console.log('this.dealerLevelId', this.dealerLevelId);
 
     // ✅ Nếu customerType = 2 (Đại lý) thì lấy bảng giá DealerLevel
     if (this.customerType === 2 && this.dealerLevelId) {
@@ -689,8 +689,11 @@ console.log("this.dealerLevelId",this.dealerLevelId);
           next: (res) => {
             const dealerPrices =
               res.DealerLevel.DealerPriceForDealerLevel || [];
-              console.log("res.DealerLevel.DealerPriceForDealerLevel",res.DealerLevel.DealerPriceForDealerLevel);
-              
+            console.log(
+              'res.DealerLevel.DealerPriceForDealerLevel',
+              res.DealerLevel.DealerPriceForDealerLevel
+            );
+
             this.applyDealerLevelPrices(dealerPrices); // đã có sẵn
             this.allData = [...this.listOfData];
             this.updateTotalAmount();
@@ -798,6 +801,7 @@ console.log("this.dealerLevelId",this.dealerLevelId);
       Id: this.id,
       StatusId: this.statusId,
       RowVersion: this.rowVersion,
+      CustomerId: this.customerId,
       CustomerType: this.selectedTabIndex === 0 ? 1 : 2,
       CustomerName: formValues.customerName,
       CustomerPhone: formValues.phoneNumber,
