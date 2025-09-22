@@ -56,8 +56,14 @@ export class RegisterComponent {
       },
       error: (err) => {
         this.isLoading.set(false);
+        const apiMessage = err.error?.Message;
+        let userMessage = 'Cập nhật thất bại';
 
-        const userMessage = err.error?.Message || 'Cập nhật thất bại';
+        if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_DUPLICATE') {
+          userMessage = 'Email đã tồn tại trong hệ thống';
+        } else if (apiMessage) {
+          userMessage = apiMessage; 
+        }
         this.toastr.error(userMessage);
       },
     });

@@ -4,7 +4,6 @@ export interface CreateReceiptDetailRequest {
 }
 
 export interface CreateReceiptRequestRequest {
-  type: number;
   supplierName?: string;
   customerName?: string;
   customerPhone?: string;

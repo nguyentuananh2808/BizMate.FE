@@ -2,11 +2,9 @@ import { BaseCoreRespone } from '../../shared/models/base-core-response.model';
 
 export interface WarehouseReceipt extends BaseCoreRespone {
   Id: string;
-  Date: Date;
-  Type: number;
   SupplierName?: string;
   DeliveryAddress: string;
-  StatusName?: string;
+  StatusName: string;
   StatusCode?: string;
   StatusId?: string;
   CustomerPhone?: string;

@@ -4,6 +4,7 @@ export interface ProductUpdateRequest {
   ProductCategoryId: string;
   Name: string;
   Unit: number;
+  SalePrice: number;
   ImageUrl?: string;
   SupplierId?: string;
   Description?: string;

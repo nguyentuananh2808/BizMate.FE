@@ -87,12 +87,12 @@
                   <label
                     class="block mb-1 text-secondary-light dark:text-secondary-dark"
                   >
-                    Số điện thoại
+                    Địa chỉ
                   </label>
                   <input
-                    formControlName="phoneNumber"
+                    formControlName="deliveryAddress"
                     class="input-style w-full"
-                    placeholder="Nhập số điện thoại..."
+                    placeholder="Nhập địa chỉ..."
                   />
                 </div>
 
@@ -296,12 +296,12 @@
                 <div>
                   <label
                     class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                    >Số điện thoại</label
+                    >Địa chỉ</label
                   >
                   <input
-                    formControlName="phoneNumber"
+                    formControlName="deliveryAddress"
                     class="input-style"
-                    placeholder="Nhập số điện thoại..."
+                    placeholder="Nhập địa chỉ..."
                   />
                 </div>
               </div>
@@ -365,7 +365,6 @@
               >
                 <thead>
                   <tr class="text-gray-500 dark:bg-gray-700 dark:text-gray-400">
-                    <th [nzWidth]="'20px'" class="text-center"></th>
                     <th [nzWidth]="'20px'" class="text-center">STT</th>
                     <th [nzWidth]="'20px'"></th>
                     <th [nzWidth]="'80px'">Mã sản phẩm</th>
@@ -380,9 +379,7 @@
                     class="hover:bg-gray-50 transition-all duration-150"
                     [ngClass]="{ 'dark:hover:bg-gray-800': isDark }"
                   >
-                    <td class="text-center">
-                      <label nz-checkbox></label>
-                    </td>
+                    
                     <td class="text-center">{{ i + 1 }}</td>
                     <td class="space-x-2 flex">
                       <button
@@ -464,7 +461,7 @@
         >
           <tr>
             <td><strong>Tên:</strong> {{ supplier.name }}</td>
-            <td><strong>SĐT:</strong> {{ supplier.phone }}</td>
+            <!-- <td><strong>Địa chỉ:</strong> {{ supplier.eliveryAddress }}</td> -->
           </tr>
           <tr>
             <td><strong>Ghi chú:</strong> {{ supplier.description }}</td>

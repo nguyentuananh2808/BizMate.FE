@@ -39,7 +39,8 @@ import { NzFormModule } from 'ng-zorro-antd/form';
 export class ProductPopupCreateComponent implements OnInit {
   name: string = '';
   productCategoryId: string = '';
-  unit: number = 1;
+  unit: number = 6;
+  salePrice: number = 0;
   imageUrl: string = '';
   description: string = '';
   categories: ProductCategory[] = [];
@@ -128,18 +129,26 @@ export class ProductPopupCreateComponent implements OnInit {
         this.name,
         this.productCategoryId,
         this.unit,
+        this.salePrice,
         this.imageUrl,
         this.description || ''
       )
       .pipe(finalize(() => (this.isSaving = false)))
       .subscribe({
         next: () => {
-          this.toastr.success('Tạo mới thành công');
+          this.toastr.success('Tạo mới sản phẩm thành công');
           this.create.emit();
           this.close();
         },
         error: (err) => {
-          const userMessage = err.error?.Message || 'Cập nhật thất bại';
+          const apiMessage = err.error?.Message;
+          let userMessage = 'Cập nhật thất bại';
+
+          if (apiMessage === 'BACKEND.VALIDATION.MESSAGE.ALREADY_EXIST') {
+            userMessage = 'Sản phẩm đã tồn tại trong hệ thống';
+          } else if (apiMessage) {
+            userMessage = apiMessage;
+          }
           this.toastr.error(userMessage);
         },
       });

@@ -1,0 +1,143 @@
+<div
+  @fadeInOut
+  class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[9999] transition-opacity duration-700"
+  [ngClass]="{ 'opacity-100': !isClosing, 'opacity-0': isClosing }"
+>
+  <div
+    class="bg-card-bg-light dark:bg-card-bg-dark text-text-primary-light dark:text-text-primary-dark rounded-2xl shadow-xl backdrop-blur-xl w-full max-w-2xl m-4 p-6 relative border border-white/30 dark:border-white/10 transform transition-all duration-300"
+    [ngClass]="{
+      'opacity-100 scale-100': !isClosing,
+      'opacity-0 scale-95': isClosing
+    }"
+  >
+    <!-- Nút đóng -->
+    <button
+      (click)="close()"
+      class="absolute top-3 right-4 text-xl text-danger-light dark:text-danger-dark hover:text-danger-dark dark:hover:text-danger-light transition"
+    >
+      ✕
+    </button>
+
+    <!-- Tiêu đề -->
+    <h2
+      class="text-2xl font-semibold mb-6 text-center text-text-primary-light dark:text-text-primary-dark"
+    >
+      Cập nhật khách hàng
+    </h2>
+    <form #form="ngForm" class="space-y-6" (ngSubmit)="onSubmit()">
+      <!-- Tên khách hàng -->
+      <div>
+        <label
+          class="block text-sm font-medium mb-1 text-text-secondary-light dark:text-text-secondary-dark"
+        >
+          Tên khách hàng
+        </label>
+        <input
+          type="text"
+          name="name"
+          placeholder="Nhập tên khách hàng..."
+          [(ngModel)]="data.Name"
+          required
+          class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-info-light dark:focus:ring-info-dark"
+        />
+      </div>
+
+      <!-- Số điện thoại -->
+      <div>
+        <label
+          class="block text-sm font-medium mb-1 text-text-secondary-light dark:text-text-secondary-dark"
+        >
+          Số điện thoại
+        </label>
+        <input
+          type="tel"
+          name="phone"
+          placeholder="Nhập số điện thoại..."
+          [(ngModel)]="data.Phone"
+          required
+          pattern="^[0-9]{10}$"
+          maxlength="10"
+          #phoneCtrl="ngModel"
+          onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+          class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-info-light dark:focus:ring-info-dark"
+        />
+
+        <div
+          *ngIf="form.submitted && phoneCtrl.invalid"
+          class="text-red-500 text-sm mt-1"
+        >
+          Số điện thoại không hợp lệ. Vui lòng nhập đúng 10 chữ số.
+        </div>
+      </div>
+      <!-- Đại lý cấp -->
+
+      <div class="relative">
+        <label
+          for="search-dealer-level"
+          class="block text-sm font-medium mb-1 text-text-secondary-light dark:text-text-secondary-dark"
+        >
+          Đại lý cấp
+        </label>
+
+        <input
+          id="search-dealer-level"
+          type="text"
+          [(ngModel)]="searchTerm"
+          [ngModelOptions]="{ standalone: true }"
+          (focus)="showDropdown = true"
+          (input)="filterDealerLevel()"
+          (blur)="onBlur()"
+          placeholder="Tìm đại lý cấp..."
+          class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-card-bg-dark text-text-primary-light dark:text-text-primary-dark focus:outline-none focus:ring-2 focus:ring-info-light dark:focus:ring-info-dark transition-colors duration-200"
+          autocomplete="off"
+        />
+
+        <ul
+          *ngIf="showDropdown && filteredDealerLevels.length > 0"
+          class="absolute z-10 w-full max-h-48 overflow-auto mt-1 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-card-bg-dark shadow-lg"
+        >
+          <li
+            *ngFor="let dl of filteredDealerLevels"
+            (click)="selectDealerLevel(dl)"
+            class="cursor-pointer px-4 py-2 hover:bg-info-light dark:hover:bg-info-dark"
+          >
+            {{ dl.Name }}
+          </li>
+        </ul>
+      </div>
+      <!-- Địa chỉ -->
+      <div>
+        <label
+          class="block text-sm font-medium mb-1 text-text-secondary-light dark:text-text-secondary-dark"
+        >
+          Địa chỉ
+        </label>
+        <textarea
+          name="address"
+          placeholder="Nhập địa chỉ khách hàng..."
+          rows="4"
+          [(ngModel)]="data.Address"
+          class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
+        ></textarea>
+      </div>
+
+      <!-- Nút hành động -->
+      <div class="flex justify-end space-x-3 pt-4">
+        <button
+          type="button"
+          (click)="close()"
+          class="px-4 py-2 rounded-lg bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 text-neutral-800 dark:text-neutral-100"
+        >
+          Hủy
+        </button>
+        <button
+          type="submit"
+          [disabled]="isSaving"
+          class="px-6 py-2 rounded-lg bg-primary-light dark:bg-primary-dark text-white hover:bg-secondary-light dark:hover:bg-secondary-dark transition disabled:opacity-50"
+        >
+          {{ isSaving ? "Đang cập nhật..." : "Cập nhật" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

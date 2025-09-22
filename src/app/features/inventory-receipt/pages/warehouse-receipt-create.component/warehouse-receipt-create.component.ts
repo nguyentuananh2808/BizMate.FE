@@ -73,7 +73,7 @@ export class WarehouseReceiptCreateComponent {
   searchKeyword = '';
   supplier = {
     name: '',
-    phone: '',
+    deliveryAddress: '',
     description: '',
   };
 
@@ -88,7 +88,7 @@ export class WarehouseReceiptCreateComponent {
   ) {
     this.receiptForm = this.fb.group({
       supplierName: [''],
-      phoneNumber: [''],
+      deliveryAddress: [''],
       description: [''],
       details: this.fb.array([], Validators.required),
     });
@@ -117,11 +117,11 @@ export class WarehouseReceiptCreateComponent {
     this.editingQuantity = item.Quantity;
   }
   onPrint() {
-    const { supplierName, phoneNumber, description } = this.receiptForm.value;
+    const { supplierName, deliveryAddress, description } = this.receiptForm.value;
 
     this.supplier = {
       name: supplierName,
-      phone: phoneNumber,
+      deliveryAddress: deliveryAddress,
       description: description,
     };
 
@@ -302,9 +302,8 @@ export class WarehouseReceiptCreateComponent {
     const formValues = this.receiptForm.value;
 
     const payload: CreateReceiptRequestRequest = {
-      type: 1, //phiếu nhập
       supplierName: formValues.supplierName,
-      customerPhone: formValues.phoneNumber,
+      deliveryAddress: formValues.deliveryAddress,
       description: formValues.description,
       details: this.listOfData.map((item) => ({
         productId: item.ProductId ?? item.Id,

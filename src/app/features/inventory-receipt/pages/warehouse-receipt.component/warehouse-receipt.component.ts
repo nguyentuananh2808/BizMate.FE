@@ -23,6 +23,10 @@ import { SearchWarehouseRequest } from '../../models/warehouse-receipt-search-re
 import { MenuComponent } from '../../../shared/menu.component/menu.component';
 import { NzPaginationComponent } from 'ng-zorro-antd/pagination';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+import { StatusDto } from '../../../status/models/status-dto.model';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { StatusService } from '../../../status/services/status.service';
+import { StatusColorPipe } from '../../../../shared/pipes/status-color.pipe';
 
 @Component({
   selector: 'warehouse-receipt',
@@ -41,6 +45,8 @@ import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
     NzFloatButtonModule,
     MenuComponent,
     NzPaginationComponent,
+    NzSelectModule,
+    StatusColorPipe
   ],
   templateUrl: './warehouse-receipt.component.html',
   styleUrls: ['./warehouse-receipt.component.scss'],
@@ -67,6 +73,9 @@ export class WarehouseReceiptComponent implements OnInit {
   pageIndex = 1;
   totalCount = 0;
   showTooltip = false;
+  statuses: string[] = [];
+  statusList: StatusDto[] = [];
+  selectedStatuses: string[] = [];
   dateRange: [Date, Date] | null = null;
   placement: 'bottomLeft' | 'bottomRight' = 'bottomLeft';
 
@@ -78,6 +87,7 @@ export class WarehouseReceiptComponent implements OnInit {
   constructor(
     private WarehouseReceiptService: WarehouseReceiptService,
     private cdr: ChangeDetectorRef,
+    private statusService: StatusService,
     private modal: NzModalService,
     private toastr: ToastrService,
     private datePipe: DatePipe,
@@ -92,8 +102,21 @@ export class WarehouseReceiptComponent implements OnInit {
   ngOnInit(): void {
     this.checkIsMobile();
     window.addEventListener('resize', () => this.checkIsMobile());
+    this.loadStatuses();
     this.fetchData();
   }
+
+  loadStatuses() {
+    this.statusService.SearchStatus('ImportReceipt').subscribe({
+      next: (res) => {
+        this.statusList = res.Statuses;
+        this.statuses = this.statusList.map((s) => s.Id);
+        console.log('statuses111:', this.statuses);
+      },
+      error: (err) => console.error(err),
+    });
+  }
+
   checkIsMobile() {
     this.isMobile = window.innerWidth <= 768;
     if (this.isMobile) {
@@ -137,27 +160,50 @@ export class WarehouseReceiptComponent implements OnInit {
     pageIndex: number = this.pageIndex,
     pageSize: number = this.pageSize,
     dateFrom?: Date,
-    dateTo?: Date
+    dateTo?: Date,
+    statuses?: string[]
   ): void {
     this.isLoading = true;
+    // Lấy ngày đầu tháng hiện tại (00:00:00.000)
     const fromDate = dateFrom
       ? new Date(dateFrom.setHours(0, 0, 0, 0))
-      : undefined;
+      : new Date(
+          new Date().getFullYear(),
+          new Date().getMonth(),
+          1,
+          0,
+          0,
+          0,
+          0
+        );
+
+    // Lấy ngày cuối tháng hiện tại (23:59:59.999)
     const toDate = dateTo
       ? new Date(dateTo.setHours(23, 59, 59, 999))
-      : undefined;
+      : new Date(
+          new Date().getFullYear(),
+          new Date().getMonth() + 1,
+          0,
+          23,
+          59,
+          59,
+          999
+        );
+
     const request: SearchWarehouseRequest = {
       pageIndex: pageIndex,
       pageSize: pageSize,
       keySearch: this.searchKeyword.trim(),
-      type: 1,
       dateFrom: fromDate,
       dateTo: toDate,
+      statusIds: statuses,
     };
 
     this.WarehouseReceiptService.SearchWarehouseReceipt(request).subscribe({
       next: (res) => {
-        this.originalData = res.InventoryReceipts || [];
+        console.log('res:', res.ImportReceipts);
+
+        this.originalData = res.ImportReceipts || [];
         this.totalCount = res.TotalCount || 0;
 
         this.listOfData = [...this.originalData].sort((a, b) =>
@@ -250,7 +296,8 @@ export class WarehouseReceiptComponent implements OnInit {
       this.pageIndex,
       this.pageSize,
       this.dateRange?.[0],
-      this.dateRange?.[1]
+      this.dateRange?.[1],
+      this.selectedStatuses
     );
   }
 

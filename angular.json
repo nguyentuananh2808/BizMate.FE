@@ -28,7 +28,11 @@
                 "output": "/assets/"
               }
             ],
-            "styles": ["src/theme.less", "src/styles.scss"],
+            "styles": [
+              "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
+              "src/theme.less",
+              "src/styles.scss"
+            ],
             "stylePreprocessorOptions": {
               "includePaths": ["src/styles"]
             }

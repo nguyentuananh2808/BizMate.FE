@@ -14,8 +14,12 @@ export interface Product {
   IsActive: boolean;
   CreatedDate: Date;
   UpdatedDate: Date;
+  SalePrice?: number;
+  Available?: number;
 }
-
+export interface ProductReadByIdResponse {
+  Product: Product;
+}
 export interface ProductResponse {
   Products: Product[];
   TotalCount: number;

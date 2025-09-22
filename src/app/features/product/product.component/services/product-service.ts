@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Product, ProductResponse } from '../models/product-response.model';
+import { Product, ProductReadByIdResponse, ProductResponse } from '../models/product-response.model';
 import { ApiUrls } from '../../../../config/api.config';
 import { ProductSearchRequest } from '../models/product-search-request.model';
 import { ProductCreateRequest } from '../models/product-create-request.model';
@@ -21,7 +21,7 @@ export class ProductService {
       keySearch,
       pageIndex,
       pageSize,
-      isActive
+      isActive,
     };
     console.log('keyseach: ', keySearch);
 
@@ -38,6 +38,7 @@ export class ProductService {
     Name: string,
     Unit: number,
     IsActive: boolean,
+    SalePrice: number,
     ImageUrl?: string,
     SupplierId?: string,
     Description?: string
@@ -51,6 +52,7 @@ export class ProductService {
       SupplierId,
       RowVersion,
       IsActive,
+      SalePrice,
       Description,
     };
     console.log('payload:', ProductCategoryId);
@@ -64,12 +66,14 @@ export class ProductService {
     name: string,
     productCategoryId: string,
     unit: number,
+    salePrice: number,
     imageUrl: string,
     description: string
   ): Observable<any> {
     const body: ProductCreateRequest = {
       name,
       productCategoryId,
+      salePrice,
       unit,
       imageUrl,
       description,
@@ -85,4 +89,11 @@ export class ProductService {
       `${ApiUrls.baseUrl}${ApiUrls.product.delete(id)}`
     );
   }
+    ReadById(id: string): Observable<ProductReadByIdResponse> {
+    return this.http.get<ProductReadByIdResponse>(
+      `${ApiUrls.baseUrl}${ApiUrls.product.readById(id)}`
+    );
+  }
 }
+
+

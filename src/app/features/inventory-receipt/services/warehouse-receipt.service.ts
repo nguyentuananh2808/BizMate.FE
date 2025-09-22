@@ -7,6 +7,7 @@ import { SearchWarehouseRequest } from '../models/warehouse-receipt-search-reque
 import { InventoryReadById } from '../models/warehouse-receipt-detail.model';
 import { CreateReceiptRequestRequest } from '../models/warehouse-receipt-create.model';
 import { UpdateReceiptRequestRequest } from '../models/warehouse-receipt-update.model';
+import { UpdateStatusWarehouseReceiptRequest } from '../models/update-status-model';
 
 @Injectable({ providedIn: 'root' })
 export class WarehouseReceiptService {
@@ -19,16 +20,23 @@ export class WarehouseReceiptService {
       keySearch: request.keySearch,
       pageIndex: request.pageIndex,
       pageSize: request.pageSize,
-      type: request.type,
       dateFrom: request.dateFrom,
       dateTo: request.dateTo,
-      statusCode: request.statusCode,
+      statusIds: request.statusIds,
     };
     return this.http.post<WarehouseReceiptSearchResponse>(
       `${ApiUrls.baseUrl}${ApiUrls.warehouseReceipt.search}`,
       body
     );
   };
+
+  
+UpdateStatusWarehouseReceipt(body: UpdateStatusWarehouseReceiptRequest): Observable<any> {
+    return this.http.put<any>(
+      `${ApiUrls.baseUrl}${ApiUrls.warehouseReceipt.updateStatus}`,
+      body
+    );
+  }
 
   ReadByIdWarehouseReceipt = (id: string): Observable<InventoryReadById> => {
     return this.http.get<InventoryReadById>(

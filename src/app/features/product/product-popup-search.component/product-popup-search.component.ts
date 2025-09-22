@@ -37,7 +37,8 @@ import { ToastrService } from 'ngx-toastr';
 })
 export class ProductPopupSearchComponent implements OnInit {
   @Input() shouldDisableProduct: boolean = true;
-  @Input() existingProducts: InventoryDetail[] = [];
+  @Input() ProductQuantity: boolean = true;
+  @Input() existingProducts: string[] = [];
   @Output() closePopup = new EventEmitter<void>();
   @Output() selectProducts = new EventEmitter<InventoryDetail[]>();
   isClosing = false;
@@ -55,7 +56,6 @@ export class ProductPopupSearchComponent implements OnInit {
   isLoading = false;
   isMobile = window.innerWidth <= 768;
   disabledProductIds = new Set<string>();
-
   constructor(
     private productService: ProductService,
     private cdr: ChangeDetectorRef,
@@ -80,12 +80,10 @@ export class ProductPopupSearchComponent implements OnInit {
         ProductCode: p.Code,
         Unit: p.Unit,
         Quantity: 0,
+        SalePrice: p.SalePrice,
         InventoryReceiptId: '',
       }));
-    console.log(selectedInventoryDetails);
-    console.log('listOfData:', this.listOfData);
-    console.log('setOfCheckedId:', this.setOfCheckedId);
-    console.log('disabledProductIds:', this.disabledProductIds);
+
     // Nếu không có sản phẩm hợp lệ được chọn
     if (selectedInventoryDetails.length === 0) {
       // Có thể hiện thông báo nếu muốn
@@ -118,19 +116,26 @@ export class ProductPopupSearchComponent implements OnInit {
       .SearchProduct(this.searchKeyword || null, pageSize, pageIndex, false)
       .subscribe({
         next: (res) => {
+          console.log('API raw response:', res);
+          console.log('Products[0]:', res.Products?.[0]);
           this.disabledProductIds.clear();
 
-          const existingIds = new Set(
-            this.existingProducts.map((p) => p.ProductId || p.Id)
-          );
+          const existingIds = new Set(this.existingProducts);
 
-          for (const p of res.Products || []) {
-            if (existingIds.has(p.Id) || p.Quantity === 0) {
-              this.disabledProductIds.add(p.Id);
-            }
-          }
+          // Lọc sản phẩm trước khi bind vào listOfData
+          let products = (res.Products || []).reduce((acc, p) => {
+            if (existingIds.has(p.Id)) return acc;
+            if (!this.ProductQuantity && p.Quantity === 0) return acc;
+            acc.push(p); // giữ nguyên object p (không mất SalePrice)
+            return acc;
+          }, [] as Product[]);
 
-          this.originalData = res.Products || [];
+          this.originalData = products;
+          console.log('res product:', res.Products);
+          console.log('products:', products);
+
+          this.listOfData = products;
+          console.log('listOfData:', this.listOfData);
           this.totalCount = res.TotalCount || 0;
 
           setTimeout(() => {
@@ -188,9 +193,9 @@ export class ProductPopupSearchComponent implements OnInit {
   }
   onAllChecked(val: boolean) {
     this.listOfCurrentPageData.forEach((item) => {
-      if (!this.disabledProductIds.has(item.Id)) {
-        this.updateCheckedSet(item.Id, val);
-      }
+      //   if (!this.disabledProductIds.has(item.Id)) {
+      this.updateCheckedSet(item.Id, val);
+      // }
     });
     this.refreshCheckedStatus();
   }

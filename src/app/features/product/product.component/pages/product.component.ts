@@ -29,7 +29,6 @@ import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { MenuComponent } from '../../../shared/menu.component/menu.component';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 
-
 @Component({
   selector: 'product',
   standalone: true,
@@ -278,11 +277,16 @@ export class ProductComponent implements OnInit {
             this.fetchData();
             this.toastr.success('Đã xóa thành công');
           },
-          error: (error) => {
-              const userMessage =
-            error.error?.Message || 
-            'Xóa thất bại';
-          this.toastr.error(userMessage);
+          error: (err) => {
+            const apiMessage = err.error?.Message;
+            let userMessage = 'Xóa sản phẩm thất bại.';
+
+            if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_NOT_EXIST') {
+              userMessage = 'Sản phẩm không tồn tại trong hệ thống.';
+            } else if (apiMessage) {
+              userMessage = apiMessage;
+            }
+            this.toastr.error(userMessage);
           },
         });
       },

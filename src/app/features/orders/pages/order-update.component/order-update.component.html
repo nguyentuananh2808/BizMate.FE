@@ -45,6 +45,7 @@
           />
           <!-- Print Button -->
           <button
+            disabled
             (click)="onPrint()"
             type="button"
             class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
@@ -66,25 +67,25 @@
             >
               <form [formGroup]="orderForm" class="space-y-4">
                 <h2 class="text-secondary-light dark:text-secondary-dark">
-                  Ngày xuất : {{ dateToday | date : "dd/MM/yyyy" }}
+                  Ngày tạo đơn : {{ dateToday | date : "dd/MM/yyyy" }}
                 </h2>
                 <!-- Các input -->
                 <div>
                   <label
-                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
+                    class="block  text-secondary-light dark:text-secondary-dark"
                   >
                     Tên khách hàng
                   </label>
                   <input
                     formControlName="customerName"
-                    class="input-style w-full"
-                    placeholder="Nhập tên khách hàng..."
+                    class="input-style"
+                    placeholder="Nhập Tên khách hàng..."
                   />
                 </div>
 
                 <div>
                   <label
-                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
+                    class="block text-secondary-light dark:text-secondary-dark"
                   >
                     Số điện thoại
                   </label>
@@ -128,11 +129,10 @@
                     nzType="primary"
                     class="rounded-[24px] h-10 px-6"
                     [disabled]="isSubmitting || isSubmitDisabled"
-                    (click)="submitForm()"
                   >
                     <nz-icon nzType="save" nzTheme="outline"></nz-icon>
                     <span *ngIf="isSubmitting">Đang cập nhật...</span>
-                    <span *ngIf="!isSubmitting">Cập nhật đơn hàng</span>
+                    <span *ngIf="!isSubmitting">Cập nhật</span>
                   </button>
                 </div>
               </form>
@@ -145,7 +145,7 @@
                   >
                     Sản phẩm đã chọn
                   </h3>
-                  <!-- <button
+                  <button
                     nz-button
                     nzType="default"
                     class="rounded-[24px] h-8 px-4 text-sm"
@@ -153,7 +153,7 @@
                   >
                     <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
                     Thêm
-                  </button> -->
+                  </button>
                 </div>
 
                 <div
@@ -174,12 +174,13 @@
                   </div>
                   <div class="text-secondary-light dark:text-secondary-dark">
                     <div>Mã: {{ item.ProductCode }}</div>
+
+                    <!-- Số lượng -->
                     <div class="flex items-center gap-2">
                       <label
                         class="text-secondary-light dark:text-secondary-dark mb-0"
                         >SL:</label
                       >
-
                       <ng-container
                         *ngIf="editingId === item.Id; else displayQuantity"
                       >
@@ -193,10 +194,10 @@
                           (keydown.enter)="saveEdit(item)"
                         />
                       </ng-container>
-
                       <ng-template #displayQuantity>
                         <span
                           class="cursor-pointer font-semibol"
+                          (click)="startEdit(item)"
                           [ngClass]="{
                             'text-danger-light dark:text-danger-dark font-bold':
                               item.Quantity <= 0,
@@ -209,16 +210,30 @@
                         </span>
                       </ng-template>
                     </div>
-
                     <div>Đơn vị: {{ item.Unit | unitText }}</div>
+
+                    <!-- Đơn giá -->
+                    <div>Đơn giá: {{ item.SalePrice ?? 0 | price }}</div>
+
+                    <!-- Thành tiền -->
+                    <div class="font-semibold text-green-400">
+                      Thành tiền: {{ item.TotalPrice ?? 0 | price }}
+                    </div>
                   </div>
-                  <!-- <button
-                    disabled
+                  <button
                     class="mt-2 text-red-500 text-xs"
                     (click)="deleteItem(item)"
                   >
                     Xóa
-                  </button> -->
+                  </button>
+                </div>
+
+                <!-- Tổng tiền -->
+                <div
+                  *ngIf="listOfData.length > 0"
+                  class="mt-3 text-right font-bold text-lg text-secondary-light dark:text-secondary-dark"
+                >
+                  Tổng đơn hàng: {{ totalAmount ?? 0 | price }}
                 </div>
               </div>
             </div>
@@ -233,7 +248,7 @@
         <div class="mb-4 flex items-center justify-between gap-4">
           <!-- page name -->
           <h1
-            class="text-secondary-light dark:text-secondary-dark text-2xl font-bold"
+            class="text-secondary-light dark:text-secondary-dark text-xl font-bold"
           >
             Cập nhật đơn hàng
           </h1>
@@ -286,12 +301,29 @@
         >
           <div class="w-full">
             <div class="flex items-center justify-between px-3 pt-3">
+              <!-- mã đơn hàng -->
               <h2 class="text-secondary-light dark:text-secondary-dark">
-                Ngày xuất : {{ dateToday | date : "dd/MM/yyyy" }}
+                Mã đơn hàng : {{ orderCode }}
               </h2>
+              <!-- Ngày tạo đơn -->
+              <h2 class="text-secondary-light dark:text-secondary-dark">
+                Ngày tạo đơn : {{ dateToday | date : "dd/MM/yyyy" }}
+              </h2>
+
+              <!-- Trạng thái đơn hàng -->
+              <div
+                class="px-3 py-1 rounded-full text-sm font-medium shadow-md"
+                [ngClass]="statusName | statusColor"
+              >
+                {{ statusName }}
+              </div>
             </div>
 
-            <form [formGroup]="orderForm" class="space-y-6 pl-3 pt-3">
+            <form
+              [formGroup]="orderForm"
+              class="space-y-6 pl-3 pt-3"
+              *ngIf="customer"
+            >
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label
@@ -301,18 +333,21 @@
                   </label>
                   <input
                     formControlName="customerName"
-                    class="input-style"
-                    placeholder="Nhập tên khách hàng..."
+                    class="input-style mt-[28px]"
+                    placeholder="Nhập Tên khách hàng..."
                   />
                 </div>
+
+                <!-- Cột 2: Số điện thoại -->
                 <div>
                   <label
                     class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                    >Số điện thoại</label
                   >
+                    Số điện thoại
+                  </label>
                   <input
                     formControlName="phoneNumber"
-                    class="input-style"
+                    class="input-style mt-[28px]"
                     placeholder="Nhập số điện thoại..."
                   />
                 </div>
@@ -355,18 +390,41 @@
                     Danh sách sản phẩm
                   </h3>
                 </div>
-                <div class="flex justify-end">
-                  <!-- <button
-                    nz-button
-                    nzType="default"
-                    class="items-center gap-2 whitespace-nowrap rounded-[24px] h-10 mb-3"
-                    (click)="addProducts()"
-                  >
-                    <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
-                    Thêm sản phẩm
-                  </button> -->
+                <div
+                  class="flex justify-end"
+                  *ngIf="statusName !== 'Hoàn thành' && statusName !== 'Hủy'"
+                >
+                  <!-- Nút Đóng hàng -->
+                  <div class="flex space-x-2">
+                    <ng-container
+                      *ngFor="let action of statusActions[statusName]"
+                    >
+                      <button
+                        nz-button
+                        class="items-center gap-2 whitespace-nowrap rounded-[24px] h-10 mb-3 px-4"
+                        [ngClass]="action.class"
+                        (click)="handleAction(action.type)"
+                      >
+                        <nz-icon
+                          [nzType]="action.icon"
+                          nzTheme="outline"
+                        ></nz-icon>
+                        <span>{{ action.label }}</span>
+                      </button>
+                    </ng-container>
+                  </div>
 
                   <div class="flex justify-end ml-2">
+                    <button
+                      nz-button
+                      nzType="default"
+                      class="items-center gap-2 whitespace-nowrap rounded-[24px] h-10 mb-3 mr-2"
+                      (click)="addProducts()"
+                    >
+                      <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
+                      Thêm sản phẩm
+                    </button>
+
                     <button
                       nz-button
                       nzType="primary"
@@ -376,7 +434,7 @@
                     >
                       <nz-icon nzType="save" nzTheme="outline"></nz-icon>
                       <span *ngIf="isSubmitting">Đang cập nhật...</span>
-                      <span *ngIf="!isSubmitting">Cập nhật đơn hàng</span>
+                      <span *ngIf="!isSubmitting">Cập nhật</span>
                     </button>
                   </div>
                 </div>
@@ -391,39 +449,35 @@
               >
                 <thead>
                   <tr class="text-gray-500 dark:bg-gray-700 dark:text-gray-400">
-                    <!-- <th [nzWidth]="'20px'" class="text-center"></th> -->
-                    <th [nzWidth]="'20px'" class="text-center">STT</th>
+                    <th [nzWidth]="'30px'" class="text-center">STT</th>
                     <th [nzWidth]="'20px'"></th>
                     <th [nzWidth]="'80px'">Mã sản phẩm</th>
-                    <th [nzWidth]="'240px'">Tên sản phẩm</th>
+                    <th [nzWidth]="'180px'">Tên sản phẩm</th>
                     <th [nzWidth]="'80px'">Đơn vị</th>
-                    <th [nzWidth]="'50px'">Số lượng xuất</th>
+                    <th [nzWidth]="'50px'">Số lượng</th>
+                    <th [nzWidth]="'80px'">Đơn giá</th>
+                    <th [nzWidth]="'80px'">Thành tiền</th>
                   </tr>
                 </thead>
+
                 <tbody>
-                  <tr
-                    *ngFor="let item of listOfData; let i = index"
-                    class="hover:bg-gray-50 transition-all duration-150"
-                    [ngClass]="{ 'dark:hover:bg-gray-800': isDark }"
-                  >
-                    <!-- <td class="text-center">
-                      <label nz-checkbox></label>
-                    </td> -->
+                  <tr *ngFor="let item of listOfData; let i = index">
                     <td class="text-center">{{ i + 1 }}</td>
                     <td class="space-x-2 flex">
-                      <!-- <button
+                      <button
                         nz-button
-                        disabled
                         nzType="link"
                         class="text-red-600"
                         (click)="deleteItem(item)"
                       >
                         <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
-                      </button> -->
+                      </button>
                     </td>
                     <td>{{ item.ProductCode }}</td>
                     <td>{{ item.ProductName }}</td>
                     <td>{{ item.Unit | unitText }}</td>
+
+                    <!-- Quantity -->
                     <td
                       [ngClass]="{
                         'text-danger-light dark:text-danger-dark font-bold':
@@ -431,6 +485,7 @@
                         'text-success-light dark:text-success-dark font-medium':
                           item.Quantity > 0
                       }"
+                      (click)="startEdit(item)"
                     >
                       <ng-container
                         *ngIf="editingId === item.Id; else displayQuantity"
@@ -452,9 +507,22 @@
                         <span class="cursor-pointer">{{ item.Quantity }}</span>
                       </ng-template>
                     </td>
+
+                    <!-- Đơn giá -->
+                    <td>{{ item.SalePrice ?? 0 | price }}</td>
+
+                    <!-- Thành tiền -->
+                    <td class="font-semibold text-green-400">
+                      {{ item.TotalPrice ?? 0 | price }}
+                    </td>
                   </tr>
                 </tbody>
               </nz-table>
+              <div
+                class="text-right text-xl mr-6 font-bold mt-4 text-secondary-light dark:text-secondary-dark"
+              >
+                Tổng hóa đơn: {{ totalAmount ?? 0 | price }}
+              </div>
             </form>
           </div>
         </div>
@@ -466,35 +534,18 @@
     <product-popup-search
       *ngIf="isPopupSearchProducts"
       [shouldDisableProduct]="true"
-      [existingProducts]="listOfData"
+      [existingProducts]="existingProductIds"
+      [ProductQuantity]="false"
       (closePopup)="closeProductPopup()"
       (selectProducts)="onSelectedProducts($event)"
     ></product-popup-search>
 
     <!-- Nội dung in -->
     <div id="print-section" class="print-only">
-      <div
-        style="
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 16px;
-        "
-      >
-        <!-- Tiêu đề ở giữa -->
-        <div style="text-align: center; flex-grow: 1; margin-left: -60px">
-          <img
-            src="assets/images/logo_vuakongfishing_bottom.png"
-            alt="Logo"
-            class="w-32 m-auto"
-          />
-
-          <h3 style="margin: 4px 0 0 0">Phiếu Xuất Kho</h3>
-          <p style="margin: 0">Ngày: {{ dateToday | date : "dd/MM/yyyy" }}</p>
-        </div>
-
-        <!-- Giữ chỗ bên phải để căn giữa đẹp -->
-        <div style="width: 60px"></div>
+      <div style="text-align: center; margin-bottom: 16px">
+        <h2 style="font-size: 24px; margin: 0">VuaKong</h2>
+        <h3 style="margin: 4px 0 0 0">Phiếu Xuất Kho</h3>
+        <p style="margin: 0">Ngày: {{ dateToday | date : "dd/MM/yyyy" }}</p>
       </div>
 
       <div style="margin-bottom: 20px">
