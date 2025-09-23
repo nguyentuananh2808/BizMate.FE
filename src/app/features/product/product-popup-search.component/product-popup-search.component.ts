@@ -82,6 +82,7 @@ export class ProductPopupSearchComponent implements OnInit {
         Quantity: 0,
         SalePrice: p.SalePrice,
         InventoryReceiptId: '',
+        Available:p.Available
       }));
 
     // Nếu không có sản phẩm hợp lệ được chọn

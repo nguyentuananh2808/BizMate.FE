@@ -179,9 +179,9 @@ export class OrderCreateComponent {
       this.applyOriginalProductPrices();
     }
     this.orderForm.patchValue({
-      customerName: '',   
+      customerName: '',
       phoneNumber: '',
-      deliveryAddress: '', 
+      deliveryAddress: '',
       customerSearch: '',
     });
   }
@@ -365,7 +365,11 @@ export class OrderCreateComponent {
   saveEdit(
     item: InventoryDetail & { SalePrice?: number; TotalPrice?: number }
   ): void {
-    if (this.editingQuantity === null || this.editingQuantity < 1) {
+    if (
+      this.editingQuantity === null ||
+      this.editingQuantity < 1 ||
+      (item.Available !== undefined && this.editingQuantity > item.Available)
+    ) {
       this.inputError = true;
       setTimeout(() => (this.inputError = false), 300);
       return;
@@ -430,24 +434,38 @@ export class OrderCreateComponent {
       return;
     }
 
+    // Gộp sản phẩm mới vào danh sách hiện tại
     this.listOfData = [...this.listOfData, ...productList];
-    this.existingProductIds = this.listOfData.map((p) => p.Id);
-    // Loại bỏ trùng
+
+    // Loại bỏ trùng theo Id
     this.listOfData = this.listOfData.filter(
       (item, index, self) => index === self.findIndex((t) => t.Id === item.Id)
     );
-    console.log('productList:', productList);
-    console.log('check:', this.listOfData);
-    // Gán SalePrice (giá bán), Quantity mặc định = 1 nếu chưa có
-    this.listOfData = this.listOfData.map((item) => ({
-      ...item,
-      Quantity: item.Quantity && item.Quantity > 0 ? item.Quantity : 1,
-      SalePrice: item.SalePrice ?? 0,
-      TotalPrice:
-        (item.SalePrice ?? 0) *
-        (item.Quantity && item.Quantity > 0 ? item.Quantity : 1),
-    }));
+    
+    
+    // Chuẩn hóa dữ liệu: Quantity không vượt quá Available
+    this.listOfData = this.listOfData.map((item) => {
+      // Quantity mặc định = 1
+      let qty = item.Quantity && item.Quantity > 0 ? item.Quantity : 1;
+      console.log("listOfData:",this.listOfData);
 
+      // Nếu có Available thì Quantity không được vượt quá
+      if (item.Available !== undefined && qty > item.Available) {
+        qty = item.Available;
+      }
+
+      console.log("item.Available :",item.Available );
+      
+
+      return {
+        ...item,
+        Quantity: qty,
+        SalePrice: item.SalePrice ?? 0,
+        TotalPrice: (item.SalePrice ?? 0) * qty,
+      };
+    });
+
+    // Nếu là khách đại lý thì áp giá DealerLevel
     if (this.customerType === 2 && this.dealerLevelId) {
       this.dealerLevelService
         .ReadByIdDealerLevel(this.dealerLevelId)
@@ -456,7 +474,7 @@ export class OrderCreateComponent {
             const dealerPrices =
               res.DealerLevel.DealerPriceForDealerLevel || [];
             console.log(
-              'res.DealerLevel.DealerPriceForDealerLevel',
+              'DealerPriceForDealerLevel:',
               res.DealerLevel.DealerPriceForDealerLevel
             );
 

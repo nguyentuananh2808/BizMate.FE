@@ -102,7 +102,8 @@
               <div class="relative">
                 <button
                   class="icon-button text-xl text-secondary-light dark:text-secondary-dark"
-                  (click)="toggleDropdown(item)" (mouseenter)="toggleDropdown(item)"
+                  (click)="toggleDropdown(item)"
+                  (mouseenter)="toggleDropdown(item)"
                 >
                   ⋮
                 </button>
@@ -144,6 +145,22 @@
                   }"
                 >
                   {{ item.Quantity }}
+                </span>
+              </div>
+
+              <div>
+                <strong>Số lượng khả dụng:</strong>
+                <span
+                  [ngClass]="{
+                    'text-danger-light dark:text-danger-dark font-bold':
+                      item.Available ?? 0 < 10,
+                    'text-warning-light dark:text-warning-dark font-semibold':
+                      (item.Available ?? 0 >= 10) && (item.Available ?? 0 < 30),
+                    'text-success-light dark:text-success-dark font-medium':
+                      item.Available ?? 0 >= 30
+                  }"
+                >
+                  {{ item.Available ?? 0 }}
                 </span>
               </div>
               <div><strong>Đơn vị:</strong> {{ item.Unit | unitText }}</div>
@@ -322,6 +339,7 @@
                 <th [nzWidth]="'120px'">Mã</th>
                 <th [nzWidth]="'240px'">Tên</th>
                 <th [nzWidth]="'150px'">Số lượng tồn kho</th>
+                <th [nzWidth]="'180px'">Số lượng khả dụng</th>
                 <th [nzWidth]="'80px'">Đơn vị</th>
                 <!-- <th [nzWidth]="'150px'">Nhà cung cấp</th> -->
                 <th [nzWidth]="'150px'">Loại SP</th>
@@ -351,7 +369,11 @@
                 </td> -->
                 <td class="text-center">{{ i + 1 }}</td>
                 <td class="relative">
-                  <button class="icon-button" (click)="toggleDropdown(item)" (mouseenter)="toggleDropdown(item)">
+                  <button
+                    class="icon-button"
+                    (click)="toggleDropdown(item)"
+                    (mouseenter)="toggleDropdown(item)"
+                  >
                     ⋮
                   </button>
 
@@ -388,7 +410,18 @@
                 >
                   {{ item.Quantity }}
                 </td>
-
+                <td
+                  [ngClass]="{
+                    'text-danger-light dark:text-danger-dark font-bold':
+                      item.Available ?? 0 < 10,
+                    'text-warning-light dark:text-warning-dark font-semibold':
+                      (item.Available ?? 0 >= 10) && (item.Available ?? 0 < 30),
+                    'text-success-light dark:text-success-dark font-medium':
+                      item.Available ?? 0 >= 10
+                  }"
+                >
+                  {{ item.Available ?? 0 }}
+                </td>
                 <td>{{ item.Unit | unitText }}</td>
                 <td>{{ item.ProductCategoryName }}</td>
                 <td>

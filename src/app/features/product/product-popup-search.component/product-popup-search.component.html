@@ -79,6 +79,7 @@
             <th [nzWidth]="'280px'">Tên sản phẩm</th>
             <th [nzWidth]="'60px'">Đơn vị</th>
             <th [nzWidth]="'120px'">Số lượng tồn kho</th>
+            <th [nzWidth]="'120px'">Số lượng khả dụng</th>
           </tr>
         </thead>
         <tbody>
@@ -117,6 +118,20 @@
                 }"
               >
                 {{ item.Quantity }}
+              </span>
+            </td>
+
+            <td>
+              <span
+                class="cursor-pointer font-semibol"
+                [ngClass]="{
+                  'text-danger-light dark:text-danger-dark font-bold':
+                    item.Available ?? 0 <= 0,
+                  'text-success-light dark:text-success-dark font-medium':
+                    item.Available ?? 0 > 0
+                }"
+              >
+                {{ item.Available ?? 0 }}
               </span>
             </td>
           </tr>
@@ -218,6 +233,19 @@
                 {{ item.Quantity }}
               </span>
               <br />
+              Số lượng khả dụng:
+              <span
+                class="cursor-pointer font-semibol"
+                [ngClass]="{
+                  'text-danger-light dark:text-danger-dark font-bold':
+                    item.Available ?? 0 <= 0,
+                  'text-success-light dark:text-success-dark font-medium':
+                    item.Available ?? 0 > 0
+                }"
+              >
+                {{ item.Available ?? 0 }}
+              </span>
+              <br />
               Đơn vị: {{ item.Unit | unitText }}
             </div>
           </div>
@@ -262,5 +290,4 @@
       </button>
     </div>
   </div>
-  
 </div>
