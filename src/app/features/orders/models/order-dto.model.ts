@@ -2,11 +2,11 @@ import { BaseCoreRespone } from '../../shared/models/base-core-response.model';
 import { StatusDto } from '../../status/models/status-dto.model';
 
 export interface GetOrderResponse {
-  Order: OrderWrapper;  
+  Order: OrderWrapper;
 }
 
 export interface OrderWrapper {
-  Order: OrderDto;      
+  Order: OrderDto;
   Success: boolean;
 }
 export interface OrderDto extends BaseCoreRespone {
@@ -31,5 +31,6 @@ export interface OrderDetailDto {
   Unit: number;
   Quantity: number;
   UnitPrice: number;
+  Available: number;
   Total: number;
 }

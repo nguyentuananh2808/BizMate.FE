@@ -72,7 +72,7 @@
                 <!-- Các input -->
                 <div>
                   <label
-                    class="block  text-secondary-light dark:text-secondary-dark"
+                    class="block text-secondary-light dark:text-secondary-dark"
                   >
                     Tên khách hàng
                   </label>
@@ -179,34 +179,60 @@
                     <div class="flex items-center gap-2">
                       <label
                         class="text-secondary-light dark:text-secondary-dark mb-0"
-                        >SL:</label
+                        [ngClass]="{
+                          'text-danger-light dark:text-danger-dark font-bold':
+                            item.Quantity <= 0,
+                          'text-success-light dark:text-success-dark font-medium':
+                            item.Quantity > 0
+                        }"
+                        (click)="startEdit(item)"
                       >
+                        SL:
+                      </label>
+
                       <ng-container
                         *ngIf="editingId === item.Id; else displayQuantity"
                       >
-                        <input
-                          type="number"
-                          min="1"
-                          [(ngModel)]="editingQuantity"
-                          [ngModelOptions]="{ standalone: true }"
-                          class="w-20 px-2 py-1 border rounded text-black bg-white"
-                          (blur)="saveEdit(item)"
-                          (keydown.enter)="saveEdit(item)"
-                        />
+                        <div class="flex flex-col space-y-1">
+                          <!-- Input số lượng -->
+                          <div class="flex items-center space-x-2">
+                            <input
+                              type="number"
+                              min="1"
+                              [(ngModel)]="editingQuantity"
+                              [ngModelOptions]="{ standalone: true }"
+                              [max]="item.Available ?? null"
+                              [ngClass]="{ 'input-error': inputError }"
+                              class="w-20 px-2 py-1 border border-gray-300 rounded"
+                              (blur)="saveEdit(item)"
+                              (keydown.enter)="saveEdit(item)"
+                            />
+                            <span class="text-xs text-gray-500">
+                              ≤ {{ item.Available ?? 0 }}
+                            </span>
+                          </div>
+
+                          <!-- Nếu lỗi vượt quá số khả dụng -->
+                          <div
+                            *ngIf="
+                              editingQuantity !== null &&
+                              editingQuantity > (item.Available ?? 0)
+                            "
+                            class="text-red-500 text-xs"
+                          >
+                            Không được vượt quá số khả dụng ({{
+                              item.Available ?? 0
+                            }})
+                          </div>
+                        </div>
                       </ng-container>
+
                       <ng-template #displayQuantity>
-                        <span
-                          class="cursor-pointer font-semibol"
-                          (click)="startEdit(item)"
-                          [ngClass]="{
-                            'text-danger-light dark:text-danger-dark font-bold':
-                              item.Quantity <= 0,
-                            'text-success-light dark:text-success-dark font-medium':
-                              item.Quantity > 0,
-                            'input-error': inputError
-                          }"
-                        >
+                        <span class="cursor-pointer">
                           {{ item.Quantity }}
+                          <span class="text-gray-500 text-xs ml-1">
+                            ≤ {{ item.Available ?? 0 }}
+                          </span>
                         </span>
                       </ng-template>
                     </div>
@@ -454,7 +480,7 @@
                     <th [nzWidth]="'80px'">Mã sản phẩm</th>
                     <th [nzWidth]="'180px'">Tên sản phẩm</th>
                     <th [nzWidth]="'80px'">Đơn vị</th>
-                    <th [nzWidth]="'50px'">Số lượng</th>
+                    <th [nzWidth]="'100px'">Số lượng</th>
                     <th [nzWidth]="'80px'">Đơn giá</th>
                     <th [nzWidth]="'80px'">Thành tiền</th>
                   </tr>
@@ -490,21 +516,46 @@
                       <ng-container
                         *ngIf="editingId === item.Id; else displayQuantity"
                       >
-                        <div class="flex items-center space-x-2">
-                          <input
-                            type="number"
-                            min="1"
-                            [(ngModel)]="editingQuantity"
-                            [ngModelOptions]="{ standalone: true }"
-                            [ngClass]="{ 'input-error': inputError }"
-                            class="w-20 px-2 py-1 border border-gray-300 rounded"
-                            (blur)="saveEdit(item)"
-                            (keydown.enter)="saveEdit(item)"
-                          />
+                        <div class="flex flex-col space-y-1">
+                          <!-- Input số lượng -->
+                          <div class="flex items-center space-x-2">
+                            <input
+                              type="number"
+                              min="1"
+                              [(ngModel)]="editingQuantity"
+                              [ngModelOptions]="{ standalone: true }"
+                              [max]="item.Available ?? null"
+                              [ngClass]="{ 'input-error': inputError }"
+                              class="w-20 px-2 py-1 border border-gray-300 rounded"
+                              (blur)="saveEdit(item)"
+                              (keydown.enter)="saveEdit(item)"
+                            />
+                            <span class="text-xs text-gray-500">
+                              ≤ {{ item.Available ?? 0 }}
+                            </span>
+                          </div>
+                          <!-- Nếu lỗi vượt quá số khả dụng -->
+                          <div
+                            *ngIf="
+                              editingQuantity !== null &&
+                              editingQuantity > (item.Available ?? 0)
+                            "
+                            class="text-red-500 text-xs"
+                          >
+                            Không được vượt quá số khả dụng ({{
+                              item.Available ?? 0
+                            }})
+                          </div>
                         </div>
                       </ng-container>
+
                       <ng-template #displayQuantity>
-                        <span class="cursor-pointer">{{ item.Quantity }}</span>
+                        <span class="cursor-pointer">
+                          {{ item.Quantity }}
+                          <span class="text-gray-500 text-xs ml-1">
+                            ≤ {{ item.Available ?? 0 }}
+                          </span>
+                        </span>
                       </ng-template>
                     </td>
 

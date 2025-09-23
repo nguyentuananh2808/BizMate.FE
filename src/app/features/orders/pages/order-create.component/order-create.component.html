@@ -70,17 +70,53 @@
                   Ngày tạo đơn : {{ dateToday | date : "dd/MM/yyyy" }}
                 </h2>
                 <!-- Các input -->
+                <!-- Cột 1: Khách hàng -->
                 <div>
-                  <label
-                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                  >
-                    Tên khách hàng
-                  </label>
-                  <input
-                    formControlName="customerName"
-                    class="input-style w-full"
-                    placeholder="Nhập tên khách hàng..."
-                  />
+                  <!-- Hàng label -->
+                  <div class="flex items-center justify-between">
+                    <nz-tabset
+                      [(nzSelectedIndex)]="selectedTabIndex"
+                      (nzSelectedIndexChange)="onTabChange($event)"
+                      class="ml-3 -mt-2 text-secondary-light dark:text-secondary-dark"
+                      nzSize="small"
+                    >
+                      <nz-tab nzTitle="Khách lẻ"></nz-tab>
+                      <nz-tab nzTitle="Đại lý"></nz-tab>
+                    </nz-tabset>
+                  </div>
+
+                  <!-- Input theo tab -->
+                  <ng-container [ngSwitch]="selectedTabIndex">
+                    <input
+                      *ngSwitchCase="0"
+                      formControlName="customerName"
+                      class="input-style mt-2"
+                      placeholder="Nhập tên khách hàng..."
+                    />
+
+                    <div *ngSwitchCase="1">
+                      <input
+                        formControlName="customerSearch"
+                        [nzAutocomplete]="auto"
+                        [(ngModel)]="searchCustomerKeyword"
+                        (ngModelChange)="onSearchCustomer($event)"
+                        placeholder="Tìm kiếm khách hàng..."
+                        class="input-style mt-2"
+                      />
+
+                      <nz-autocomplete
+                        #auto
+                        (selectionChange)="onCustomerSelected($event.nzValue)"
+                      >
+                        <nz-auto-option
+                          *ngFor="let customer of customers"
+                          [nzValue]="customer"
+                        >
+                          {{ customer.Name }}
+                        </nz-auto-option>
+                      </nz-autocomplete>
+                    </div>
+                  </ng-container>
                 </div>
 
                 <div>
@@ -128,7 +164,7 @@
                   <button
                     nz-button
                     nzType="default"
-                    class="rounded-[24px] h-10 px-6 bg-green-400 hover:bg-green-500 text-white"
+                    class="rounded-[24px] h-10 px-6 bg-green-400 hover:bg-green-500 text-white mr-2"
                     [disabled]="isSubmitting || isSubmitDisabled"
                     (click)="submitForm(true)"
                   >
@@ -147,7 +183,7 @@
                   >
                     <nz-icon nzType="save" nzTheme="outline"></nz-icon>
                     <span *ngIf="isSubmitting">Đang tạo...</span>
-                    <span *ngIf="!isSubmitting">Tạo đơn hàng</span>
+                    <span *ngIf="!isSubmitting">Tạo đơn</span>
                   </button>
                 </div>
               </form>
@@ -183,7 +219,7 @@
                   class="mb-2 p-3 rounded-lg bg-white shadow dark:bg-gray-800 text-sm"
                 >
                   <div
-                    class="font-medium text-secondary-light dark:text-secondary-dark"
+                    class="font-medium text-secondary-light dark:text-secondary-dark text-[18px]"
                   >
                     {{ item.ProductName }}
                   </div>
@@ -194,37 +230,64 @@
                     <div class="flex items-center gap-2">
                       <label
                         class="text-secondary-light dark:text-secondary-dark mb-0"
-                        >SL:</label
+                        [ngClass]="{
+                          'text-danger-light dark:text-danger-dark font-bold':
+                            item.Quantity <= 0,
+                          'text-success-light dark:text-success-dark font-medium':
+                            item.Quantity > 0
+                        }"
+                        (click)="startEdit(item)"
                       >
+                        SL:
+                      </label>
+
                       <ng-container
                         *ngIf="editingId === item.Id; else displayQuantity"
                       >
-                        <input
-                          type="number"
-                          min="1"
-                          [(ngModel)]="editingQuantity"
-                          [ngModelOptions]="{ standalone: true }"
-                          class="w-20 px-2 py-1 border rounded text-black bg-white"
-                          (blur)="saveEdit(item)"
-                          (keydown.enter)="saveEdit(item)"
-                        />
+                        <div class="flex flex-col space-y-1">
+                          <!-- Input số lượng -->
+                          <div class="flex items-center space-x-2">
+                            <input
+                              type="number"
+                              min="1"
+                              [(ngModel)]="editingQuantity"
+                              [ngModelOptions]="{ standalone: true }"
+                              [max]="item.Available ?? null"
+                              [ngClass]="{ 'input-error': inputError }"
+                              class="w-20 px-2 py-1 border border-gray-300 rounded"
+                              (blur)="saveEdit(item)"
+                              (keydown.enter)="saveEdit(item)"
+                            />
+                            <span class="text-xs text-gray-500">
+                              ≤ {{ item.Available ?? 0 }}
+                            </span>
+                          </div>
+
+                          <!-- Nếu lỗi vượt quá số khả dụng -->
+                          <div
+                            *ngIf="
+                              editingQuantity !== null &&
+                              editingQuantity > (item.Available ?? 0)
+                            "
+                            class="text-red-500 text-xs"
+                          >
+                            Không được vượt quá số khả dụng ({{
+                              item.Available ?? 0
+                            }})
+                          </div>
+                        </div>
                       </ng-container>
+
                       <ng-template #displayQuantity>
-                        <span
-                          class="cursor-pointer font-semibol"
-                          (click)="startEdit(item)"
-                          [ngClass]="{
-                            'text-danger-light dark:text-danger-dark font-bold':
-                              item.Quantity <= 0,
-                            'text-success-light dark:text-success-dark font-medium':
-                              item.Quantity > 0,
-                            'input-error': inputError
-                          }"
-                        >
+                        <span class="cursor-pointer">
                           {{ item.Quantity }}
+                          <span class="text-gray-500 text-xs ml-1">
+                            ≤ {{ item.Available ?? 0 }}
+                          </span>
                         </span>
                       </ng-template>
                     </div>
+
                     <div>Đơn vị: {{ item.Unit | unitText }}</div>
 
                     <!-- Đơn giá -->
@@ -507,7 +570,6 @@
                     <td>{{ item.Unit | unitText }}</td>
 
                     <!-- Quantity -->
-                    <!-- Quantity -->
                     <td
                       [ngClass]="{
                         'text-danger-light dark:text-danger-dark font-bold':
@@ -535,7 +597,7 @@
                               (keydown.enter)="saveEdit(item)"
                             />
                             <span class="text-xs text-gray-500">
-                             ≤ {{ item.Available ?? 0 }}
+                              ≤ {{ item.Available ?? 0 }}
                             </span>
                           </div>
                           <!-- Nếu lỗi vượt quá số khả dụng -->

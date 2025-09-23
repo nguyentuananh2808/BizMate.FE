@@ -460,8 +460,6 @@ export class OrderUpdateComponent implements OnInit {
   //đổi tab
   onTabChange(index: number): void {
     this.selectedTabIndex = index;
-    console.log('Tab changed:', index);
-
     this.orderForm.patchValue({
       customerName: '',
       phoneNumber: '',
@@ -476,7 +474,6 @@ export class OrderUpdateComponent implements OnInit {
   getOrderDetail(id: string): void {
     this.orderService.ReadByIdOrder(id).subscribe({
       next: (res) => {
-        console.log('res.Order.Order', res.Order.Order);
         this.customerId = res.Order.Order.CustomerId;
         this.customerType = res.Order.Order.CustomerType;
         if (res.Order.Order.CustomerType === 2) {
@@ -489,11 +486,6 @@ export class OrderUpdateComponent implements OnInit {
           this.customerService.ReadByIdCustomer(this.customerId).subscribe({
             next: (cusRes) => {
               this.dealerLevelId = cusRes.Customer.DealerLevelId ?? '';
-              console.log('cusRes:', cusRes);
-              console.log(
-                'cusRes.Customer.DealerLevelId:',
-                cusRes.Customer.DealerLevelId
-              );
             },
             error: (err) => {
               console.error('Load customer failed:', err);
@@ -521,7 +513,7 @@ export class OrderUpdateComponent implements OnInit {
         // ======= ĐỒNG BỘ DETAILS FORMARRAY =======
         const detailsFormArray = this.orderForm.get('details') as FormArray;
         detailsFormArray.clear();
-        console.log(res.Order.Order.Details);
+console.log("res.Order.Order.Details:",res.Order.Order.Details);
 
         (res.Order.Order.Details || []).forEach((item: any) => {
           const detailGroup = this.fb.group({
@@ -533,14 +525,13 @@ export class OrderUpdateComponent implements OnInit {
             Quantity: [item.Quantity],
             SalePrice: [item.UnitPrice],
             TotalPrice: [item.Total],
+            Available: [item.Available],
           });
           detailsFormArray.push(detailGroup);
-          console.log('Pushed detail', detailGroup.value);
         });
 
         // listOfData = sync với formArray
         this.listOfData = detailsFormArray.controls.map((c) => c.value);
-        console.log('listOfData:', this.listOfData);
 
         this.cdr.detectChanges();
       },
@@ -596,25 +587,27 @@ export class OrderUpdateComponent implements OnInit {
   saveEdit(
     item: InventoryDetail & { SalePrice?: number; TotalPrice?: number }
   ): void {
-    if (this.editingQuantity === null || this.editingQuantity < 1) {
+    const qty = this.editingQuantity;
+
+    // Kiểm tra hợp lệ
+    const isInvalid =
+      qty === null ||
+      qty < 1 ||
+      (item.Available !== undefined && qty > item.Available);
+
+    if (isInvalid) {
       this.inputError = true;
       setTimeout(() => (this.inputError = false), 300);
       return;
     }
 
-    // Cập nhật số lượng
-    item.Quantity = this.editingQuantity;
-
-    // Tính lại thành tiền
-    item.TotalPrice = (item.SalePrice ?? 0) * item.Quantity;
+    item.Quantity = qty;
+    item.TotalPrice = (item.SalePrice ?? 0) * qty;
 
     this.editingId = null;
     this.editingQuantity = null;
 
-    // 👉 Cập nhật tổng tiền đơn hàng
     this.updateTotalAmount();
-
-    // Cập nhật lại UI
     this.cdr.detectChanges();
   }
 
@@ -644,8 +637,6 @@ export class OrderUpdateComponent implements OnInit {
       this.listOfData = [...this.allData];
       this.updateExistingProductIds();
     } else {
-      console.log('allData :', this.allData);
-
       this.listOfData = this.allData.filter((item) =>
         Object.values(item).some((value) =>
           String(value).toLowerCase().includes(this.searchKeyword)
@@ -680,7 +671,6 @@ export class OrderUpdateComponent implements OnInit {
         (item.SalePrice ?? 0) *
         (item.Quantity && item.Quantity > 0 ? item.Quantity : 1),
     }));
-    console.log('this.dealerLevelId', this.dealerLevelId);
 
     // ✅ Nếu customerType = 2 (Đại lý) thì lấy bảng giá DealerLevel
     if (this.customerType === 2 && this.dealerLevelId) {
@@ -690,10 +680,6 @@ export class OrderUpdateComponent implements OnInit {
           next: (res) => {
             const dealerPrices =
               res.DealerLevel.DealerPriceForDealerLevel || [];
-            console.log(
-              'res.DealerLevel.DealerPriceForDealerLevel',
-              res.DealerLevel.DealerPriceForDealerLevel
-            );
 
             this.applyDealerLevelPrices(dealerPrices); // đã có sẵn
             this.allData = [...this.listOfData];
@@ -803,7 +789,7 @@ export class OrderUpdateComponent implements OnInit {
       StatusId: this.statusId,
       RowVersion: this.rowVersion,
       CustomerId: this.customerId,
-      CustomerType: this.selectedTabIndex === 0 ? 1 : 2,
+      CustomerType: this.customerType,
       CustomerName: formValues.customerName,
       CustomerPhone: formValues.phoneNumber,
       DeliveryAddress: formValues.deliveryAddress,

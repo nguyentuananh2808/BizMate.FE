@@ -169,10 +169,10 @@ export class OrderCreateComponent {
   }
   onTabChange(index: number): void {
     this.selectedTabIndex = index;
-    console.log('Tab changed:', index);
     if (index === 1) {
       this.orderForm.get('phoneNumber')?.disable();
       this.orderForm.get('deliveryAddress')?.disable();
+      this.customerType = 2;
     } else {
       this.orderForm.get('phoneNumber')?.enable();
       this.orderForm.get('deliveryAddress')?.enable();
@@ -184,6 +184,10 @@ export class OrderCreateComponent {
       deliveryAddress: '',
       customerSearch: '',
     });
+  }
+
+  updateExistingProductIds(): void {
+    this.existingProductIds = this.listOfData.map((item) => item.ProductId);
   }
   private applyOriginalProductPrices(): void {
     if (!this.listOfData || this.listOfData.length === 0) {
@@ -203,8 +207,6 @@ export class OrderCreateComponent {
           const product = products[idx];
           const basePrice = product.Product.SalePrice ?? 0;
           const qty = item.Quantity > 0 ? item.Quantity : 1;
-          console.log('product', product);
-          console.log('basePrice', basePrice);
 
           return {
             ...item,
@@ -269,7 +271,6 @@ export class OrderCreateComponent {
       this.customerService.ReadByIdCustomer(this.customerId).subscribe({
         next: (cusRes) => {
           this.dealerLevelId = cusRes.Customer.DealerLevelId ?? '';
-          console.log('cusRes:', cusRes);
 
           if (this.dealerLevelId) {
             this.dealerLevelService
@@ -365,31 +366,30 @@ export class OrderCreateComponent {
   saveEdit(
     item: InventoryDetail & { SalePrice?: number; TotalPrice?: number }
   ): void {
-    if (
-      this.editingQuantity === null ||
-      this.editingQuantity < 1 ||
-      (item.Available !== undefined && this.editingQuantity > item.Available)
-    ) {
+    const qty = this.editingQuantity;
+
+    // Kiểm tra hợp lệ
+    const isInvalid =
+      qty === null ||
+      qty < 1 ||
+      (item.Available !== undefined && qty > item.Available);
+
+    if (isInvalid) {
       this.inputError = true;
       setTimeout(() => (this.inputError = false), 300);
       return;
     }
 
-    // Cập nhật số lượng
-    item.Quantity = this.editingQuantity;
-
-    // Tính lại thành tiền
-    item.TotalPrice = (item.SalePrice ?? 0) * item.Quantity;
+    item.Quantity = qty;
+    item.TotalPrice = (item.SalePrice ?? 0) * qty;
 
     this.editingId = null;
     this.editingQuantity = null;
 
-    // 👉 Cập nhật tổng tiền đơn hàng
     this.updateTotalAmount();
-
-    // Cập nhật lại UI
     this.cdr.detectChanges();
   }
+
   stopEdit(): void {
     this.editingId = null;
   }
@@ -406,7 +406,7 @@ export class OrderCreateComponent {
 
         // 👉 Tính lại tổng sau khi xóa
         this.updateTotalAmount();
-
+        this.updateExistingProductIds();
         this.cdr.detectChanges();
       },
     });
@@ -417,8 +417,6 @@ export class OrderCreateComponent {
     if (!this.searchKeyword) {
       this.listOfData = [...this.allData];
     } else {
-      console.log('allData :', this.allData);
-
       this.listOfData = this.allData.filter((item) =>
         Object.values(item).some((value) =>
           String(value).toLowerCase().includes(this.searchKeyword)
@@ -436,26 +434,21 @@ export class OrderCreateComponent {
 
     // Gộp sản phẩm mới vào danh sách hiện tại
     this.listOfData = [...this.listOfData, ...productList];
-
+    this.existingProductIds = this.listOfData.map((p) => p.Id);
     // Loại bỏ trùng theo Id
     this.listOfData = this.listOfData.filter(
       (item, index, self) => index === self.findIndex((t) => t.Id === item.Id)
     );
-    
-    
+
     // Chuẩn hóa dữ liệu: Quantity không vượt quá Available
     this.listOfData = this.listOfData.map((item) => {
       // Quantity mặc định = 1
       let qty = item.Quantity && item.Quantity > 0 ? item.Quantity : 1;
-      console.log("listOfData:",this.listOfData);
 
       // Nếu có Available thì Quantity không được vượt quá
       if (item.Available !== undefined && qty > item.Available) {
         qty = item.Available;
       }
-
-      console.log("item.Available :",item.Available );
-      
 
       return {
         ...item,
@@ -464,7 +457,7 @@ export class OrderCreateComponent {
         TotalPrice: (item.SalePrice ?? 0) * qty,
       };
     });
-
+    console.log('this.customerType:', this.customerType);
     // Nếu là khách đại lý thì áp giá DealerLevel
     if (this.customerType === 2 && this.dealerLevelId) {
       this.dealerLevelService
@@ -474,7 +467,7 @@ export class OrderCreateComponent {
             const dealerPrices =
               res.DealerLevel.DealerPriceForDealerLevel || [];
             console.log(
-              'DealerPriceForDealerLevel:',
+              'DealerPriceForDealerLevel1111:',
               res.DealerLevel.DealerPriceForDealerLevel
             );
 
