@@ -160,6 +160,13 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
         this.importCode = res.ImportReceipt.ImportReceipt.Code;
         // Gán dữ liệu sản phẩm
         this.listOfData = res.ImportReceipt.ImportReceipt.Details || [];
+        this.listOfData = (res.ImportReceipt.ImportReceipt.Details || []).map(
+          (d: any) => ({
+            ...d,
+            ProductCode: d.ProductCode ?? d.Code,
+          })
+        );
+
         this.allData = [...this.listOfData];
         this.rowVersion = res.ImportReceipt.ImportReceipt.RowVersion;
 
@@ -185,7 +192,6 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
     );
   }
 
-  
   startEdit(item: InventoryDetail): void {
     this.editingId = item.Id;
     this.editingQuantity = item.Quantity;
@@ -290,6 +296,7 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
     this.allData = [...this.listOfData];
 
     this.details.clear();
+    console.log('this.listOfData:', this.listOfData);
 
     for (const item of this.listOfData) {
       this.details.push(

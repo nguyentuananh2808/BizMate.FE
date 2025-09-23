@@ -203,7 +203,7 @@
                               [ngModelOptions]="{ standalone: true }"
                               [max]="item.Available ?? null"
                               [ngClass]="{ 'input-error': inputError }"
-                              class="w-20 px-2 py-1 border border-gray-300 rounded"
+                              class="w-20 px-2 py-1 border text-success-light dark:text-success-dark rounded"
                               (blur)="saveEdit(item)"
                               (keydown.enter)="saveEdit(item)"
                             />

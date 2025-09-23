@@ -513,9 +513,10 @@ export class OrderUpdateComponent implements OnInit {
         // ======= ĐỒNG BỘ DETAILS FORMARRAY =======
         const detailsFormArray = this.orderForm.get('details') as FormArray;
         detailsFormArray.clear();
-console.log("res.Order.Order.Details:",res.Order.Order.Details);
 
         (res.Order.Order.Details || []).forEach((item: any) => {
+          const availableAfterReserve =
+            (item.Available ?? 0) + (item.Quantity ?? 0);
           const detailGroup = this.fb.group({
             Id: [item.Id],
             ProductId: [item.ProductId],
@@ -525,7 +526,7 @@ console.log("res.Order.Order.Details:",res.Order.Order.Details);
             Quantity: [item.Quantity],
             SalePrice: [item.UnitPrice],
             TotalPrice: [item.Total],
-            Available: [item.Available],
+            Available: [availableAfterReserve >= 0 ? availableAfterReserve : 0],
           });
           detailsFormArray.push(detailGroup);
         });
