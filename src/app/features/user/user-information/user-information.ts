@@ -6,6 +6,7 @@ import { BottomMenuComponent } from '../../shared/bottom-menu.component/bottom-m
 import { MenuComponent } from '../../shared/menu.component/menu.component';
 import { DarkModeToggleComponent } from '../../shared/dark-mode/pages/dark-mode-toggle.component';
 import { Router } from '@angular/router';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 
 @Component({
   selector: 'user-information',
@@ -16,6 +17,7 @@ import { Router } from '@angular/router';
     HeaderCommonComponent,
     BottomMenuComponent,
     MenuComponent,
+    NzIconModule
   ],
   templateUrl: './user-information.html',
   styleUrls: ['./user-information.scss'],
