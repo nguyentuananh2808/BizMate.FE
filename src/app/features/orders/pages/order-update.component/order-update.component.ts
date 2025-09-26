@@ -567,7 +567,7 @@ export class OrderUpdateComponent implements OnInit {
   }
   onPrint() {
     const { customerName, phoneNumber, description, deliveryAddress } =
-      this.orderForm.value;
+      this.orderForm.getRawValue();
 
     this.customer = {
       id: '',
@@ -576,7 +576,7 @@ export class OrderUpdateComponent implements OnInit {
       address: deliveryAddress,
       description: description,
     };
-
+    this.allData = [...this.listOfData];
     this.showPrint = true;
 
     setTimeout(() => {

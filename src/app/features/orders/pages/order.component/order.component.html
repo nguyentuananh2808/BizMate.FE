@@ -295,14 +295,17 @@
                 >
                   Mã đơn: {{ item.Code }}
                 </h3>
-                <!-- Dropdown actions -->
-                <div class="relative">
+
                   <span
                     class="px-3 py-1 rounded-full text-sm font-medium mr-3"
                     [ngClass]="item.StatusName | statusColor"
                   >
                     {{ item.StatusName }}
                   </span>
+                <!-- Dropdown actions -->
+                <div class="relative z-10">
+                
+
                   <button
                     class="icon-button text-xl text-secondary-light dark:text-secondary-dark"
                     (click)="toggleDropdown(item)"

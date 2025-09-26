@@ -41,6 +41,7 @@ export const ApiUrls = {
   },
   notification: {
     get: '/notification/get-notification',
+    update: '/notification',
   },
   customer: {
     search: '/customer/search',

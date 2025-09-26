@@ -60,7 +60,7 @@
           class="bg-[rgba(233,233,233,0.87)] dark:bg-gray-900 flex flex-col rounded-[24px]"
         >
           <!-- Scrollable content -->
-          <div class="overflow-y-auto px-3 pb-4 space-y-4 max-h-[76vh]">
+          <div class="overflow-y-auto px-3 py-4 space-y-4 max-h-[76vh]">
             <div
               class="shadow-lg rounded-[24px] overflow-hidden px-4 pb-4 w-full mb-1"
               [ngClass]="{ 'dark:bg-gray-900': isDark }"
@@ -69,7 +69,7 @@
                 <div
                   class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
                 >
-                 <!-- Trạng thái đơn hàng -->
+                  <!-- Trạng thái đơn hàng -->
                   <div
                     class="self-center md:self-center px-3 py-1 rounded-full text-xs md:text-sm font-medium shadow-md"
                     [ngClass]="statusName | statusColor"
@@ -93,8 +93,6 @@
                       }}</span>
                     </h2>
                   </div>
-
-                 
                 </div>
 
                 <!-- Các input -->
@@ -160,6 +158,7 @@
                     nzType="primary"
                     class="rounded-[24px] h-10 px-6 w-full mb-3"
                     [disabled]="isSubmitting || isSubmitDisabled"
+                    (click)="submitForm()"
                   >
                     <nz-icon nzType="save" nzTheme="outline"></nz-icon>
                     <span *ngIf="isSubmitting">Đang cập nhật...</span>
@@ -619,7 +618,7 @@
                 </tbody>
               </nz-table>
               <div
-                class="text-right text-xl mr-6 font-bold mt-4 text-secondary-light dark:text-secondary-dark"
+                class="text-right text-xl mr-6 font-bold mt-4 text-secondary-light dark:text-secondary-dark mb-8"
               >
                 Tổng hóa đơn: {{ totalAmount ?? 0 | price }}
               </div>
@@ -641,6 +640,7 @@
     ></product-popup-search>
 
     <!-- Nội dung in -->
+    <!-- Nội dung in -->
     <div id="print-section" class="print-only">
       <div style="text-align: center; margin-bottom: 16px">
         <h2 style="font-size: 24px; margin: 0">VuaKong</h2>
@@ -648,6 +648,7 @@
         <p style="margin: 0">Ngày: {{ dateToday | date : "dd/MM/yyyy" }}</p>
       </div>
 
+      <!-- Thông tin khách hàng -->
       <div style="margin-bottom: 20px">
         <strong>Thông tin khách hàng:</strong>
         <table
@@ -669,14 +670,17 @@
         </table>
       </div>
 
+      <!-- Bảng sản phẩm -->
       <table style="width: 100%; border-collapse: collapse; font-size: 14px">
         <thead>
-          <tr>
+          <tr style="border-bottom: 2px solid #000">
             <th style="border: 1px solid #000; padding: 6px">STT</th>
             <th style="border: 1px solid #000; padding: 6px">Mã SP</th>
             <th style="border: 1px solid #000; padding: 6px">Tên SP</th>
             <th style="border: 1px solid #000; padding: 6px">Số lượng</th>
             <th style="border: 1px solid #000; padding: 6px">Đơn vị</th>
+            <th style="border: 1px solid #000; padding: 6px">Đơn giá</th>
+            <th style="border: 1px solid #000; padding: 6px">Thành tiền</th>
           </tr>
         </thead>
         <tbody>
@@ -694,8 +698,32 @@
             <td style="border: 1px solid #000; padding: 6px">
               {{ item.Unit | unitText }}
             </td>
+            <td style="border: 1px solid #000; padding: 6px">
+              {{ item.SalePrice | price }}
+            </td>
+            <td style="border: 1px solid #000; padding: 6px">
+              {{ item.TotalPrice | price }}
+            </td>
           </tr>
         </tbody>
+        <tfoot>
+          <tr>
+            <td
+              colspan="6"
+              style="
+                border: 1px solid #000;
+                padding: 6px;
+                text-align: right;
+                font-weight: bold;
+              "
+            >
+              Tổng giá
+            </td>
+            <td style="border: 1px solid #000; padding: 6px; font-weight: bold">
+              {{ totalAmount | price }}
+            </td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   </div>

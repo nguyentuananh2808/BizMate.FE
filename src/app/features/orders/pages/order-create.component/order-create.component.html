@@ -48,6 +48,7 @@
             disabled
             (click)="onPrint()"
             type="button"
+            [disabled]="true"
             class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
           >
             <nz-icon nzType="printer" nzTheme="outline"></nz-icon>
@@ -349,6 +350,7 @@
             <button
               (click)="onPrint()"
               type="button"
+              [disabled]="true"
               class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
             >
               <nz-icon nzType="printer" nzTheme="outline"></nz-icon> In phiếu
