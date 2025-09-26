@@ -580,9 +580,13 @@ export class OrderUpdateComponent implements OnInit {
     this.showPrint = true;
 
     setTimeout(() => {
-      window.print();
-      this.showPrint = false;
-    }, 100);
+      this.showPrint = true;
+
+      setTimeout(() => {
+        window.print();
+        this.showPrint = false;
+      }, 100);
+    }, 0);
   }
 
   // Hàm tính tổng tiền
