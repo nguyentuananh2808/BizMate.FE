@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzTableModule } from 'ng-zorro-antd/table';
-import { NotificationComponent } from '../../notification/pages/notification';
 
 @Component({
   selector: 'app-menu',
@@ -14,7 +13,6 @@ import { NotificationComponent } from '../../notification/pages/notification';
     NzMenuModule,
     NzIconModule,
     NzTableModule,
-    NotificationComponent,
   ],
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.scss'],

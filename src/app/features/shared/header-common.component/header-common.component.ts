@@ -4,11 +4,12 @@ import { DarkModeToggleComponent } from '../dark-mode/pages/dark-mode-toggle.com
 import { CommonModule } from '@angular/common';
 import { DarkModeService } from '../dark-mode/services/dark-mode.service';
 import { Subscription } from 'rxjs';
+import { NotificationComponent } from '../../notification/pages/notification';
 
 @Component({
   standalone: true,
   selector: 'header-common',
-  imports: [TopMenuComponent, DarkModeToggleComponent, CommonModule],
+  imports: [TopMenuComponent, DarkModeToggleComponent, CommonModule,NotificationComponent],
   templateUrl: './header-common.component.html',
   styleUrls: ['./header-common.component.scss'],
 })

@@ -67,7 +67,7 @@ export class ProductPopupSearchComponent implements OnInit {
   }
 
   onSaveSelectedProducts(): void {
-    const selectedInventoryDetails: InventoryDetail[] = this.listOfData
+    const selectedInventoryDetails: InventoryDetail[] = this.originalData
       .filter(
         (p) =>
           this.setOfCheckedId.has(p.Id) &&
@@ -82,12 +82,10 @@ export class ProductPopupSearchComponent implements OnInit {
         Quantity: 0,
         SalePrice: p.SalePrice,
         InventoryReceiptId: '',
-        Available:p.Available
+        Available: p.Available,
       }));
 
-    // Nếu không có sản phẩm hợp lệ được chọn
     if (selectedInventoryDetails.length === 0) {
-      // Có thể hiện thông báo nếu muốn
       this.toastr.warning('Không có sản phẩm hợp lệ được chọn!');
       this.closePopup.emit();
       return;
@@ -113,42 +111,35 @@ export class ProductPopupSearchComponent implements OnInit {
     pageSize: number = this.pageSize
   ): void {
     this.isLoading = true;
+
     this.productService
-      .SearchProduct(this.searchKeyword || null, pageSize, pageIndex, false)
+      .SearchProduct(this.searchKeyword || null, 1000, 1, false) // lấy đủ data
       .subscribe({
         next: (res) => {
-          console.log('API raw response:', res);
-          console.log('Products[0]:', res.Products?.[0]);
-          this.disabledProductIds.clear();
-
           const existingIds = new Set(this.existingProducts);
 
-          // Lọc sản phẩm trước khi bind vào listOfData
-          let products = (res.Products || []).reduce((acc, p) => {
-            if (existingIds.has(p.Id)) return acc;
-            if (!this.ProductQuantity && p.Quantity === 0) return acc;
-            acc.push(p); // giữ nguyên object p (không mất SalePrice)
-            return acc;
-          }, [] as Product[]);
+          // Bỏ sản phẩm đã có
+          let filtered = (res.Products || []).filter(
+            (p) => !existingIds.has(p.Id)
+          );
 
-          this.originalData = products;
-          console.log('res product:', res.Products);
-          console.log('products:', products);
+          // ✅ Lưu toàn bộ danh sách đã filter để dùng lại khi save
+          this.originalData = filtered;
 
-          this.listOfData = products;
-          console.log('listOfData:', this.listOfData);
-          this.totalCount = res.TotalCount || 0;
+          // Paging ở frontend
+          const start = (pageIndex - 1) * pageSize;
+          const end = start + pageSize;
+          this.listOfData = filtered.slice(start, end);
 
-          setTimeout(() => {
-            this.listOfData = [...this.originalData].sort((a, b) =>
-              a.Code.localeCompare(b.Code)
-            );
-            this.listOfCurrentPageData = [...this.listOfData];
-            this.isLoading = false;
-            this.cdr.detectChanges();
-          });
+          this.totalCount = filtered.length;
+
+          this.listOfCurrentPageData = [...this.listOfData];
+          this.isLoading = false;
+          this.cdr.detectChanges();
         },
-        error: () => (this.isLoading = false),
+        error: () => {
+          this.isLoading = false;
+        },
       });
   }
 

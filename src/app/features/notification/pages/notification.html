@@ -1,24 +1,56 @@
-<div class="w-80 p-4 bg-white rounded-xl shadow-md">
-  <nz-badge [nzCount]="notifications.length">
-    <span class="text-lg font-semibold">Thông báo</span>
-  </nz-badge>
+<div class="relative inline-block">
+  <!-- Icon chuông -->
+  <button
+    class="relative z-[100] flex items-center justify-center bg-transparent transition rounded-full p-2 hover:bg-gray-200 dark:hover:bg-gray-800 group"
+    (click)="toggleTooltip()"
+  >
+    <i
+      nz-icon
+      nzType="bell"
+      nzTheme="outline"
+      class="text-xl leading-none text-blue-400 dark:text-gray-200 animate-shake group-hover:animate-wiggle"
+    ></i>
 
-  <nz-spin [nzSpinning]="loading" class="w-full">
-    <nz-list
-      class="mt-4 max-h-80 overflow-y-auto"
-      [nzDataSource]="notifications"
-      [nzRenderItem]="item"
-    >
-      <ng-template #item let-item>
-        <nz-list-item class="border-b py-2">
-          <div class="flex flex-col">
-            <span class="font-medium">{{ item.message }}</span>
-            <span class="text-xs text-gray-500">
-              {{ item.createdAt | date : "short" }}
-            </span>
+    <nz-badge
+      *ngIf="notifications.length > 0"
+      [nzCount]="notifications.length"
+      class="absolute -top-2 right-0 translate-x-1/2"
+    ></nz-badge>
+  </button>
+
+  <!-- Tooltip box -->
+  <div
+    *ngIf="isTooltipOpen"
+    class="absolute right-[-30px] mt-2 w-64 bg-white dark:bg-background-dark shadow-2xl drop-shadow-xl rounded-xl p-4 z-[90] ring-2 ring-blue-400/80 transform origin-top-right transition-all duration-300 ease-out animate-[fadeInUp_0.25s_ease-out]"
+  >
+    <div class="flex items-center justify-between mb-2">
+      <span
+        class="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark"
+      >
+        Thông báo
+      </span>
+      <span
+        class="text-xs text-gray-400 dark:text-gray-500 cursor-pointer hover:text-blue-500 dark:hover:text-blue-400"
+        (click)="markAllAsRead()"
+      >
+        Đánh dấu đã đọc
+      </span>
+    </div>
+
+    <nz-spin [nzSpinning]="loading">
+      <div class="max-h-96 overflow-y-auto space-y-2">
+        <div
+          *ngFor="let item of notifications"
+          class="p-2 border-b border-gray-200 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800 rounded"
+        >
+          <span class="font-medium text-gray-800 dark:text-gray-100">
+            {{ item.Message }}
+          </span>
+          <div class="text-xs text-gray-500 dark:text-gray-400">
+            {{ item.createdAt | date : "short" }}
           </div>
-        </nz-list-item>
-      </ng-template>
-    </nz-list>
-  </nz-spin>
+        </div>
+      </div>
+    </nz-spin>
+  </div>
 </div>

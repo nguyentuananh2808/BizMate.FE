@@ -1,10 +1,15 @@
-export interface Notification {
-  id: string;
-  message: string;
-  type: string;
-  createdAt: string;
-  isRead: boolean;
+export interface NotificationResponse {
+  Notifications: AppNotification[];
 }
+
+export interface AppNotification {
+  StoreId: string;
+  Message: string;
+  Type: string;
+  createdAt?: string;
+  UserId: string;
+}
+
 
 export interface NotificationRequest {
   lastChecked: string;

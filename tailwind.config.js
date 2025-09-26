@@ -4,6 +4,25 @@ module.exports = {
   darkMode: "class",
   theme: {
     extend: {
+    keyframes: {
+        shake: {
+          '0%, 100%': { transform: 'rotate(0deg)' },
+          '25%': { transform: 'rotate(-15deg)' },
+          '75%': { transform: 'rotate(15deg)' },
+        },
+        wiggle: {
+          '0%, 100%': { transform: 'rotate(0deg)' },
+          '20%': { transform: 'rotate(-25deg)' },
+          '40%': { transform: 'rotate(25deg)' },
+          '60%': { transform: 'rotate(-20deg)' },
+          '80%': { transform: 'rotate(20deg)' },
+        },
+      },
+      animation: {
+        shake: 'shake 1.5s ease-in-out infinite',   // lắc nhẹ
+        wiggle: 'wiggle 0.6s ease-in-out infinite', // lắc mạnh
+      },
+    
       colors: {
         vkStart: "#60A5FA", // xanh nhạt (light blue-400)
         vkEnd: "#2563EB", // xanh đậm (blue-600)
