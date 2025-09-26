@@ -5,7 +5,11 @@
   (click)="openMobileMenu()"
 >
   <!-- <i nz-icon nzType="menu"></i> -->
-  <img src="assets/images/logo_vuakong_light.png" alt="" class="w-5 animate-spin-slow animate-bounce" />
+  <img
+    src="assets/images/logo_vuakong_light.png"
+    alt=""
+    class="w-5 animate-spin-slow animate-bounce"
+  />
 </button>
 
 <!-- Overlay đen khi menu mở -->
@@ -34,7 +38,11 @@
       (click)="isMobile ? closeMobileMenu() : toggleSidebar()"
     >
       <!-- <i nz-icon [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"></i> -->
-      <img src="assets/images/logo_vuakong_light.png" alt="" class="w-5 animate-spin-slow animate-bounce" />
+      <img
+        src="assets/images/logo_vuakong_light.png"
+        alt=""
+        class="w-5 animate-spin-slow animate-bounce"
+      />
     </button>
   </div>
 
@@ -85,4 +93,5 @@
       </li>
     </ng-container>
   </ul>
+  <notification></notification>
 </div>

@@ -1,6 +1,6 @@
 export const ApiUrls = {
-  baseUrl: 'http://103.163.118.228:5000/v1',
-  //baseUrl: 'https://localhost:44349/v1',
+  //baseUrl: 'http://103.163.118.228:5000/v1',
+  baseUrl: 'https://localhost:44349/v1',
   productCategory: {
     getAll: '/product-category/GetAll',
     getById: (id: string) => `/product-category/${id}`,
@@ -39,7 +39,9 @@ export const ApiUrls = {
     update: '/order',
     updateStatus: '/order/update_status',
   },
-
+  notification: {
+    get: '/notification/get-notification',
+  },
   customer: {
     search: '/customer/search',
     getById: (id: string) => `/customer/${id}`,

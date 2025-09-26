@@ -60,15 +60,43 @@
           class="bg-[rgba(233,233,233,0.87)] dark:bg-gray-900 flex flex-col rounded-[24px]"
         >
           <!-- Scrollable content -->
-          <div class="overflow-y-auto px-3 py-4 space-y-4 max-h-[76vh]">
+          <div class="overflow-y-auto px-3 pb-4 space-y-4 max-h-[76vh]">
             <div
-              class="shadow-lg rounded-[24px] overflow-hidden p-4 w-full m-1"
+              class="shadow-lg rounded-[24px] overflow-hidden px-4 pb-4 w-full mb-1"
               [ngClass]="{ 'dark:bg-gray-900': isDark }"
             >
               <form [formGroup]="orderForm" class="space-y-4">
-                <h2 class="text-secondary-light dark:text-secondary-dark">
-                  Ngày tạo đơn : {{ dateToday | date : "dd/MM/yyyy" }}
-                </h2>
+                <div
+                  class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
+                >
+                 <!-- Trạng thái đơn hàng -->
+                  <div
+                    class="self-center md:self-center px-3 py-1 rounded-full text-xs md:text-sm font-medium shadow-md"
+                    [ngClass]="statusName | statusColor"
+                  >
+                    {{ statusName }}
+                  </div>
+                  <!-- Cột trái: Mã đơn & Ngày tạo -->
+                  <div class="flex flex-col gap-1 md:flex-row md:gap-6">
+                    <h2
+                      class="text-secondary-light dark:text-secondary-dark text-sm md:text-base"
+                    >
+                      Mã đơn hàng:
+                      <span class="font-semibold">{{ orderCode }}</span>
+                    </h2>
+                    <h2
+                      class="text-secondary-light dark:text-secondary-dark text-sm md:text-base"
+                    >
+                      Ngày tạo:
+                      <span class="font-semibold">{{
+                        dateToday | date : "dd/MM/yyyy"
+                      }}</span>
+                    </h2>
+                  </div>
+
+                 
+                </div>
+
                 <!-- Các input -->
                 <div>
                   <label
@@ -123,11 +151,14 @@
                   ></textarea>
                 </div>
 
-                <div class="flex justify-end">
+                <div
+                  class="flex justify-end"
+                  *ngIf="statusName !== 'Hoàn thành' && statusName !== 'Hủy'"
+                >
                   <button
                     nz-button
                     nzType="primary"
-                    class="rounded-[24px] h-10 px-6"
+                    class="rounded-[24px] h-10 px-6 w-full mb-3"
                     [disabled]="isSubmitting || isSubmitDisabled"
                   >
                     <nz-icon nzType="save" nzTheme="outline"></nz-icon>
@@ -136,6 +167,23 @@
                   </button>
                 </div>
               </form>
+              <!-- Nút Đóng hàng -->
+              <div
+                class="flex flex-wrap gap-2"
+                *ngIf="statusName !== 'Hoàn thành' && statusName !== 'Hủy'"
+              >
+                <ng-container *ngFor="let action of statusActions[statusName]">
+                  <button
+                    nz-button
+                    class="flex-1 min-w-[45%] items-center justify-center gap-2 whitespace-nowrap rounded-[24px] h-10 px-4"
+                    [ngClass]="action.class"
+                    (click)="handleAction(action.type)"
+                  >
+                    <nz-icon [nzType]="action.icon" nzTheme="outline"></nz-icon>
+                    <span>{{ action.label }}</span>
+                  </button>
+                </ng-container>
+              </div>
 
               <!-- Danh sách sản phẩm -->
               <div class="mt-4">
@@ -150,6 +198,7 @@
                     nzType="default"
                     class="rounded-[24px] h-8 px-4 text-sm"
                     (click)="addProducts()"
+                    *ngIf="statusName !== 'Hoàn thành' && statusName !== 'Hủy'"
                   >
                     <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
                     Thêm

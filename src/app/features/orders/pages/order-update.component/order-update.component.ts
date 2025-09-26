@@ -214,7 +214,7 @@ export class OrderUpdateComponent implements OnInit {
     'Tạo mới': [
       {
         type: 'packing',
-        label: 'Bắt đầu đóng hàng',
+        label: 'Đóng hàng',
         icon: 'gift',
         class: 'bg-green-500 hover:bg-green-600 text-white hover:text-white',
       },
@@ -318,21 +318,29 @@ export class OrderUpdateComponent implements OnInit {
   }
 
   cancelOrder(): void {
-    const payload: UpdateStatusOrderRequest = {
-      Id: this.id,
-      RowVersion: this.rowVersion,
-      StatusCode: 'CANCELLED',
-      StatusId: this.statusId,
-    };
-    this.orderService.UpdateStatusOrder(payload).subscribe({
-      next: () => {
-        this.toastr.success('Cập nhật trạng thái đơn hàng thành công!');
-        this.cdr.detectChanges();
-        this.getOrderDetail(this.id);
-      },
-      error: (err) => {
-        console.error('Lỗi khi gọi ReadByIdWarehouseReceipt:', err);
-        this.toastr.error('Cập nhật trạng thái đơn hàng thất bại!');
+    this.modal.confirm({
+      nzTitle: `Bạn có chắc muốn hủy đơn hàng này?`,
+      nzOkText: 'Hủy đơn',
+      nzCancelText: 'Đóng',
+      nzOnOk: () => {
+        const payload: UpdateStatusOrderRequest = {
+          Id: this.id,
+          RowVersion: this.rowVersion,
+          StatusCode: 'CANCELLED',
+          StatusId: this.statusId,
+        };
+
+        this.orderService.UpdateStatusOrder(payload).subscribe({
+          next: () => {
+            this.toastr.success('Cập nhật trạng thái đơn hàng thành công!');
+            this.cdr.detectChanges();
+            this.getOrderDetail(this.id);
+          },
+          error: (err) => {
+            console.error('Lỗi khi cập nhật trạng thái đơn hàng:', err);
+            this.toastr.error('Hủy đơn hàng thất bại!');
+          },
+        });
       },
     });
   }

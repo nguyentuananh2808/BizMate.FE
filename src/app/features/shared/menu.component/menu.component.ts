@@ -4,11 +4,18 @@ import { Router } from '@angular/router';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzTableModule } from 'ng-zorro-antd/table';
+import { NotificationComponent } from '../../notification/pages/notification';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [CommonModule, NzMenuModule, NzIconModule,NzTableModule],
+  imports: [
+    CommonModule,
+    NzMenuModule,
+    NzIconModule,
+    NzTableModule,
+    NotificationComponent,
+  ],
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.scss'],
 })
@@ -130,13 +137,13 @@ export class MenuComponent implements OnInit {
       key: 'customers',
       icon: 'user',
       label: 'Khách hàng',
-     
+
       children: [
         {
           key: 'customer-list',
           label: 'Danh sách khách hàng',
           icon: 'user-add',
-           route: '/customer-list',
+          route: '/customer-list',
         },
         {
           key: 'product-categories',
