@@ -10,24 +10,44 @@
         alt="logo"
         width="200"
       />
+
       <!-- Form -->
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="text-left">
-        <!-- store name -->
+        <!-- Store name -->
         <label class="text-sm text-gray-600">Tên cửa hàng</label>
         <input
           formControlName="nameStore"
-          type="nameStore"
+          type="text"
           placeholder="Tên cửa hàng"
-          class="w-full border-b border-gray-300 focus:outline-none py-2 mb-3 placeholder-gray-400 text-sm rounded-[24px] pl-4"
+          class="w-full border-b border-gray-300 focus:outline-none py-2 mb-1 placeholder-gray-400 text-sm rounded-[24px] pl-4"
         />
-        <!--Full name-->
+        <div
+          *ngIf="
+            form.get('nameStore')?.touched &&
+            form.get('nameStore')?.hasError('required')
+          "
+          class="text-red-500 text-xs mb-2"
+        >
+          Tên cửa hàng là bắt buộc
+        </div>
+
+        <!-- Full name -->
         <label class="text-sm text-gray-600">Họ và tên</label>
         <input
           formControlName="fullName"
-          type="fullName"
+          type="text"
           placeholder="Họ và tên"
-          class="w-full border-b border-gray-300 focus:outline-none py-2 mb-6 placeholder-gray-400 text-sm rounded-[24px] pl-4"
+          class="w-full border-b border-gray-300 focus:outline-none py-2 mb-1 placeholder-gray-400 text-sm rounded-[24px] pl-4"
         />
+        <div
+          *ngIf="
+            form.get('fullName')?.touched &&
+            form.get('fullName')?.hasError('required')
+          "
+          class="text-red-500 text-xs mb-2"
+        >
+          Họ và tên là bắt buộc
+        </div>
 
         <!-- Email -->
         <label class="text-sm text-gray-600">Email</label>
@@ -35,8 +55,25 @@
           formControlName="email"
           type="email"
           placeholder="admin@gmail.com"
-          class="w-full border-b border-gray-300 focus:outline-none py-2 mb-6 placeholder-gray-400 text-sm rounded-[24px] pl-4"
+          class="w-full border-b border-gray-300 focus:outline-none py-2 mb-1 placeholder-gray-400 text-sm rounded-[24px] pl-4"
         />
+        <div
+          *ngIf="
+            form.get('email')?.touched &&
+            form.get('email')?.hasError('required')
+          "
+          class="text-red-500 text-xs mb-2"
+        >
+          Email là bắt buộc
+        </div>
+        <div
+          *ngIf="
+            form.get('email')?.touched && form.get('email')?.hasError('email')
+          "
+          class="text-red-500 text-xs mb-2"
+        >
+          Email không hợp lệ
+        </div>
 
         <!-- Password -->
         <label class="text-sm text-gray-600">Mật khẩu</label>
@@ -44,10 +81,43 @@
           formControlName="password"
           type="password"
           placeholder="**********"
-          class="w-full border-b border-gray-300 focus:outline-none py-2 mb-3 placeholder-gray-400 text-sm rounded-[24px] pl-4"
+          class="w-full border-b border-gray-300 focus:outline-none py-2 mb-1 placeholder-gray-400 text-sm rounded-[24px] pl-4"
         />
+        <div
+          *ngIf="
+            form.get('password')?.touched &&
+            form.get('password')?.hasError('required')
+          "
+          class="text-red-500 text-xs mb-2"
+        >
+          Mật khẩu là bắt buộc
+        </div>
 
-        <!-- Đăng ký -->
+        <!-- Confirm Password -->
+        <label class="text-sm text-gray-600">Xác nhận mật khẩu</label>
+        <input
+          formControlName="confirmPassword"
+          type="password"
+          placeholder="**********"
+          class="w-full border-b border-gray-300 focus:outline-none py-2 mb-1 placeholder-gray-400 text-sm rounded-[24px] pl-4"
+        />
+        <div
+          *ngIf="
+            form.get('confirmPassword')?.touched &&
+            form.get('confirmPassword')?.hasError('required')
+          "
+          class="text-red-500 text-xs mb-2"
+        >
+          Xác nhận mật khẩu là bắt buộc
+        </div>
+        <div
+          *ngIf="form.errors?.['passwordMismatch'] && form.get('confirmPassword')?.touched"
+          class="text-red-500 text-xs mb-2"
+        >
+          Mật khẩu và xác nhận mật khẩu không khớp
+        </div>
+
+        <!-- Submit button -->
         <button
           type="submit"
           [disabled]="isLoading()"
@@ -74,21 +144,20 @@
               d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 000 16z"
             ></path>
           </svg>
-
           <span>{{ isLoading() ? "Đang đăng ký..." : "Đăng ký" }}</span>
         </button>
 
-        <!-- Thông báo lỗi -->
+        <!-- API error -->
         <div *ngIf="error()" class="text-red-500 mt-4 text-sm text-center">
           {{ error() }}
         </div>
 
-        <!-- Đăng nhập -->
+        <!-- Login link -->
         <div class="text-center mt-8 text-sm">
           Đã có tài khoản ?
-          <a href="#" class="text-orange-500 font-medium hover:underline"
-            >Đăng nhập</a
-          >
+          <a href="#" class="text-orange-500 font-medium hover:underline">
+            Đăng nhập
+          </a>
         </div>
       </form>
     </div>
