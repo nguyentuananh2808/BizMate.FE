@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzListModule } from 'ng-zorro-antd/list';
@@ -38,8 +38,7 @@ export class NotificationComponent implements OnInit, OnDestroy {
 
   constructor(
     private notificationService: NotificationService,
-    private router: Router,
-    private cdr: ChangeDetectorRef
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -62,7 +61,6 @@ export class NotificationComponent implements OnInit, OnDestroy {
   toggleTooltip(): void {
     setTimeout(() => {
       this.isTooltipOpen = !this.isTooltipOpen;
-      this.cdr.detectChanges();
     });
   }
 

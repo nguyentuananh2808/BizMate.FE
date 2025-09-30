@@ -89,7 +89,7 @@
                     >
                       Ngày tạo:
                       <span class="font-semibold">{{
-                        dateToday | date : "dd/MM/yyyy"
+                        createdDate | date : "dd/MM/yyyy"
                       }}</span>
                     </h2>
                   </div>
@@ -381,7 +381,7 @@
               </h2>
               <!-- Ngày tạo đơn -->
               <h2 class="text-secondary-light dark:text-secondary-dark">
-                Ngày tạo đơn : {{ dateToday | date : "dd/MM/yyyy" }}
+                Ngày tạo đơn : {{ createdDate | date : "dd/MM/yyyy" }}
               </h2>
 
               <!-- Trạng thái đơn hàng -->
@@ -640,68 +640,171 @@
     ></product-popup-search>
 
     <!-- Nội dung in -->
-    <!-- Nội dung in -->
-    <div id="print-section" class="print-only">
-      <div style="text-align: center; margin-bottom: 16px">
-        <h2 style="font-size: 24px; margin: 0">VuaKong</h2>
-        <h3 style="margin: 4px 0 0 0">Phiếu Xuất Kho</h3>
-        <p style="margin: 0">Ngày: {{ dateToday | date : "dd/MM/yyyy" }}</p>
+    <div
+      id="print-section"
+      class="print-only"
+      style="font-family: Arial, sans-serif; color: #000"
+    >
+      <!-- Header -->
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 2px solid #000;
+          padding-bottom: 10px;
+          margin-bottom: 15px;
+        "
+      >
+        <!-- Logo -->
+        <div>
+          <img
+            src="/assets/images/logo_print_vuakong.png"
+            alt="Logo"
+            style="height: 50px"
+          />
+        </div>
+
+        <!-- Company Info -->
+        <div style="text-align: right; font-size: 13px; line-height: 1.6">
+          <h2 style="margin: 0; font-size: 20px; font-weight: bold">
+            VuaKong Fishing Tackel
+          </h2>
+          <div>
+            📍 47/2 Kênh Tân Hóa, Phường Tân Thới Hòa, Quận Tân Phú, TP.HCM
+          </div>
+          <div>
+            ☎️ 0378 887 168 &nbsp; | &nbsp; 🌐 FaceBook: VuaKong Fishing
+          </div>
+          <div>🧾 Mã số thuế: 0319072418</div>
+        </div>
       </div>
 
-      <!-- Thông tin khách hàng -->
-      <div style="margin-bottom: 20px">
-        <strong>Thông tin khách hàng:</strong>
+      <!-- Title -->
+      <div style="text-align: center; margin-bottom: 20px">
+        <h2
+          style="
+            margin: 0;
+            font-size: 22px;
+            font-weight: bold;
+            text-transform: uppercase;
+          "
+        >
+          PHIẾU XUẤT KHO
+        </h2>
+        <div style="font-size: 14px; margin-top: 4px">
+          Ngày: {{ createdDate | date : "dd/MM/yyyy" }}
+        </div>
+      </div>
+
+      <!-- Customer Info -->
+      <div style="margin-bottom: 15px; font-size: 14px">
+        <strong style="text-decoration: underline">Thông tin khách hàng</strong>
         <table
           style="
             width: 100%;
-            margin-top: 8px;
+            margin-top: 6px;
             border-collapse: collapse;
-            font-size: 14px;
+            table-layout: fixed;
           "
         >
           <tr>
-            <td><strong>Tên:</strong> {{ customer.name }}</td>
-            <td><strong>SĐT:</strong> {{ customer.phone }}</td>
+            <td style="padding: 4px; width: 50%">
+              <strong>Tên:</strong> {{ customer.name }}
+            </td>
+            <td style="padding: 4px; width: 50%">
+              <strong>SĐT:</strong> {{ customer.phone }}
+            </td>
           </tr>
           <tr>
-            <td><strong>Địa chỉ:</strong> {{ customer.address }}</td>
-            <td><strong>Ghi chú:</strong> {{ customer.description }}</td>
+            <td style="padding: 4px">
+              <strong>Địa chỉ:</strong> {{ customer.address }}
+            </td>
+            <td
+              style="
+                padding: 4px;
+                word-break: break-word;
+                white-space: normal;
+                max-width: 250px;
+              "
+            >
+              <strong>Ghi chú:</strong> {{ customer.description }}
+            </td>
           </tr>
         </table>
       </div>
 
-      <!-- Bảng sản phẩm -->
-      <table style="width: 100%; border-collapse: collapse; font-size: 14px">
+      <!-- Product Table -->
+      <table
+        style="
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 14px;
+          margin-bottom: 20px;
+        "
+      >
         <thead>
-          <tr style="border-bottom: 2px solid #000">
-            <th style="border: 1px solid #000; padding: 6px">STT</th>
-            <th style="border: 1px solid #000; padding: 6px">Mã SP</th>
-            <th style="border: 1px solid #000; padding: 6px">Tên SP</th>
-            <th style="border: 1px solid #000; padding: 6px">Số lượng</th>
-            <th style="border: 1px solid #000; padding: 6px">Đơn vị</th>
-            <th style="border: 1px solid #000; padding: 6px">Đơn giá</th>
-            <th style="border: 1px solid #000; padding: 6px">Thành tiền</th>
+          <tr style="background-color: #f9f9f9; border: 1px solid #000">
+            <th
+              style="border: 1px solid #000; padding: 6px; text-align: center"
+            >
+              STT
+            </th>
+            <th
+              style="border: 1px solid #000; padding: 6px; text-align: center"
+            >
+              Mã SP
+            </th>
+            <th style="border: 1px solid #000; padding: 6px; text-align: left">
+              Tên SP
+            </th>
+            <th
+              style="border: 1px solid #000; padding: 6px; text-align: center"
+            >
+              Số lượng
+            </th>
+            <th
+              style="border: 1px solid #000; padding: 6px; text-align: center"
+            >
+              Đơn vị
+            </th>
+            <th style="border: 1px solid #000; padding: 6px; text-align: right">
+              Đơn giá
+            </th>
+            <th style="border: 1px solid #000; padding: 6px; text-align: right">
+              Thành tiền
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let item of allData; let i = index">
-            <td style="border: 1px solid #000; padding: 6px">{{ i + 1 }}</td>
-            <td style="border: 1px solid #000; padding: 6px">
+            <td
+              style="border: 1px solid #000; padding: 6px; text-align: center"
+            >
+              {{ i + 1 }}
+            </td>
+            <td
+              style="border: 1px solid #000; padding: 6px; text-align: center"
+            >
               {{ item.ProductCode }}
             </td>
             <td style="border: 1px solid #000; padding: 6px">
               {{ item.ProductName }}
             </td>
-            <td style="border: 1px solid #000; padding: 6px">
+            <td
+              style="border: 1px solid #000; padding: 6px; text-align: center"
+            >
               {{ item.Quantity }}
             </td>
-            <td style="border: 1px solid #000; padding: 6px">
+            <td
+              style="border: 1px solid #000; padding: 6px; text-align: center"
+            >
               {{ item.Unit | unitText }}
             </td>
-            <td style="border: 1px solid #000; padding: 6px">
+            <td style="border: 1px solid #000; padding: 6px; text-align: right">
               {{ item.SalePrice | price }}
             </td>
-            <td style="border: 1px solid #000; padding: 6px">
+            <td style="border: 1px solid #000; padding: 6px; text-align: right">
               {{ item.TotalPrice | price }}
             </td>
           </tr>
@@ -717,14 +820,43 @@
                 font-weight: bold;
               "
             >
-              Tổng giá
+              Tổng cộng
             </td>
-            <td style="border: 1px solid #000; padding: 6px; font-weight: bold">
+            <td
+              style="
+                border: 1px solid #000;
+                padding: 6px;
+                text-align: right;
+                font-weight: bold;
+              "
+            >
               {{ totalAmount | price }}
             </td>
           </tr>
         </tfoot>
       </table>
+
+      <!-- Footer: Signatures
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          text-align: center;
+          font-size: 14px;
+          margin-top: 40px;
+        "
+      >
+        <div style="width: 30%">
+          <strong>Người lập phiếu</strong><br /><em>(Ký, ghi rõ họ tên)</em>
+        </div>
+        <div style="width: 30%">
+          <strong>Thủ kho</strong><br /><em>(Ký, ghi rõ họ tên)</em>
+        </div>
+        <div style="width: 30%">
+          <strong>Khách hàng</strong><br /><em>(Ký, ghi rõ họ tên)</em>
+        </div>
+      </div>
+    </div> -->
     </div>
   </div>
 </div>

@@ -26,6 +26,7 @@
     </h2>
     <form #form="ngForm" class="space-y-6" (ngSubmit)="onSubmit()">
       <!-- Tên khách hàng -->
+      <!-- Tên khách hàng -->
       <div>
         <label
           class="block text-sm font-medium mb-1 text-text-secondary-light dark:text-text-secondary-dark"
@@ -38,8 +39,23 @@
           placeholder="Nhập tên khách hàng..."
           [(ngModel)]="name"
           required
+          minlength="2"
+          #nameCtrl="ngModel"
           class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-info-light dark:focus:ring-info-dark"
         />
+
+        <!-- Thông báo lỗi -->
+        <div
+          *ngIf="form.submitted && nameCtrl.invalid"
+          class="text-red-500 text-sm mt-1"
+        >
+          <div *ngIf="nameCtrl.errors?.['required']">
+            Vui lòng nhập tên khách hàng.
+          </div>
+          <div *ngIf="nameCtrl.errors?.['minlength']">
+            Tên khách hàng phải có ít nhất 2 ký tự.
+          </div>
+        </div>
       </div>
 
       <!-- Số điện thoại -->
@@ -107,6 +123,7 @@
         </ul>
       </div>
       <!-- Địa chỉ -->
+      <!-- Địa chỉ -->
       <div>
         <label
           class="block text-sm font-medium mb-1 text-text-secondary-light dark:text-text-secondary-dark"
@@ -119,8 +136,16 @@
           placeholder="Nhập địa chỉ khách hàng..."
           rows="4"
           [(ngModel)]="address"
-          class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
+          #addressCtrl="ngModel"
+          class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-info-light dark:focus:ring-info-dark"
         ></textarea>
+
+        <div
+          *ngIf="form.submitted && addressCtrl.invalid"
+          class="text-red-500 text-sm mt-1"
+        >
+          Vui lòng nhập địa chỉ khách hàng.
+        </div>
       </div>
 
       <!-- Nút hành động -->

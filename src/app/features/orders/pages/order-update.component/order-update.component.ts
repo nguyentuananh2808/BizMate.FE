@@ -1,3 +1,4 @@
+import { NzListModule } from 'ng-zorro-antd/list';
 import { OrderService } from './../../services/order.service';
 import { Product } from '../../../product/product.component/models/product-response.model';
 import { CommonModule, Location } from '@angular/common';
@@ -96,7 +97,7 @@ export class OrderUpdateComponent implements OnInit {
   private searchSubject = new Subject<string>();
   orderForm: FormGroup;
   isDark = false;
-  dateToday = new Date();
+  createdDate: Date | null = new Date();
   existingProductIds: string[] = [];
   customerType: number = 1;
   isPopupSearchProducts = false;
@@ -482,6 +483,9 @@ export class OrderUpdateComponent implements OnInit {
   getOrderDetail(id: string): void {
     this.orderService.ReadByIdOrder(id).subscribe({
       next: (res) => {
+        console.log('res.Order.Order.CreatedDate:', res.Order.Order);
+
+        this.createdDate = res.Order.Order.CreatedDate;
         this.customerId = res.Order.Order.CustomerId;
         this.customerType = res.Order.Order.CustomerType;
         if (res.Order.Order.CustomerType === 2) {
@@ -565,6 +569,8 @@ export class OrderUpdateComponent implements OnInit {
     this.editingId = item.Id;
     this.editingQuantity = item.Quantity;
   }
+
+  
   onPrint() {
     const { customerName, phoneNumber, description, deliveryAddress } =
       this.orderForm.getRawValue();

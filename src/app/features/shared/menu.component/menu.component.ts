@@ -151,6 +151,6 @@ export class MenuComponent implements OnInit {
         },
       ],
     },
-    { key: 'reports', icon: 'bar-chart', label: 'Báo cáo', route: '/reports' },
+    // { key: 'reports', icon: 'bar-chart', label: 'Báo cáo', route: '/reports' },
   ];
 }

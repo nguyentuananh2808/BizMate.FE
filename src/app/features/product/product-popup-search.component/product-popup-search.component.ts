@@ -123,6 +123,10 @@ export class ProductPopupSearchComponent implements OnInit {
             (p) => !existingIds.has(p.Id)
           );
 
+          if (!this.ProductQuantity) {
+            filtered = filtered.filter((p) => (p.Available ?? 0) > 0);
+          }
+
           // ✅ Lưu toàn bộ danh sách đã filter để dùng lại khi save
           this.originalData = filtered;
 

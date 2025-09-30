@@ -162,7 +162,7 @@ export class OrderComponent implements OnInit {
     pageSize: number = this.pageSize,
     dateFrom?: Date,
     dateTo?: Date,
-    statuses?: string[] 
+    statuses?: string[]
   ): void {
     this.isLoading = true;
     // Lấy ngày đầu tháng hiện tại (00:00:00.000)
@@ -202,13 +202,10 @@ export class OrderComponent implements OnInit {
 
     this.orderService.SearchOrder(request).subscribe({
       next: (res) => {
-        
-        
         this.originalData = (res.Orders || []).map((item) => ({
           ...item,
-          CreatedDate: new Date(item.CreatedDate),
-
-          UpdatedDate: new Date(item.UpdatedDate),
+          CreatedDate: item.CreatedDate ? new Date(item.CreatedDate) : null,
+          UpdatedDate: item.UpdatedDate ? new Date(item.UpdatedDate) : null,
         }));
         console.log('data', this.originalData);
         this.totalCount = res.TotalCount || 0;
@@ -296,10 +293,10 @@ export class OrderComponent implements OnInit {
   }
 
   applyDateFilter() {
-     console.log('Áp dụng filter:', {
-    dateRange: this.dateRange,
-    statuses: this.selectedStatuses
-  });
+    console.log('Áp dụng filter:', {
+      dateRange: this.dateRange,
+      statuses: this.selectedStatuses,
+    });
     this.hideTooltip();
     this.fetchData(
       this.pageIndex,

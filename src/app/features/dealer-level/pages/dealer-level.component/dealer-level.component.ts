@@ -151,9 +151,8 @@ export class DealerLevelComponent implements OnInit {
       next: (res) => {
         this.originalData = (res.DealerLevels || []).map((item) => ({
           ...item,
-          CreatedDate: new Date(item.CreatedDate),
-
-          UpdatedDate: new Date(item.UpdatedDate),
+          CreatedDate: item.CreatedDate ? new Date(item.CreatedDate) : null,
+          UpdatedDate: item.UpdatedDate ? new Date(item.UpdatedDate) : null,
         }));
         console.log('data', this.originalData);
         this.totalCount = res.TotalCount || 0;
@@ -192,8 +191,7 @@ export class DealerLevelComponent implements OnInit {
             } else if (
               apiMessage === 'BACKEND.APP_MESSAGE.EXIST_CUSTOMER_IN_DEALERLEVEL'
             ) {
-              userMessage =
-                'Đại lý cấp này đang được áp dụng cho khách hàng.';
+              userMessage = 'Đại lý cấp này đang được áp dụng cho khách hàng.';
             } else if (apiMessage) {
               userMessage = apiMessage;
             }

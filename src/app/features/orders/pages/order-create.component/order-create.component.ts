@@ -449,7 +449,12 @@ export class OrderCreateComponent {
       if (item.Available !== undefined && qty > item.Available) {
         qty = item.Available;
       }
-
+      const firstNew = productList[0];
+      if (firstNew) {
+        this.editingId = firstNew.Id;
+        this.editingQuantity =
+          firstNew.Quantity && firstNew.Quantity > 0 ? firstNew.Quantity : 1;
+      }
       return {
         ...item,
         Quantity: qty,
@@ -457,7 +462,6 @@ export class OrderCreateComponent {
         TotalPrice: (item.SalePrice ?? 0) * qty,
       };
     });
-    console.log('this.customerType:', this.customerType);
     // Nếu là khách đại lý thì áp giá DealerLevel
     if (this.customerType === 2 && this.dealerLevelId) {
       this.dealerLevelService
@@ -466,10 +470,6 @@ export class OrderCreateComponent {
           next: (res) => {
             const dealerPrices =
               res.DealerLevel.DealerPriceForDealerLevel || [];
-            console.log(
-              'DealerPriceForDealerLevel1111:',
-              res.DealerLevel.DealerPriceForDealerLevel
-            );
 
             this.applyDealerLevelPrices(dealerPrices);
             this.allData = [...this.listOfData];

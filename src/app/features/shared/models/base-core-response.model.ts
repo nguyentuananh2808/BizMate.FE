@@ -1,9 +1,9 @@
 export interface BaseCoreEntity {
   Id: string;
   Description?: string;
-  CreatedDate: Date;
+  CreatedDate: Date | null;
   CreatedBy: string;
-  UpdatedDate: Date;
+  UpdatedDate: Date | null;
   UpdatedBy: string;
   RowVersion: string;
 }
