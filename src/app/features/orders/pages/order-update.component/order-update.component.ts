@@ -299,21 +299,28 @@ export class OrderUpdateComponent implements OnInit {
   }
 
   finishOrder(): void {
-    const payload: UpdateStatusOrderRequest = {
-      Id: this.id,
-      RowVersion: this.rowVersion,
-      StatusCode: 'COMPLETED',
-      StatusId: this.statusId,
-    };
-    this.orderService.UpdateStatusOrder(payload).subscribe({
-      next: () => {
-        this.toastr.success('Cập nhật trạng thái đơn hàng thành công!');
-        this.cdr.detectChanges();
-        this.getOrderDetail(this.id);
-      },
-      error: (err) => {
-        console.error('Lỗi khi gọi ReadByIdWarehouseReceipt:', err);
-        this.toastr.error('Cập nhật trạng thái đơn hàng thất bại!');
+    this.modal.confirm({
+      nzTitle: `Bạn có chắc muốn hoàn thành đơn hàng này?`,
+      nzOkText: 'Hoàn thành',
+      nzCancelText: 'Đóng',
+      nzOnOk: () => {
+        const payload: UpdateStatusOrderRequest = {
+          Id: this.id,
+          RowVersion: this.rowVersion,
+          StatusCode: 'COMPLETED',
+          StatusId: this.statusId,
+        };
+        this.orderService.UpdateStatusOrder(payload).subscribe({
+          next: () => {
+            this.toastr.success('Cập nhật trạng thái đơn hàng thành công!');
+            this.cdr.detectChanges();
+            this.getOrderDetail(this.id);
+          },
+          error: (err) => {
+            console.error('Lỗi khi cập nhật trạng thái đơn hàng:', err);
+            this.toastr.error('Cập nhật trạng thái đơn hàng thất bại!');
+          },
+        });
       },
     });
   }
@@ -570,7 +577,6 @@ export class OrderUpdateComponent implements OnInit {
     this.editingQuantity = item.Quantity;
   }
 
-  
   onPrint() {
     const { customerName, phoneNumber, description, deliveryAddress } =
       this.orderForm.getRawValue();
@@ -644,7 +650,7 @@ export class OrderUpdateComponent implements OnInit {
           (item) => item.Id !== itemToDelete.Id
         );
         this.updateExistingProductIds();
-
+        this.updateTotalAmount();
         this.cdr.detectChanges();
       },
     });

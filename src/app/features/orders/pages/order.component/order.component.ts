@@ -165,12 +165,12 @@ export class OrderComponent implements OnInit {
     statuses?: string[]
   ): void {
     this.isLoading = true;
-    // Lấy ngày đầu tháng hiện tại (00:00:00.000)
+    // Lấy ngày đầu tháng trước (00:00:00.000)
     const fromDate = dateFrom
       ? new Date(dateFrom.setHours(0, 0, 0, 0))
       : new Date(
           new Date().getFullYear(),
-          new Date().getMonth(),
+          new Date().getMonth() - 1,
           1,
           0,
           0,
@@ -211,7 +211,7 @@ export class OrderComponent implements OnInit {
         this.totalCount = res.TotalCount || 0;
 
         this.listOfData = [...this.originalData].sort((a, b) =>
-          a.Code.localeCompare(b.Code)
+          b.Code.localeCompare(a.Code)
         );
 
         this.listOfCurrentPageData = this.listOfData;
