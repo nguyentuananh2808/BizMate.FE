@@ -588,7 +588,9 @@ export class OrderUpdateComponent implements OnInit {
       address: deliveryAddress,
       description: description,
     };
-    this.allData = [...this.listOfData];
+    this.allData = [...this.listOfData].sort((a, b) =>
+      a.ProductName.localeCompare(b.ProductName)
+    );
     this.showPrint = true;
 
     setTimeout(() => {
