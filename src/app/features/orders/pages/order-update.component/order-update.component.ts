@@ -532,7 +532,9 @@ export class OrderUpdateComponent implements OnInit {
         // ======= ĐỒNG BỘ DETAILS FORMARRAY =======
         const detailsFormArray = this.orderForm.get('details') as FormArray;
         detailsFormArray.clear();
-
+        this.allData = [...res.Order.Order.Details].sort((a, b) =>
+          a.ProductName.localeCompare(b.ProductName)
+        );
         (res.Order.Order.Details || []).forEach((item: any) => {
           const availableAfterReserve =
             (item.Available ?? 0) + (item.Quantity ?? 0);
@@ -551,7 +553,9 @@ export class OrderUpdateComponent implements OnInit {
         });
 
         // listOfData = sync với formArray
-        this.listOfData = detailsFormArray.controls.map((c) => c.value);
+        this.listOfData = detailsFormArray.controls
+          .map((c) => c.value)
+          .sort((a, b) => a.ProductName.localeCompare(b.ProductName));
 
         this.cdr.detectChanges();
       },
@@ -687,6 +691,9 @@ export class OrderUpdateComponent implements OnInit {
     // Loại bỏ trùng sản phẩm
     this.listOfData = this.listOfData.filter(
       (item, index, self) => index === self.findIndex((t) => t.Id === item.Id)
+    );
+    this.listOfData = [...this.listOfData].sort((a, b) =>
+      a.ProductName.localeCompare(b.ProductName)
     );
 
     // Set giá mặc định (trước khi check DealerLevel)
