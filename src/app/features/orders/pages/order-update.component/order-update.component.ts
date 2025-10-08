@@ -552,10 +552,39 @@ export class OrderUpdateComponent implements OnInit {
           detailsFormArray.push(detailGroup);
         });
 
-        // listOfData = sync với formArray
+        //sắp xếp theo tên
         this.listOfData = detailsFormArray.controls
           .map((c) => c.value)
-          .sort((a, b) => a.ProductName.localeCompare(b.ProductName));
+          .sort((a, b) => {
+            // 1️⃣ Tách phần tên và phần thông số
+            const [nameA, ...restA] = a.ProductName.split(' - ').map(
+              (s: string) => s.trim()
+            );
+            const [nameB, ...restB] = b.ProductName.split(' - ').map(
+              (s: string) => s.trim()
+            );
+
+            // 2️⃣ So sánh theo tên cụm sản phẩm trước
+            const nameCompare = nameA.localeCompare(nameB);
+            if (nameCompare !== 0) return nameCompare;
+
+            // 3️⃣ Hàm tách thông số (ví dụ "5H - 3M6" => [5, 3, 6])
+            const parseSpecs = (arr: string[]): number[] => {
+              const regex = /(\d+)H.*?(\d+)M(\d+)/i;
+              const joined = arr.join(' - ');
+              const match = joined.match(regex);
+              if (!match) return [0, 0, 0];
+              return match.slice(1).map((n: string) => Number(n)); // ép kiểu an toàn
+            };
+
+            const [hA, mA, dA] = parseSpecs(restA);
+            const [hB, mB, dB] = parseSpecs(restB);
+
+            // 4️⃣ So sánh lần lượt theo giá trị số học
+            if (hA !== hB) return hA - hB;
+            if (mA !== mB) return mA - mB;
+            return dA - dB;
+          });
 
         this.cdr.detectChanges();
       },
@@ -592,14 +621,44 @@ export class OrderUpdateComponent implements OnInit {
       address: deliveryAddress,
       description: description,
     };
-    this.allData = [...this.listOfData].sort((a, b) =>
-      a.ProductName.localeCompare(b.ProductName)
-    );
+
+    // ✅ Sắp xếp theo cụm tên sản phẩm rồi theo thông số
+    this.allData = [...this.listOfData].sort((a, b) => {
+      // 1️⃣ Tách phần tên và phần thông số
+      const [nameA, ...restA] = a.ProductName.split(' - ').map((s: string) =>
+        s.trim()
+      );
+      const [nameB, ...restB] = b.ProductName.split(' - ').map((s: string) =>
+        s.trim()
+      );
+
+      // 2️⃣ So sánh cụm tên
+      const nameCompare = nameA.localeCompare(nameB);
+      if (nameCompare !== 0) return nameCompare;
+
+      // 3️⃣ Hàm parse thông số: ví dụ "5H - 3M6" → [5, 3, 6]
+      const parseSpecs = (arr: string[]): number[] => {
+        const regex = /(\d+)H.*?(\d+)M(\d+)/i;
+        const joined = arr.join(' - ');
+        const match = joined.match(regex);
+        if (!match) return [0, 0, 0];
+        return match.slice(1).map((n: string) => Number(n));
+      };
+
+      const [hA, mA, dA] = parseSpecs(restA);
+      const [hB, mB, dB] = parseSpecs(restB);
+
+      // 4️⃣ So sánh lần lượt H, M, số sau M
+      if (hA !== hB) return hA - hB;
+      if (mA !== mB) return mA - mB;
+      return dA - dB;
+    });
+
+    // ✅ Thực hiện in
     this.showPrint = true;
 
     setTimeout(() => {
       this.showPrint = true;
-
       setTimeout(() => {
         window.print();
         this.showPrint = false;
