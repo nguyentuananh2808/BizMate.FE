@@ -24,6 +24,8 @@ export class RegisterComponent {
   form: FormGroup;
   error = signal<string | null>(null);
   isLoading = signal(false);
+  showPassword = false;
+  showConfirmPassword = false;
 
   constructor(
     private fb: FormBuilder,
@@ -76,7 +78,7 @@ export class RegisterComponent {
 
   onSubmit() {
     if (this.form.invalid) {
-      this.form.markAllAsTouched(); 
+      this.form.markAllAsTouched();
       return;
     }
 

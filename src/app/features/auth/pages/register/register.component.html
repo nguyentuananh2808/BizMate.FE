@@ -77,12 +77,24 @@
 
         <!-- Password -->
         <label class="text-sm text-gray-600">Mật khẩu</label>
-        <input
-          formControlName="password"
-          type="password"
-          placeholder="**********"
-          class="w-full border-b border-gray-300 focus:outline-none py-2 mb-1 placeholder-gray-400 text-sm rounded-[24px] pl-4"
-        />
+        <div class="relative w-full">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="**********"
+            class="w-full border-b border-gray-300 focus:outline-none py-2 mb-3 placeholder-gray-400 text-sm rounded-[24px] pl-4 pr-10"
+          />
+
+          <!-- Icon show/hide -->
+          <button
+            type="button"
+            (click)="showPassword = !showPassword"
+            class="absolute inset-y-0 right-3 flex items-center text-gray-500"
+          >
+            <i *ngIf="!showPassword" class="fa-regular fa-eye"></i>
+            <i *ngIf="showPassword" class="fa-regular fa-eye-slash"></i>
+          </button>
+        </div>
         <div
           *ngIf="
             form.get('password')?.touched &&
@@ -95,12 +107,24 @@
 
         <!-- Confirm Password -->
         <label class="text-sm text-gray-600">Xác nhận mật khẩu</label>
-        <input
-          formControlName="confirmPassword"
-          type="password"
-          placeholder="**********"
-          class="w-full border-b border-gray-300 focus:outline-none py-2 mb-1 placeholder-gray-400 text-sm rounded-[24px] pl-4"
-        />
+        <div class="relative w-full">
+          <input
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            formControlName="confirmPassword"
+            type="password"
+            placeholder="**********"
+            class="w-full border-b border-gray-300 focus:outline-none py-2 mb-1 placeholder-gray-400 text-sm rounded-[24px] pl-4"
+          />
+          <button
+            type="button"
+            (click)="showConfirmPassword = !showConfirmPassword"
+            class="absolute inset-y-0 right-3 flex items-center text-gray-500"
+          >
+            <i *ngIf="!showConfirmPassword" class="fa-regular fa-eye"></i>
+            <i *ngIf="showConfirmPassword" class="fa-regular fa-eye-slash"></i>
+          </button>
+        </div>
+
         <div
           *ngIf="
             form.get('confirmPassword')?.touched &&
@@ -121,7 +145,7 @@
         <button
           type="submit"
           [disabled]="isLoading()"
-          class="w-full bg-blue-500 text-white py-2 rounded-full text-sm hover:bg-blue-600 transition flex items-center justify-center gap-2"
+          class="w-full mt-3 bg-blue-500 text-white py-2 rounded-full text-sm hover:bg-blue-600 transition flex items-center justify-center gap-2"
         >
           <svg
             *ngIf="isLoading()"
