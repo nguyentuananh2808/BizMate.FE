@@ -1,0 +1,78 @@
+[1m[33mWorkspace extension with invalid name (allowedCommonJsDependencies) found.[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: UnitTextPipe is not used within the template of DealerLevelUpdateComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/dealer-level/pages/dealer-level-update.component/dealer-level-update.component.ts:59:4:
+[37m      59 │     [32mUnitTextPipe[37m,
+         ╵     [32m~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8102: The left side of this nullish coalescing operation does not include 'null' or 'undefined' in its type, therefore the '??' operator can be safely removed.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/orders/pages/order-create.component/order-create.component.html:375:36:
+[37m      375 │                   Tổng đơn hàng[32m: {{ totalAmount[37m ?? 0 | price }}
+          ╵                                [32m~~~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component OrderCreateComponent.
+
+    src/app/features/orders/pages/order-create.component/order-create.component.ts:73:15:
+[37m      73 │   templateUrl: [32m'./order-create.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8102: The left side of this nullish coalescing operation does not include 'null' or 'undefined' in its type, therefore the '??' operator can be safely removed.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/orders/pages/order-create.component/order-create.component.html:773:33:
+[37m      773 │                 Tổng hóa đơn[32m: {{ totalAmount[37m ?? 0 | price }}
+          ╵                             [32m~~~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component OrderCreateComponent.
+
+    src/app/features/orders/pages/order-create.component/order-create.component.ts:73:15:
+[37m      73 │   templateUrl: [32m'./order-create.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8102: The left side of this nullish coalescing operation does not include 'null' or 'undefined' in its type, therefore the '??' operator can be safely removed.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/orders/pages/order-update.component/order-update.component.html:370:36:
+[37m      370 │                   Tổng đơn hàng[32m: {{ totalAmount[37m ?? 0 | price }}
+          ╵                                [32m~~~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component OrderUpdateComponent.
+
+    src/app/features/orders/pages/order-update.component/order-update.component.ts:85:15:
+[37m      85 │   templateUrl: [32m'./order-update.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8102: The left side of this nullish coalescing operation does not include 'null' or 'undefined' in its type, therefore the '??' operator can be safely removed.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/orders/pages/order-update.component/order-update.component.html:753:33:
+[37m      753 │                 Tổng hóa đơn[32m: {{ totalAmount[37m ?? 0 | price }}
+          ╵                             [32m~~~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component OrderUpdateComponent.
+
+    src/app/features/orders/pages/order-update.component/order-update.component.ts:85:15:
+[37m      85 │   templateUrl: [32m'./order-update.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mDeprecation[0m [1m[35m[plugin angular-sass][0m
+
+    src/styles.scss:1:8:
+[37m      1 │ @import [32m[37m'ngx-toastr/toastr';
+        ╵         [32m^[0m
+
+
+  Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+  
+  More info and automated migrator: [4mhttps://sass-lang.com/d/import[0m
+
+  The plugin "angular-sass" was triggered by this import
+
+    angular:styles/global:styles:3:8:
+[37m      3 │ @import [32m'src/styles.scss'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

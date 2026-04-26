@@ -14,4 +14,5 @@ export interface CreateOrderDetailRequest {
   ProductId: string;
   Quantity: number;
   UnitPrice: number;
+  SerialNumbers?: string[];
 }

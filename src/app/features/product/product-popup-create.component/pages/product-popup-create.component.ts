@@ -54,6 +54,7 @@ export class ProductPopupCreateComponent implements OnInit {
 
   isClosing: boolean = false;
   isSaving: boolean = false;
+  isSerialTracked: boolean = false;
 
   constructor(
     private productService: ProductService,
@@ -125,14 +126,15 @@ export class ProductPopupCreateComponent implements OnInit {
 
     this.isSaving = true;
     this.productService
-      .CreateProduct(
-        this.name,
-        this.productCategoryId,
-        this.unit,
-        this.salePrice,
-        this.imageUrl,
-        this.description || ''
-      )
+  .CreateProduct(
+    this.name,
+    this.productCategoryId,
+    this.unit,
+    this.salePrice,
+    this.imageUrl,
+    this.description || '',
+    this.isSerialTracked 
+  )
       .pipe(finalize(() => (this.isSaving = false)))
       .subscribe({
         next: () => {

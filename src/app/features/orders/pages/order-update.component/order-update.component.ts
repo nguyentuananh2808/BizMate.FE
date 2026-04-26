@@ -52,6 +52,7 @@ import {
 import { CustomerService } from '../../../customer/services/customer-service';
 import { DealerLevelService } from '../../../dealer-level/services/dealer-level-service';
 import { DealerPriceDetail } from '../../../dealer-level/models/dealer-level-detail.models';
+import { Html5Qrcode } from 'html5-qrcode';
 
 @Component({
   standalone: true,
@@ -121,6 +122,14 @@ export class OrderUpdateComponent implements OnInit {
   message: any;
   selectedCustomer!: Customer | string;
   searchKeyword = '';
+  isScanning = false;
+  scannerTitle = 'Quét Serial';
+  lastScan = '';
+  private scanner?: Html5Qrcode;
+  private scanLocked = false;
+  private scanTargetItem:
+    | (InventoryDetail & { SalePrice?: number; TotalPrice?: number })
+    | null = null;
   customer = {
     id: '',
     name: '',
@@ -548,6 +557,10 @@ export class OrderUpdateComponent implements OnInit {
             SalePrice: [item.UnitPrice],
             TotalPrice: [item.Total],
             Available: [availableAfterReserve >= 0 ? availableAfterReserve : 0],
+            IsSerialTracked: [
+              item.IsSerialTracked ?? item.isSerialTracked ?? false,
+            ],
+            SerialNumbers: [item.SerialNumbers ?? item.serialNumbers ?? []],
           });
           detailsFormArray.push(detailGroup);
         });
@@ -601,11 +614,233 @@ export class OrderUpdateComponent implements OnInit {
   get isSubmitDisabled(): boolean {
     return (
       this.listOfData.length === 0 ||
-      this.listOfData.some((item) => item.Quantity <= 0)
+      this.listOfData.some((item) =>
+        this.isSerialTracked(item)
+          ? this.getSerialNumbers(item).length === 0
+          : item.Quantity <= 0
+      )
     );
   }
 
+  isSerialTracked(item: InventoryDetail): boolean {
+    return item.IsSerialTracked ?? (item as any).isSerialTracked ?? false;
+  }
+
+  getSerialNumbers(item: InventoryDetail): string[] {
+    return item.SerialNumbers ?? [];
+  }
+
+  private normalizeSerialNumber(value: string): string {
+    return value.trim();
+  }
+
+  private hasSerialInOrder(serialNumber: string, targetItem: InventoryDetail): boolean {
+    const normalized = serialNumber.toLowerCase();
+
+    return this.listOfData.some((item) => {
+      if (item.ProductId === targetItem.ProductId) {
+        return false;
+      }
+
+      return this.getSerialNumbers(item).some(
+        (sn) => sn.toLowerCase() === normalized
+      );
+    });
+  }
+
+  private syncSerialQuantity(
+    item: InventoryDetail & { SalePrice?: number; TotalPrice?: number }
+  ): void {
+    if (!this.isSerialTracked(item)) {
+      return;
+    }
+
+    item.Quantity = this.getSerialNumbers(item).length;
+    item.TotalPrice = (item.SalePrice ?? 0) * item.Quantity;
+    this.allData = [...this.listOfData];
+    this.updateTotalAmount();
+    this.cdr.detectChanges();
+  }
+
+  addSerialToItem(
+    item: InventoryDetail & { SalePrice?: number; TotalPrice?: number },
+    value: string
+  ): void {
+    if (!this.isSerialTracked(item)) {
+      this.toastr.warning('Sản phẩm này bán theo số lượng, không cần SN.');
+      return;
+    }
+
+    const serialNumber = this.normalizeSerialNumber(value);
+    if (!serialNumber) {
+      return;
+    }
+
+    const currentSerials = this.getSerialNumbers(item);
+    const duplicatedInProduct = currentSerials.some(
+      (sn) => sn.toLowerCase() === serialNumber.toLowerCase()
+    );
+
+    if (duplicatedInProduct || this.hasSerialInOrder(serialNumber, item)) {
+      this.toastr.warning(`SN ${serialNumber} đã có trong đơn.`);
+      return;
+    }
+
+    if (item.Available !== undefined && currentSerials.length >= item.Available) {
+      this.toastr.warning(
+        `Không thể vượt quá số lượng khả dụng (${item.Available}).`
+      );
+      return;
+    }
+
+    item.SerialNumbers = [...currentSerials, serialNumber];
+    this.lastScan = serialNumber;
+    this.toastr.success(`Đã thêm SN ${serialNumber}`);
+    navigator.vibrate?.(120);
+    this.syncSerialQuantity(item);
+  }
+
+  removeSerialFromItem(
+    item: InventoryDetail & { SalePrice?: number; TotalPrice?: number },
+    serialNumber: string
+  ): void {
+    item.SerialNumbers = this.getSerialNumbers(item).filter(
+      (sn) => sn !== serialNumber
+    );
+    this.syncSerialQuantity(item);
+  }
+
+  openSerialTextModal(
+    item: InventoryDetail & { SalePrice?: number; TotalPrice?: number }
+  ): void {
+    if (!this.isSerialTracked(item)) {
+      return;
+    }
+
+    const existing = this.getSerialNumbers(item).join('\n');
+
+    this.modal.create({
+      nzTitle: `Chọn Serial xuất kho - ${item.ProductName}`,
+      nzContent: `
+        <textarea id="orderUpdateSnInput"
+          style="width:100%;height:220px;border:1px solid #d9d9d9;border-radius:12px;padding:12px;outline:none"
+          placeholder="Mỗi dòng 1 serial">${existing}</textarea>
+      `,
+      nzOkText: 'Lưu SN',
+      nzCancelText: 'Đóng',
+      nzOnOk: () => {
+        const textarea = document.getElementById(
+          'orderUpdateSnInput'
+        ) as HTMLTextAreaElement | null;
+
+        if (!textarea) {
+          return;
+        }
+
+        const serials = textarea.value
+          .split('\n')
+          .map((x) => this.normalizeSerialNumber(x))
+          .filter((x) => x);
+        const uniqueSerials = [...new Set(serials)];
+
+        if (
+          item.Available !== undefined &&
+          uniqueSerials.length > item.Available
+        ) {
+          this.toastr.warning(
+            `Không thể vượt quá số lượng khả dụng (${item.Available}).`
+          );
+          return;
+        }
+
+        item.SerialNumbers = uniqueSerials;
+        this.syncSerialQuantity(item);
+      },
+    });
+  }
+
+  async openCameraScanner(
+    item: InventoryDetail & { SalePrice?: number; TotalPrice?: number }
+  ): Promise<void> {
+    if (!this.isSerialTracked(item)) {
+      this.toastr.info('Sản phẩm này bán theo số lượng, không cần quét SN.');
+      return;
+    }
+
+    this.scanTargetItem = item;
+    this.scannerTitle = `Quét SN xuất kho - ${item.ProductName}`;
+    this.isScanning = true;
+    this.cdr.detectChanges();
+
+    setTimeout(() => void this.startScanner(), 150);
+  }
+
+  private async startScanner(): Promise<void> {
+    try {
+      this.scanner = new Html5Qrcode('order-update-serial-qr-reader');
+      const cameras = await Html5Qrcode.getCameras();
+
+      if (!cameras.length) {
+        this.toastr.warning('Không tìm thấy camera khả dụng.');
+        this.isScanning = false;
+        return;
+      }
+
+      const cameraId =
+        cameras.find((c) => c.label.toLowerCase().includes('back'))?.id ||
+        cameras[0].id;
+
+      await this.scanner.start(
+        cameraId,
+        {
+          fps: 12,
+          qrbox: { width: 250, height: 250 },
+        },
+        (decodedText) => this.handleScannedSerial(decodedText),
+        () => {}
+      );
+    } catch (error) {
+      console.error('Cannot start order serial scanner:', error);
+      this.toastr.error('Không thể bật camera quét SN.');
+      this.isScanning = false;
+    }
+  }
+
+  private handleScannedSerial(decodedText: string): void {
+    if (this.scanLocked || !this.scanTargetItem) {
+      return;
+    }
+
+    this.scanLocked = true;
+    this.addSerialToItem(this.scanTargetItem, decodedText);
+
+    setTimeout(() => {
+      this.scanLocked = false;
+    }, 900);
+  }
+
+  async closeScanner(): Promise<void> {
+    try {
+      if (this.scanner) {
+        await this.scanner.stop();
+        await this.scanner.clear();
+      }
+    } catch (error) {
+      console.warn('Cannot stop order serial scanner:', error);
+    }
+
+    this.scanner = undefined;
+    this.scanTargetItem = null;
+    this.scanLocked = false;
+    this.isScanning = false;
+  }
+
   startEdit(item: InventoryDetail): void {
+    if (this.isSerialTracked(item)) {
+      this.openSerialTextModal(item);
+      return;
+    }
+
     this.editingId = item.Id;
     this.editingQuantity = item.Quantity;
   }
@@ -677,6 +912,13 @@ export class OrderUpdateComponent implements OnInit {
   saveEdit(
     item: InventoryDetail & { SalePrice?: number; TotalPrice?: number }
   ): void {
+    if (this.isSerialTracked(item)) {
+      this.syncSerialQuantity(item);
+      this.editingId = null;
+      this.editingQuantity = null;
+      return;
+    }
+
     const qty = this.editingQuantity;
 
     // Kiểm tra hợp lệ
@@ -712,6 +954,9 @@ export class OrderUpdateComponent implements OnInit {
       nzCancelText: 'Hủy',
       nzOnOk: () => {
         this.listOfData = this.listOfData.filter(
+          (item) => item.Id !== itemToDelete.Id
+        );
+        this.allData = this.allData.filter(
           (item) => item.Id !== itemToDelete.Id
         );
         this.updateExistingProductIds();
@@ -758,11 +1003,20 @@ export class OrderUpdateComponent implements OnInit {
     // Set giá mặc định (trước khi check DealerLevel)
     this.listOfData = this.listOfData.map((item) => ({
       ...item,
-      Quantity: item.Quantity && item.Quantity > 0 ? item.Quantity : 1,
+      SerialNumbers: item.SerialNumbers ?? [],
+      Quantity: this.isSerialTracked(item)
+        ? (item.SerialNumbers ?? []).length
+        : item.Quantity && item.Quantity > 0
+          ? item.Quantity
+          : 1,
       SalePrice: item.SalePrice ?? 0,
       TotalPrice:
         (item.SalePrice ?? 0) *
-        (item.Quantity && item.Quantity > 0 ? item.Quantity : 1),
+        (this.isSerialTracked(item)
+          ? (item.SerialNumbers ?? []).length
+          : item.Quantity && item.Quantity > 0
+            ? item.Quantity
+            : 1),
     }));
 
     // ✅ Nếu customerType = 2 (Đại lý) thì lấy bảng giá DealerLevel
@@ -876,6 +1130,16 @@ export class OrderUpdateComponent implements OnInit {
 
   submitForm(): void {
     const formValues = this.orderForm.getRawValue();
+    const missingSerialItem = this.listOfData.find(
+      (item) => this.isSerialTracked(item) && this.getSerialNumbers(item).length === 0
+    );
+
+    if (missingSerialItem) {
+      this.toastr.warning(
+        `Vui lòng quét hoặc nhập SN cho ${missingSerialItem.ProductName}.`
+      );
+      return;
+    }
 
     const payload: UpdateOrderRequest = {
       Id: this.id,
@@ -890,6 +1154,9 @@ export class OrderUpdateComponent implements OnInit {
       Details: this.listOfData.map((item) => ({
         ProductId: item.ProductId ?? item.Id,
         Quantity: item.Quantity,
+        SerialNumbers: this.isSerialTracked(item)
+          ? this.getSerialNumbers(item)
+          : [],
       })),
     };
 

@@ -223,6 +223,11 @@ export class ProductComponent implements OnInit {
       this.listOfCurrentPageData.some((i) => this.setOfCheckedId.has(i.Id)) &&
       !this.checked;
   }
+
+  isSerialTracked(item: Product): boolean {
+    return item.IsSerialTracked ?? (item as any).isSerialTracked ?? false;
+  }
+
   trackById(index: number, item: Product): string {
     return item.Id;
   }
@@ -240,6 +245,7 @@ export class ProductComponent implements OnInit {
       'Tên sản phẩm',
       'Số lượng',
       'Đơn vị',
+      'Quản lý SN',
       'Nhà cung cấp',
       'Mô tả',
       'Ngày cập nhật',
@@ -251,6 +257,7 @@ export class ProductComponent implements OnInit {
       i.Name,
       i.Quantity,
       i.Name,
+      this.isSerialTracked(i) ? 'Có' : 'Không',
       i.SupplierName,
       i.Description || '',
       this.datePipe.transform(i.UpdatedDate, 'dd/MM/yyyy'),

@@ -33,4 +33,6 @@ export interface OrderDetailDto {
   UnitPrice: number;
   Available: number;
   Total: number;
+  IsSerialTracked?: boolean;
+  SerialNumbers?: string[];
 }

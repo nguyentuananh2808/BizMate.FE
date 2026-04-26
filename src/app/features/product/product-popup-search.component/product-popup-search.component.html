@@ -78,6 +78,7 @@
             <th [nzWidth]="'80px'">Mã sản phẩm</th>
             <th [nzWidth]="'280px'">Tên sản phẩm</th>
             <th [nzWidth]="'60px'">Đơn vị</th>
+            <th [nzWidth]="'110px'">Quản lý SN</th>
             <th [nzWidth]="'120px'">Số lượng tồn kho</th>
             <th [nzWidth]="'120px'">Số lượng khả dụng</th>
           </tr>
@@ -107,6 +108,18 @@
               }}
             </td>
             <td>{{ item.Unit | unitText }}</td>
+            <td>
+              <span
+                class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                [ngClass]="
+                  item.IsSerialTracked
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-slate-100 text-slate-500'
+                "
+              >
+                {{ item.IsSerialTracked ? "Theo SN" : "Theo SL" }}
+              </span>
+            </td>
             <td>
               <span
                 class="cursor-pointer font-semibol"
@@ -244,6 +257,16 @@
                 }"
               >
                 {{ item.Available ?? 0 }}
+              </span>
+              <br />
+              Quản lý SN:
+              <span
+                [ngClass]="{
+                  'text-emerald-600 font-semibold': item.IsSerialTracked,
+                  'text-slate-500': !item.IsSerialTracked
+                }"
+              >
+                {{ item.IsSerialTracked ? "Theo SN" : "Theo SL" }}
               </span>
               <br />
               Đơn vị: {{ item.Unit | unitText }}

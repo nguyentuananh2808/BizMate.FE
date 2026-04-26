@@ -24,4 +24,6 @@ export interface InventoryDetail {
   Quantity: number;
   SalePrice?: number;
   Available?: number;
+  IsSerialTracked?: boolean;      // Sản phẩm có theo dõi SN không
+  SerialNumbers?: string[]; 
 }

@@ -1,5 +1,4 @@
 import { Product } from './../../../product/product.component/models/product-response.model';
-import { ProductService } from './../../../product/product.component/services/product-service';
 import { CommonModule, Location } from '@angular/common';
 import { ChangeDetectorRef, Component, HostListener } from '@angular/core';
 import {
@@ -27,6 +26,7 @@ import { CreateReceiptRequestRequest } from '../../models/warehouse-receipt-crea
 import { WarehouseReceiptService } from '../../services/warehouse-receipt.service';
 import { ToastrService } from 'ngx-toastr';
 import { NgxPrintModule } from 'ngx-print';
+import { Html5Qrcode } from 'html5-qrcode';
 
 @Component({
   standalone: true,
@@ -84,7 +84,7 @@ export class WarehouseReceiptCreateComponent {
     private modal: NzModalService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private receiptService: WarehouseReceiptService
+    private receiptService: WarehouseReceiptService,
   ) {
     this.receiptForm = this.fb.group({
       supplierName: [''],
@@ -100,7 +100,218 @@ export class WarehouseReceiptCreateComponent {
   onResize(event: any) {
     this.isMobile = event.target.innerWidth < 768;
   }
+  private successSound = new Audio('assets/sounds/success-beep.mp3');
+  private errorSound = new Audio('assets/sounds/error-buzz.mp3');
+  isScanning = false;
+  lastScan = '';
+  scannerTitle = 'Quét Serial';
+  private scanner?: Html5Qrcode;
+  private scanLocked = false;
+  private scanTargetItem: InventoryDetail | null = null;
 
+  playSuccessSound(): void {
+    this.successSound.currentTime = 0;
+    this.successSound.play().catch((err) => console.log(err));
+  }
+
+  playErrorSound(): void {
+    this.errorSound.currentTime = 0;
+    this.errorSound.play().catch((err) => console.log(err));
+  }
+
+  
+  isSerialTracked(item: InventoryDetail): boolean {
+    return item.IsSerialTracked ?? (item as any).isSerialTracked ?? false;
+  }
+
+  getSerialNumbers(item: InventoryDetail): string[] {
+    return item.SerialNumbers ?? [];
+  }
+
+  private normalizeSerialNumber(value: string): string {
+    return value.trim();
+  }
+
+  private hasSerialInReceipt(
+    serialNumber: string,
+    targetItem: InventoryDetail
+  ): boolean {
+    const normalized = serialNumber.toLowerCase();
+
+    return this.listOfData.some((item) => {
+      if (item.ProductId === targetItem.ProductId) {
+        return false;
+      }
+
+      return this.getSerialNumbers(item).some(
+        (sn) => sn.toLowerCase() === normalized
+      );
+    });
+  }
+
+  private syncSerialQuantity(item: InventoryDetail): void {
+    if (!this.isSerialTracked(item)) {
+      return;
+    }
+
+    item.Quantity = this.getSerialNumbers(item).length;
+  }
+
+  private refreshDataSnapshots(): void {
+    this.allData = [...this.listOfData];
+    this.receiptForm.updateValueAndValidity();
+    this.cdr.detectChanges();
+  }
+
+  addSerialToItem(item: InventoryDetail, value: string): void {
+    if (!this.isSerialTracked(item)) {
+      this.toastr.warning('Sản phẩm này không bật quản lý theo SN.');
+      return;
+    }
+
+    const serialNumber = this.normalizeSerialNumber(value);
+    if (!serialNumber) {
+      return;
+    }
+
+    const currentSerials = this.getSerialNumbers(item);
+    const duplicatedInProduct = currentSerials.some(
+      (sn) => sn.toLowerCase() === serialNumber.toLowerCase()
+    );
+
+    if (duplicatedInProduct || this.hasSerialInReceipt(serialNumber, item)) {
+      this.toastr.warning(`SN ${serialNumber} đã có trong phiếu.`);
+      this.playErrorSound();
+      return;
+    }
+
+    item.SerialNumbers = [...currentSerials, serialNumber];
+    this.syncSerialQuantity(item);
+    this.lastScan = serialNumber;
+    this.toastr.success(`Đã thêm SN ${serialNumber}`);
+    navigator.vibrate?.(120);
+    this.playSuccessSound();
+    this.refreshDataSnapshots();
+  }
+
+  removeSerialFromItem(item: InventoryDetail, serialNumber: string): void {
+    item.SerialNumbers = this.getSerialNumbers(item).filter(
+      (sn) => sn !== serialNumber
+    );
+    this.syncSerialQuantity(item);
+    this.refreshDataSnapshots();
+  }
+
+  openSerialTextModal(item: InventoryDetail): void {
+    if (!this.isSerialTracked(item)) {
+      return;
+    }
+
+    const existing = this.getSerialNumbers(item).join('\n');
+
+    this.modal.create({
+      nzTitle: `Nhập Serial - ${item.ProductName}`,
+      nzContent: `
+        <textarea id="snInput"
+          style="width:100%;height:220px;border:1px solid #d9d9d9;border-radius:12px;padding:12px;outline:none"
+          placeholder="Mỗi dòng 1 serial">${existing}</textarea>
+      `,
+      nzOkText: 'Lưu SN',
+      nzCancelText: 'Đóng',
+      nzOnOk: () => {
+        const textarea = document.getElementById(
+          'snInput'
+        ) as HTMLTextAreaElement | null;
+
+        if (!textarea) {
+          return;
+        }
+
+        const serials = textarea.value
+          .split('\n')
+          .map((x) => this.normalizeSerialNumber(x))
+          .filter((x) => x);
+
+        item.SerialNumbers = [...new Set(serials)];
+        this.syncSerialQuantity(item);
+        this.refreshDataSnapshots();
+      },
+    });
+  }
+
+  async openCameraScanner(item: InventoryDetail): Promise<void> {
+    if (!this.isSerialTracked(item)) {
+      this.toastr.info('Sản phẩm này nhập theo số lượng, không cần quét SN.');
+      return;
+    }
+
+    this.scanTargetItem = item;
+    this.scannerTitle = `Quét SN - ${item.ProductName}`;
+    this.isScanning = true;
+    this.cdr.detectChanges();
+
+    setTimeout(() => void this.startScanner(), 150);
+  }
+
+  private async startScanner(): Promise<void> {
+    try {
+      this.scanner = new Html5Qrcode('warehouse-serial-qr-reader');
+      const cameras = await Html5Qrcode.getCameras();
+
+      if (!cameras.length) {
+        this.toastr.warning('Không tìm thấy camera khả dụng.');
+        this.isScanning = false;
+        return;
+      }
+
+      const cameraId =
+        cameras.find((c) => c.label.toLowerCase().includes('back'))?.id ||
+        cameras[0].id;
+
+      await this.scanner.start(
+        cameraId,
+        {
+          fps: 12,
+          qrbox: { width: 250, height: 250 },
+        },
+        (decodedText) => this.handleScannedSerial(decodedText),
+        () => {}
+      );
+    } catch (error) {
+      console.error('Cannot start serial scanner:', error);
+      this.toastr.error('Không thể bật camera quét SN.');
+      this.isScanning = false;
+    }
+  }
+
+  private handleScannedSerial(decodedText: string): void {
+    if (this.scanLocked || !this.scanTargetItem) {
+      return;
+    }
+
+    this.scanLocked = true;
+    this.addSerialToItem(this.scanTargetItem, decodedText);
+
+    setTimeout(() => {
+      this.scanLocked = false;
+    }, 900);
+  }
+
+  async closeScanner(): Promise<void> {
+    try {
+      if (this.scanner) {
+        await this.scanner.stop();
+        await this.scanner.clear();
+      }
+    } catch (error) {
+      console.warn('Cannot stop serial scanner:', error);
+    }
+
+    this.scanner = undefined;
+    this.scanTargetItem = null;
+    this.scanLocked = false;
+    this.isScanning = false;
+  }
   get details(): FormArray {
     return this.receiptForm.get('details') as FormArray;
   }
@@ -108,16 +319,26 @@ export class WarehouseReceiptCreateComponent {
   get isSubmitDisabled(): boolean {
     return (
       this.listOfData.length === 0 ||
-      this.listOfData.some((item) => item.Quantity <= 0)
+      this.listOfData.some((item) =>
+        this.isSerialTracked(item)
+          ? this.getSerialNumbers(item).length === 0
+          : item.Quantity <= 0
+      )
     );
   }
 
   startEdit(item: InventoryDetail): void {
+    if (this.isSerialTracked(item)) {
+      this.openSerialTextModal(item);
+      return;
+    }
+
     this.editingId = item.Id;
     this.editingQuantity = item.Quantity;
   }
   onPrint() {
-    const { supplierName, deliveryAddress, description } = this.receiptForm.value;
+    const { supplierName, deliveryAddress, description } =
+      this.receiptForm.value;
 
     this.supplier = {
       name: supplierName,
@@ -132,7 +353,17 @@ export class WarehouseReceiptCreateComponent {
       this.showPrint = false;
     }, 100);
   }
+
+  qrScanner!: Html5Qrcode;
+
   saveEdit(item: InventoryDetail): void {
+    if (this.isSerialTracked(item)) {
+      this.syncSerialQuantity(item);
+      this.editingId = null;
+      this.editingQuantity = null;
+      return;
+    }
+
     if (this.editingQuantity === null || this.editingQuantity < 1) {
       this.inputError = true;
       // Tự động bỏ hiệu ứng sau khi shake xong
@@ -146,6 +377,7 @@ export class WarehouseReceiptCreateComponent {
     item.Quantity = this.editingQuantity;
     this.editingId = null;
     this.editingQuantity = null;
+    this.refreshDataSnapshots();
   }
 
   stopEdit(): void {
@@ -159,9 +391,9 @@ export class WarehouseReceiptCreateComponent {
       nzCancelText: 'Hủy',
       nzOnOk: () => {
         this.listOfData = this.listOfData.filter(
-          (item) => item.Id !== itemToDelete.Id
+          (item) => item.Id !== itemToDelete.Id,
         );
-        this.cdr.detectChanges();
+        this.refreshDataSnapshots();
       },
     });
   }
@@ -175,14 +407,27 @@ export class WarehouseReceiptCreateComponent {
 
       this.listOfData = this.allData.filter((item) =>
         Object.values(item).some((value) =>
-          String(value).toLowerCase().includes(this.searchKeyword)
-        )
+          String(value).toLowerCase().includes(this.searchKeyword),
+        ),
       );
     }
     this.cdr.detectChanges();
   }
 
   onSelectedProducts(productList: InventoryDetail[]) {
+    productList = productList.map((p) => ({
+      ...p,
+      IsSerialTracked:
+        (p as any).IsSerialTracked ?? (p as any).isSerialTracked ?? false,
+      SerialNumbers: (p as any).SerialNumbers ?? [],
+      Quantity:
+        ((p as any).IsSerialTracked ?? (p as any).isSerialTracked ?? false)
+          ? ((p as any).SerialNumbers ?? []).length
+          : p.Quantity > 0
+            ? p.Quantity
+            : 1,
+    }));
+    console.log('Selected Product:', productList);
     if (!productList || productList.length === 0) {
       this.closeProductPopup();
       return;
@@ -191,7 +436,7 @@ export class WarehouseReceiptCreateComponent {
     this.listOfData = [...this.listOfData, ...productList];
 
     this.listOfData = this.listOfData.filter(
-      (item, index, self) => index === self.findIndex((t) => t.Id === item.Id)
+      (item, index, self) => index === self.findIndex((t) => t.Id === item.Id),
     );
 
     this.listOfData.sort((a, b) => a.ProductCode.localeCompare(b.ProductCode));
@@ -205,10 +450,10 @@ export class WarehouseReceiptCreateComponent {
         this.fb.group({
           productId: [item.ProductId ?? item.Id, Validators.required],
           quantity: [
-            item.Quantity > 0 ? item.Quantity : 1,
+            item.Quantity > 0 ? item.Quantity : this.isSerialTracked(item) ? 0 : 1,
             [Validators.required, Validators.min(1)],
           ],
-        })
+        }),
       );
     }
 
@@ -230,7 +475,7 @@ export class WarehouseReceiptCreateComponent {
       this.fb.group({
         productId: ['', Validators.required],
         quantity: [1, [Validators.required, Validators.min(1)]],
-      })
+      }),
     );
   }
 
@@ -253,7 +498,7 @@ export class WarehouseReceiptCreateComponent {
       text: 'Chọn hàng chẵn',
       onSelect: () => {
         this.listOfCurrentPageData.forEach((data, index) =>
-          this.updateCheckedSet(data.Id, index % 2 !== 0)
+          this.updateCheckedSet(data.Id, index % 2 !== 0),
         );
         this.refreshCheckedStatus();
       },
@@ -262,7 +507,7 @@ export class WarehouseReceiptCreateComponent {
       text: 'Chọn hàng lẻ',
       onSelect: () => {
         this.listOfCurrentPageData.forEach((data, index) =>
-          this.updateCheckedSet(data.Id, index % 2 === 0)
+          this.updateCheckedSet(data.Id, index % 2 === 0),
         );
         this.refreshCheckedStatus();
       },
@@ -278,7 +523,7 @@ export class WarehouseReceiptCreateComponent {
   }
   onAllChecked(val: boolean) {
     this.listOfCurrentPageData.forEach((item) =>
-      this.updateCheckedSet(item.Id, val)
+      this.updateCheckedSet(item.Id, val),
     );
     this.refreshCheckedStatus();
   }
@@ -288,7 +533,7 @@ export class WarehouseReceiptCreateComponent {
   }
   refreshCheckedStatus() {
     this.checked = this.listOfCurrentPageData.every((i) =>
-      this.setOfCheckedId.has(i.Id)
+      this.setOfCheckedId.has(i.Id),
     );
     this.indeterminate =
       this.listOfCurrentPageData.some((i) => this.setOfCheckedId.has(i.Id)) &&
@@ -297,9 +542,18 @@ export class WarehouseReceiptCreateComponent {
   trackById(index: number, item: InventoryDetail): string {
     return item.Id;
   }
-
   submitForm(): void {
     const formValues = this.receiptForm.value;
+    const missingSerialItem = this.listOfData.find(
+      (item) => this.isSerialTracked(item) && this.getSerialNumbers(item).length === 0
+    );
+
+    if (missingSerialItem) {
+      this.toastr.warning(
+        `Vui lòng quét hoặc nhập SN cho ${missingSerialItem.ProductName}.`
+      );
+      return;
+    }
 
     const payload: CreateReceiptRequestRequest = {
       supplierName: formValues.supplierName,
@@ -308,9 +562,13 @@ export class WarehouseReceiptCreateComponent {
       details: this.listOfData.map((item) => ({
         productId: item.ProductId ?? item.Id,
         quantity: item.Quantity,
+        serialNumbers: this.isSerialTracked(item)
+          ? this.getSerialNumbers(item)
+          : [],
       })),
     };
 
+    this.isSubmitting = true;
     this.receiptService.CreateWarehouseReceipt(payload).subscribe({
       next: () => {
         this.toastr.success('Tạo phiếu nhập thành công!');
@@ -319,6 +577,10 @@ export class WarehouseReceiptCreateComponent {
       error: (err) => {
         const userMessage = err.error?.Message || 'Cập nhật thất bại';
         this.toastr.error(userMessage);
+        this.isSubmitting = false;
+      },
+      complete: () => {
+        this.isSubmitting = false;
       },
     });
   }

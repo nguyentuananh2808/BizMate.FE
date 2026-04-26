@@ -1,7 +1,6 @@
 export const ApiUrls = {
-  //baseUrl: 'http://103.163.118.228:5000/v1',
+  baseUrl: 'http://192.168.1.130:8088/v1',
 
-  baseUrl: 'https://localhost:44349/v1',
   productCategory: {
     getAll: '/product-category/GetAll',
     getById: (id: string) => `/product-category/${id}`,
@@ -17,14 +16,17 @@ export const ApiUrls = {
     delete: (id: string) => `/product/${id}`,
     readById: (id: string) => `/product/${id}`,
   },
+
   status: {
     getByGroup: '/status/getbygroup',
   },
+
   auth: {
     login: '/auth/login',
     register: '/user/register',
     verifyOtp: '/user/verify',
   },
+
   warehouseReceipt: {
     search: '/import-receipt/search',
     readById: '/import-receipt',
@@ -40,10 +42,12 @@ export const ApiUrls = {
     update: '/order',
     updateStatus: '/order/update_status',
   },
+
   notification: {
     get: '/notification/get-notification',
     update: '/notification',
   },
+
   customer: {
     search: '/customer/search',
     getById: (id: string) => `/customer/${id}`,
@@ -64,5 +68,16 @@ export const ApiUrls = {
     create: '/dealer-price',
     update: `/dealer-price`,
     delete: (id: string) => `/dealer-price/${id}`,
+  },
+
+  // ── MỚI THÊM: Quản lý sản phẩm theo serial number ─────────────────────────
+  productItem: {
+    getByProduct: '/product-item',
+    getBySN:      (sn: string) => `/product-item/sn/${encodeURIComponent(sn)}`,
+    getHistory:   (sn: string) => `/product-item/sn/${encodeURIComponent(sn)}/history`,
+    import:       '/product-item/import',
+    export:       '/product-item/export',
+    return:       '/product-item/return',
+    adjust:       '/product-item/adjust',
   },
 };

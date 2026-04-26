@@ -5,4 +5,5 @@ export interface ProductCreateRequest {
   salePrice: number;
   imageUrl: string;
   description: string;
+  isSerialTracked: boolean;
 }

@@ -14,4 +14,5 @@ export interface UpdateOrderRequest {
 export interface UpdateOrderDetailRequest {
   ProductId: string;
   Quantity: number;
+  SerialNumbers?: string[];
 }

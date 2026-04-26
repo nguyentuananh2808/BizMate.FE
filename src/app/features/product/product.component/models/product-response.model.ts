@@ -16,6 +16,7 @@ export interface Product {
   UpdatedDate: Date;
   SalePrice?: number;
   Available?: number;
+  IsSerialTracked?: boolean;
 }
 export interface ProductReadByIdResponse {
   Product: Product;

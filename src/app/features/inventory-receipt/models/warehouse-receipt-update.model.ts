@@ -1,6 +1,7 @@
 export interface UpdateReceiptDetailRequest {
   productId: string;
   quantity: number;
+  serialNumbers?: string[];
 }
 
 export interface UpdateReceiptRequestRequest {

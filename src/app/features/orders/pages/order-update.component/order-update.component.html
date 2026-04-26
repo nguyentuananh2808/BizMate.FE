@@ -221,7 +221,19 @@
                     {{ item.ProductName }}
                   </div>
                   <div class="text-secondary-light dark:text-secondary-dark">
-                    <div>Mã: {{ item.ProductCode }}</div>
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span>Mã: {{ item.ProductCode }}</span>
+                      <span
+                        class="rounded-full px-2 py-0.5 text-xs font-semibold"
+                        [ngClass]="
+                          isSerialTracked(item)
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : 'bg-slate-100 text-slate-500'
+                        "
+                      >
+                        {{ isSerialTracked(item) ? "Theo SN" : "Theo SL" }}
+                      </span>
+                    </div>
 
                     <!-- Số lượng -->
                     <div class="flex items-center gap-2">
@@ -239,7 +251,10 @@
                       </label>
 
                       <ng-container
-                        *ngIf="editingId === item.Id; else displayQuantity"
+                        *ngIf="
+                          !isSerialTracked(item) && editingId === item.Id;
+                          else displayQuantity
+                        "
                       >
                         <div class="flex flex-col space-y-1">
                           <!-- Input số lượng -->
@@ -285,6 +300,51 @@
                       </ng-template>
                     </div>
                     <div>Đơn vị: {{ item.Unit | unitText }}</div>
+
+                    <div
+                      *ngIf="isSerialTracked(item)"
+                      class="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/80 p-3 text-slate-700"
+                    >
+                      <div class="mb-2 flex items-center justify-between gap-2">
+                        <span class="text-xs font-semibold uppercase text-emerald-700">
+                          SN xuất: {{ getSerialNumbers(item).length }}
+                        </span>
+                        <div class="flex gap-1">
+                          <button
+                            nz-button
+                            nzType="default"
+                            class="h-8 rounded-full px-3 text-xs"
+                            (click)="openSerialTextModal(item)"
+                          >
+                            Nhập tay
+                          </button>
+                          <button
+                            nz-button
+                            nzType="primary"
+                            class="h-8 rounded-full px-3 text-xs"
+                            (click)="openCameraScanner(item)"
+                          >
+                            <nz-icon nzType="scan" nzTheme="outline"></nz-icon>
+                            Quét
+                          </button>
+                        </div>
+                      </div>
+                      <div class="flex flex-wrap gap-1.5">
+                        <span
+                          *ngFor="let sn of getSerialNumbers(item)"
+                          class="inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 text-xs text-slate-700 shadow-sm"
+                        >
+                          {{ sn }}
+                          <button
+                            type="button"
+                            class="text-slate-400 hover:text-red-500"
+                            (click)="removeSerialFromItem(item, sn)"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      </div>
+                    </div>
 
                     <!-- Đơn giá -->
                     <div>Đơn giá: {{ item.SalePrice ?? 0 | price }}</div>
@@ -518,7 +578,7 @@
                 [nzData]="listOfData"
                 [nzBordered]="false"
                 [nzSize]="'middle'"
-                [nzScroll]="{ x: '1000px', y: '300px' }"
+                [nzScroll]="{ x: '1260px', y: '300px' }"
                 [nzShowPagination]="false"
               >
                 <thead>
@@ -527,8 +587,10 @@
                     <th [nzWidth]="'20px'"></th>
                     <th [nzWidth]="'80px'">Mã sản phẩm</th>
                     <th [nzWidth]="'180px'">Tên sản phẩm</th>
+                    <th [nzWidth]="'110px'">Kiểu xuất</th>
                     <th [nzWidth]="'80px'">Đơn vị</th>
                     <th [nzWidth]="'100px'">Số lượng</th>
+                    <th [nzWidth]="'260px'">Serial numbers</th>
                     <th [nzWidth]="'80px'">Đơn giá</th>
                     <th [nzWidth]="'80px'">Thành tiền</th>
                   </tr>
@@ -546,9 +608,30 @@
                       >
                         <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
                       </button>
+                      <button
+                        *ngIf="isSerialTracked(item)"
+                        nz-button
+                        nzType="link"
+                        class="text-blue-600"
+                        (click)="openCameraScanner(item)"
+                      >
+                        <nz-icon nzType="scan" nzTheme="outline"></nz-icon>
+                      </button>
                     </td>
                     <td>{{ item.ProductCode }}</td>
                     <td>{{ item.ProductName }}</td>
+                    <td>
+                      <span
+                        class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                        [ngClass]="
+                          isSerialTracked(item)
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : 'bg-slate-100 text-slate-500'
+                        "
+                      >
+                        {{ isSerialTracked(item) ? "Theo SN" : "Theo SL" }}
+                      </span>
+                    </td>
                     <td>{{ item.Unit | unitText }}</td>
 
                     <!-- Quantity -->
@@ -562,7 +645,10 @@
                       (click)="startEdit(item)"
                     >
                       <ng-container
-                        *ngIf="editingId === item.Id; else displayQuantity"
+                        *ngIf="
+                          !isSerialTracked(item) && editingId === item.Id;
+                          else displayQuantity
+                        "
                       >
                         <div class="flex flex-col space-y-1">
                           <!-- Input số lượng -->
@@ -604,6 +690,50 @@
                             ≤ {{ item.Available ?? 0 }}
                           </span>
                         </span>
+                      </ng-template>
+                    </td>
+
+                    <td>
+                      <ng-container *ngIf="isSerialTracked(item); else noSerial">
+                        <div class="flex flex-col gap-2">
+                          <div class="flex flex-wrap gap-1.5">
+                            <span
+                              *ngFor="let sn of getSerialNumbers(item)"
+                              class="inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 text-xs text-slate-700 shadow-sm"
+                            >
+                              {{ sn }}
+                              <button
+                                type="button"
+                                class="text-slate-400 hover:text-red-500"
+                                (click)="removeSerialFromItem(item, sn)"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          </div>
+                          <div class="flex gap-2">
+                            <button
+                              nz-button
+                              nzType="default"
+                              class="h-8 rounded-full px-3 text-xs"
+                              (click)="openSerialTextModal(item)"
+                            >
+                              Nhập tay
+                            </button>
+                            <button
+                              nz-button
+                              nzType="primary"
+                              class="h-8 rounded-full px-3 text-xs"
+                              (click)="openCameraScanner(item)"
+                            >
+                              <nz-icon nzType="scan" nzTheme="outline"></nz-icon>
+                              Quét
+                            </button>
+                          </div>
+                        </div>
+                      </ng-container>
+                      <ng-template #noSerial>
+                        <span class="text-xs text-slate-400">Không yêu cầu</span>
                       </ng-template>
                     </td>
 
@@ -857,6 +987,47 @@
         </div>
       </div>
     </div> -->
+    </div>
+  </div>
+</div>
+
+<div
+  *ngIf="isScanning"
+  class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+>
+  <div class="bg-white rounded-3xl p-4 w-full max-w-md shadow-2xl">
+    <div class="flex items-start justify-between gap-3 mb-4">
+      <div>
+        <h3 class="font-bold text-slate-900">
+          {{ scannerTitle }}
+        </h3>
+        <p class="text-xs text-slate-500">
+          Mỗi SN hợp lệ sẽ tự tăng số lượng xuất và thành tiền.
+        </p>
+      </div>
+
+      <button nz-button nzType="default" (click)="closeScanner()">
+        Đóng
+      </button>
+    </div>
+
+    <div
+      id="order-update-serial-qr-reader"
+      style="
+        width: 100%;
+        min-height: 350px;
+        overflow: hidden;
+        border-radius: 16px;
+      "
+    ></div>
+
+    <div class="mt-4 flex items-center justify-between gap-3">
+      <span class="text-xs text-slate-500">
+        SN cuối: {{ lastScan || "Chưa có" }}
+      </span>
+      <button nz-button nzType="primary" class="rounded-full" (click)="closeScanner()">
+        Hoàn tất
+      </button>
     </div>
   </div>
 </div>

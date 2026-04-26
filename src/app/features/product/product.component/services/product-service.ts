@@ -39,6 +39,7 @@ export class ProductService {
     Unit: number,
     IsActive: boolean,
     SalePrice: number,
+    IsSerialTracked: boolean,
     ImageUrl?: string,
     SupplierId?: string,
     Description?: string
@@ -53,6 +54,7 @@ export class ProductService {
       RowVersion,
       IsActive,
       SalePrice,
+      IsSerialTracked,
       Description,
     };
     console.log('payload:', ProductCategoryId);
@@ -68,7 +70,8 @@ export class ProductService {
     unit: number,
     salePrice: number,
     imageUrl: string,
-    description: string
+    description: string,
+    isSerialTracked: boolean
   ): Observable<any> {
     const body: ProductCreateRequest = {
       name,
@@ -77,6 +80,7 @@ export class ProductService {
       unit,
       imageUrl,
       description,
+      isSerialTracked
     };
     return this.http.post<any>(
       `${ApiUrls.baseUrl}${ApiUrls.product.create}`,

@@ -8,5 +8,6 @@ export interface ProductUpdateRequest {
   ImageUrl?: string;
   SupplierId?: string;
   Description?: string;
+  IsSerialTracked: boolean;
   IsActive: boolean;
 }

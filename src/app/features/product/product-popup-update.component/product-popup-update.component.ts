@@ -60,6 +60,7 @@ export class ProductPopupUpdateComponent implements OnInit {
   ngOnInit(): void {
     if (this.data) {
       this.searchTerm = this.data.ProductCategoryName || '';
+      this.data.IsSerialTracked = this.data.IsSerialTracked ?? false;
     }
     this.loadCategories();
   }
@@ -137,7 +138,8 @@ export class ProductPopupUpdateComponent implements OnInit {
         this.data.Name.trim(),
         this.data.Unit,
         this.data.IsActive,
-        this.data.SalePrice ?? 0, 
+        this.data.SalePrice ?? 0,
+        this.data.IsSerialTracked ?? false,
         this.data.ImageUrl,
         this.data.SupplierId,
         this.data.Description.trim() || ''

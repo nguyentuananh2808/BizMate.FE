@@ -163,6 +163,19 @@
                   {{ item.Available ?? 0 }}
                 </span>
               </div>
+              <div class="flex items-center gap-2">
+                <strong>Quản lý SN:</strong>
+                <span
+                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                  [ngClass]="
+                    isSerialTracked(item)
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200'
+                      : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'
+                  "
+                >
+                  {{ isSerialTracked(item) ? "Có" : "Không" }}
+                </span>
+              </div>
               <div><strong>Đơn vị:</strong> {{ item.Unit | unitText }}</div>
               <div>
                 <strong>Loại SP:</strong> {{ item.ProductCategoryName }}
@@ -340,6 +353,7 @@
                 <th [nzWidth]="'240px'">Tên</th>
                 <th [nzWidth]="'150px'">Số lượng tồn kho</th>
                 <th [nzWidth]="'180px'">Số lượng khả dụng</th>
+                <th [nzWidth]="'130px'">Quản lý SN</th>
                 <th [nzWidth]="'80px'">Đơn vị</th>
                 <!-- <th [nzWidth]="'150px'">Nhà cung cấp</th> -->
                 <th [nzWidth]="'150px'">Loại SP</th>
@@ -421,6 +435,18 @@
                   }"
                 >
                   {{ item.Available ?? 0 }}
+                </td>
+                <td>
+                  <span
+                    class="inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-semibold"
+                    [ngClass]="
+                      isSerialTracked(item)
+                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200'
+                        : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300'
+                    "
+                  >
+                    {{ isSerialTracked(item) ? "Theo SN" : "Theo SL" }}
+                  </span>
                 </td>
                 <td>{{ item.Unit | unitText }}</td>
                 <td>{{ item.ProductCategoryName }}</td>

@@ -83,6 +83,8 @@ export class ProductPopupSearchComponent implements OnInit {
         SalePrice: p.SalePrice,
         InventoryReceiptId: '',
         Available: p.Available,
+        IsSerialTracked: p.IsSerialTracked ?? (p as any).isSerialTracked ?? false,
+        SerialNumbers: [],
       }));
 
     if (selectedInventoryDetails.length === 0) {

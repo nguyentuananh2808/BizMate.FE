@@ -99,6 +99,33 @@
         </select>
       </div>
 
+      <div
+        class="flex items-center justify-between rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800 px-4 py-3"
+      >
+        <div>
+          <label
+            class="block text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark"
+          >
+            Quản lý theo Serial (SN)
+          </label>
+          <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+            Bật khi mỗi thiết bị có một số serial riêng.
+          </p>
+        </div>
+
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            [(ngModel)]="isSerialTracked"
+            name="isSerialTracked"
+            class="sr-only peer"
+          />
+          <div
+            class="w-12 h-7 rounded-full bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-info-light dark:bg-gray-700 peer-checked:bg-primary-light dark:peer-checked:bg-primary-dark after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-all peer-checked:after:translate-x-5"
+          ></div>
+        </label>
+      </div>
+
       <!-- Giá -->
       <div class="w-full">
         <label
