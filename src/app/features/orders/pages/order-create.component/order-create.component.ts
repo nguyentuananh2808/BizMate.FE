@@ -363,6 +363,10 @@ export class OrderCreateComponent {
     );
   }
 
+  calculateTotalPrice(): number {
+    return this.listOfData.reduce((sum, item) => sum + (item.TotalPrice ?? 0), 0);
+  }
+
   saveEdit(
     item: InventoryDetail & { SalePrice?: number; TotalPrice?: number }
   ): void {

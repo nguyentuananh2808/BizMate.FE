@@ -112,7 +112,6 @@ export class OrderComponent implements OnInit {
       next: (res) => {
         this.statusList = res.Statuses;
         this.statuses = this.statusList.map((s) => s.Id);
-        console.log('statuses111:', this.statuses);
       },
       error: (err) => console.error(err),
     });
