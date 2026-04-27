@@ -1,97 +1,119 @@
-<!-- Nút mở menu (mobile only) -->
 <button
   *ngIf="isMobile && !isMobileMenuOpen"
-  class="fixed top-4 left-4 z-[9999] bg-primary-light text-white p-2 rounded-full shadow-md"
+  class="sidebar-mobile-trigger"
   (click)="openMobileMenu()"
+  aria-label="Mở menu"
 >
-  <!-- <i nz-icon nzType="menu"></i> -->
-  <img
-    src="assets/images/logo_vuakong_light.png"
-    alt=""
-    class="w-5 animate-spin-slow animate-bounce"
-  />
+  <img src="assets/images/logo_vuakong_light.png" alt="" />
 </button>
 
-<!-- Overlay đen khi menu mở -->
 <div
   *ngIf="isMobile && isMobileMenuOpen"
-  class="fixed inset-0 bg-black bg-opacity-40 z-40"
+  class="sidebar-overlay"
   (click)="closeMobileMenu()"
 ></div>
 
-<!-- Sidebar -->
-<div
-  class="bg-slate-900 text-white h-screen transition-all duration-300 ease-in-out z-50 overflow-y-auto m-1 rounded-[24px]"
+<aside
+  class="sidebar-shell"
   [ngClass]="{
-    'fixed top-0 left-0 w-64': isMobile,
+    'sidebar-mobile': isMobile,
     'translate-x-0': isMobile && isMobileMenuOpen,
     '-translate-x-full': isMobile && !isMobileMenuOpen,
-    'w-16': isCollapsed && !isMobile,
-    'w-64': !isCollapsed && !isMobile,
-    'rounded-[24px] p-1': !isMobile
+    'sidebar-collapsed': isCollapsed && !isMobile,
+    'sidebar-expanded': !isCollapsed && !isMobile,
+    'sidebar-light': !isDark,
+    'sidebar-dark': isDark
   }"
 >
-  <!-- Toggle Button (desktop or inside mobile menu) -->
-  <div class="p-3 flex justify-end">
+  <div class="sidebar-top">
     <button
-      class="bg-primary-light hover:bg-primary-dark p-2 rounded-full"
+      class="brand-button"
       (click)="isMobile ? closeMobileMenu() : toggleSidebar()"
+      [attr.aria-label]="isCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'"
     >
-      <!-- <i nz-icon [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"></i> -->
       <img
-        src="assets/images/logo_vuakong_light.png"
+        [src]="
+          isDark
+            ? 'assets/images/logo_vuakong_light.png'
+            : 'assets/images/logo_vuakong.png'
+        "
         alt=""
-        class="w-5 animate-spin-slow animate-bounce"
       />
+    </button>
+
+    <div *ngIf="!isCollapsed" class="brand-copy">
+      <span class="brand-kicker">BizMate</span>
+      <strong>VuaKong</strong>
+    </div>
+
+    <button
+      *ngIf="!isMobile"
+      class="collapse-button"
+      (click)="toggleSidebar()"
+      [attr.aria-label]="isCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'"
+    >
+      <i nz-icon [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"></i>
     </button>
   </div>
 
-  <!-- Menu Items -->
-  <ul class="space-y-1 m-2">
-    <ng-container *ngFor="let item of menuItems">
-      <!-- Menu cha có con -->
-      <li *ngIf="item.children">
-        <div
-          class="flex items-center gap-3 p-3 cursor-pointer hover:bg-vkDarkEnd transition rounded"
-          (click)="toggleExpand(item.key)"
-          [ngClass]="{
-            'bg-vkDarkEnd': isExpanded(item.key) || activeRouteKey === item.key
-          }"
-        >
-          <i nz-icon [nzType]="item.icon"></i>
-          <span *ngIf="!isCollapsed" class="truncate">{{ item.label }}</span>
-          <i
-            *ngIf="!isCollapsed"
-            class="ml-auto"
-            nz-icon
-            [nzType]="isExpanded(item.key) ? 'down' : 'right'"
-          ></i>
+  <nav class="sidebar-nav" aria-label="Menu chính">
+    <section *ngFor="let section of menuSections" class="nav-section">
+      <ng-container *ngFor="let item of section.items">
+        <div class="nav-parent" *ngIf="item.children; else singleItem">
+          <button
+            class="nav-item"
+            [ngClass]="{
+              active: isExpanded(item.key) || isActive(item)
+            }"
+            (click)="toggleExpand(item.key)"
+            [attr.title]="isCollapsed ? item.label : null"
+          >
+            <span class="nav-icon">
+              <i nz-icon [nzType]="item.icon"></i>
+            </span>
+            <span *ngIf="!isCollapsed" class="nav-label">{{ item.label }}</span>
+            <i
+              *ngIf="!isCollapsed"
+              class="nav-chevron"
+              nz-icon
+              [nzType]="isExpanded(item.key) ? 'down' : 'right'"
+            ></i>
+          </button>
+
+          <div
+            *ngIf="isExpanded(item.key) && !isCollapsed"
+            class="nav-children"
+          >
+            <button
+              *ngFor="let child of item.children"
+              class="nav-child"
+              [ngClass]="{ active: isActive(child) }"
+              (click)="handleClick(child.route, child.key)"
+            >
+              <i nz-icon [nzType]="child.icon || 'right'"></i>
+              <span>{{ child.label }}</span>
+            </button>
+          </div>
         </div>
 
-        <ul *ngIf="isExpanded(item.key) && !isCollapsed" class="pl-6 space-y-1">
-          <li
-            *ngFor="let child of item.children"
-            class="flex items-center gap-2 p-2 cursor-pointer hover:bg-vkDarkEnd transition rounded my-1"
-            (click)="handleClick(child.route)"
-            [ngClass]="{ 'bg-vkDarkEnd': activeRouteKey === child.key }"
+        <ng-template #singleItem>
+          <button
+            class="nav-item"
+            [ngClass]="{ active: isActive(item) }"
+            (click)="handleClick(item.route, item.key)"
+            [attr.title]="isCollapsed ? item.label : null"
           >
-            <i nz-icon [nzType]="child.icon || 'right'"></i>
-            <span class="truncate">{{ child.label }}</span>
-          </li>
-        </ul>
-      </li>
+            <span class="nav-icon">
+              <i nz-icon [nzType]="item.icon"></i>
+            </span>
+            <span *ngIf="!isCollapsed" class="nav-label">{{ item.label }}</span>
+          </button>
+        </ng-template>
+      </ng-container>
+    </section>
+  </nav>
 
-      <!-- Menu không có con -->
-      <li
-        *ngIf="!item.children"
-        class="flex items-center gap-3 p-3 cursor-pointer hover:bg-vkDarkEnd transition rounded"
-        (click)="handleClick(item.route)"
-        [ngClass]="{ 'bg-vkDarkEnd': activeRouteKey === item.key }"
-      >
-        <i nz-icon [nzType]="item.icon"></i>
-        <span *ngIf="!isCollapsed" class="truncate">{{ item.label }}</span>
-      </li>
-    </ng-container>
-  </ul>
-
-</div>
+  <div class="sidebar-footer">
+    <dark-mode-toggle></dark-mode-toggle>
+  </div>
+</aside>

@@ -7,7 +7,7 @@ import {
 import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { HeaderCommonComponent } from '../../../shared/header-common.component/header-common.component';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -87,7 +87,8 @@ export class ProductComponent implements OnInit {
     private modal: NzModalService,
     private toastr: ToastrService,
     private datePipe: DatePipe,
-    private location: Location
+    private location: Location,
+    private router: Router
   ) {}
 
   get totalPages(): number {
@@ -120,6 +121,12 @@ export class ProductComponent implements OnInit {
   viewDetail(item: Product) {
     this.selectedItem = item;
     this.showPopup = true;
+  }
+
+  viewSerials(item: Product): void {
+    this.router.navigate(['/product-items'], {
+      queryParams: { productId: item.Id },
+    });
   }
   closeProductDetailPopup() {
     this.showPopup = false;

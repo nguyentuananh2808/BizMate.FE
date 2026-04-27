@@ -85,6 +85,14 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: 'product-items',
+    loadComponent: () =>
+      import(
+        './features/product-item/pages/product-item-list.component'
+      ).then((m) => m.ProductItemListComponent),
+    canActivate: [AuthGuard],
+  },
+  {
     path: 'warehouse-receipt-create',
     loadComponent: () =>
       import(

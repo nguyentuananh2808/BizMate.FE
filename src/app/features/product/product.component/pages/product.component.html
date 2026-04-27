@@ -119,6 +119,13 @@
                     <nz-icon nzType="edit" nzTheme="outline"></nz-icon> Chi tiết
                   </button>
                   <button
+                    *ngIf="isSerialTracked(item)"
+                    class="flex items-center gap-2 text-emerald-600 dark:text-emerald-300 text-sm px-2 py-1 w-full"
+                    (click)="viewSerials(item)"
+                  >
+                    <nz-icon nzType="barcode" nzTheme="outline"></nz-icon> SN
+                  </button>
+                  <button
                     class="flex items-center gap-2 text-red-600 dark:text-red-400 text-sm px-2 py-1 w-full"
                     (click)="deleteProduct(item)"
                   >
@@ -398,6 +405,13 @@
                   >
                     <div class="dropdown-item" (click)="viewDetail(item)">
                       <nz-icon nzType="edit" nzTheme="outline"></nz-icon>
+                    </div>
+                    <div
+                      *ngIf="isSerialTracked(item)"
+                      class="dropdown-item"
+                      (click)="viewSerials(item)"
+                    >
+                      <nz-icon nzType="barcode" nzTheme="outline"></nz-icon>
                     </div>
                     <div class="dropdown-item" (click)="deleteProduct(item)">
                       <nz-icon nzType="delete" nzTheme="outline"></nz-icon>

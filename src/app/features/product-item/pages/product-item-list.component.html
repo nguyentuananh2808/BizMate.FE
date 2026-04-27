@@ -1,0 +1,158 @@
+<div class="flex">
+  <app-menu class="bg-background-dark"></app-menu>
+
+  <div class="bg-login" [ngClass]="{ dark: isDark }">
+    <div class="px-4 pt-6 z-10 relative" [ngClass]="{ 'dark:bg-gray-900': isDark }">
+      <header-common></header-common>
+
+      <section class="serial-page">
+        <div class="serial-toolbar">
+          <div>
+            <p class="serial-kicker">Serial inventory</p>
+            <h1>Serial theo sản phẩm</h1>
+          </div>
+
+          <button
+            type="button"
+            class="back-button"
+            (click)="goBack()"
+            [ngClass]="{
+              'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600': isDark
+            }"
+          >
+            <span>Quay lại</span>
+            <nz-icon nzType="arrow-right" nzTheme="outline"></nz-icon>
+          </button>
+        </div>
+
+        <div class="serial-panel">
+          <div class="product-picker">
+            <label>Sản phẩm</label>
+            <div class="picker-row">
+              <input
+                type="text"
+                [(ngModel)]="productKeyword"
+                (keyup.enter)="searchProducts()"
+                placeholder="Tìm mã hoặc tên sản phẩm..."
+              />
+              <button nz-button nzType="primary" (click)="searchProducts()">
+                <nz-icon nzType="search" nzTheme="outline"></nz-icon>
+                Tìm
+              </button>
+              <button
+                *ngIf="selectedProduct"
+                nz-button
+                nzType="default"
+                (click)="clearProduct()"
+              >
+                Bỏ chọn
+              </button>
+            </div>
+
+            <div *ngIf="!selectedProduct" class="product-results">
+              <button
+                *ngFor="let product of products"
+                type="button"
+                class="product-result"
+                (click)="selectProduct(product)"
+              >
+                <span>
+                  <strong>{{ product.Name }}</strong>
+                  <small>{{ product.Code }} - Tồn: {{ product.Available ?? product.Quantity }}</small>
+                </span>
+                <nz-icon nzType="right" nzTheme="outline"></nz-icon>
+              </button>
+              <div *ngIf="!products.length && !isProductLoading" class="empty-state">
+                Chưa có sản phẩm phù hợp.
+              </div>
+            </div>
+
+            <div *ngIf="selectedProduct" class="selected-product">
+              <div>
+                <span class="selected-code">{{ selectedProduct.Code }}</span>
+                <strong>{{ selectedProduct.Name }}</strong>
+              </div>
+              <span class="selected-count">{{ totalCount }} SN</span>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <input
+              type="text"
+              [(ngModel)]="keyword"
+              (keyup.enter)="onFilterChange()"
+              placeholder="Tìm serial, mã sản phẩm..."
+              [disabled]="!selectedProduct"
+            />
+
+            <select [(ngModel)]="status" (ngModelChange)="onFilterChange()" [disabled]="!selectedProduct">
+              <option *ngFor="let option of statusOptions" [ngValue]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+
+            <button
+              nz-button
+              nzType="primary"
+              [disabled]="!selectedProduct"
+              (click)="onFilterChange()"
+            >
+              Lọc
+            </button>
+          </div>
+        </div>
+
+        <div class="serial-table-wrap">
+          <nz-table
+            [nzData]="productItems"
+            [nzLoading]="isLoading"
+            [nzShowPagination]="false"
+            [nzScroll]="{ x: '980px', y: isMobile ? '420px' : '480px' }"
+          >
+            <thead>
+              <tr>
+                <th [nzWidth]="'60px'" class="text-center">STT</th>
+                <th [nzWidth]="'160px'">Serial</th>
+                <th [nzWidth]="'120px'">Trạng thái</th>
+                <th [nzWidth]="'130px'">Mã SP</th>
+                <th [nzWidth]="'260px'">Tên sản phẩm</th>
+                <th [nzWidth]="'150px'">Ngày bán</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let item of productItems; let i = index; trackBy: trackById">
+                <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
+                <td class="serial-code">{{ item.SerialNumber }}</td>
+                <td>
+                  <span class="status-pill" [ngClass]="{ sold: item.SoldAt }">
+                    {{ item.StatusName || item.Status }}
+                  </span>
+                </td>
+                <td>{{ item.ProductCode }}</td>
+                <td>{{ item.ProductName }}</td>
+                <td>{{ item.SoldAt ? (item.SoldAt | date : "dd/MM/yyyy HH:mm") : "-" }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+
+          <div *ngIf="selectedProduct && !productItems.length && !isLoading" class="empty-table">
+            Sản phẩm này chưa có Serial nào theo bộ lọc hiện tại.
+          </div>
+
+          <nz-pagination
+            *ngIf="totalCount > pageSize"
+            class="serial-pagination"
+            [nzPageIndex]="pageIndex"
+            [nzTotal]="totalCount"
+            [nzPageSize]="pageSize"
+            [nzShowSizeChanger]="false"
+            (nzPageIndexChange)="onPageChange($event)"
+          ></nz-pagination>
+        </div>
+      </section>
+
+      <bottom-menu class="mt-6"></bottom-menu>
+    </div>
+  </div>
+</div>
