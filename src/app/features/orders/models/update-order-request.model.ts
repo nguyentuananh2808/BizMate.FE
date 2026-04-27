@@ -3,10 +3,10 @@ export interface UpdateOrderRequest {
   RowVersion: string;
   CustomerType: number;
   DeliveryAddress: string;
-  CustomerId: string;
+  CustomerId?: string | null;
   CustomerPhone: string;
   CustomerName: string;
-  Description: string;
+  Description?: string | null;
   StatusId: string;
   Details: UpdateOrderDetailRequest[];
 }
@@ -14,5 +14,5 @@ export interface UpdateOrderRequest {
 export interface UpdateOrderDetailRequest {
   ProductId: string;
   Quantity: number;
-  SerialNumbers?: string[];
+  SerialNumbers: string[];
 }

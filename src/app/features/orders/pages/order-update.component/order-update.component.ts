@@ -439,6 +439,8 @@ export class OrderUpdateComponent implements OnInit {
       address: customer.Address ?? '',
       description: '',
     };
+    this.customerId = customer.Id;
+    this.customerType = 2;
 
     //  Nếu customer có DealerLevelId thì gọi API lấy giá
     if (customer.DealerLevelId) {
@@ -480,11 +482,31 @@ export class OrderUpdateComponent implements OnInit {
       address: customer.Address,
       description: '',
     };
+    this.customerId = customer.Id;
+    this.customerType = 2;
   }
 
   //đổi tab
   onTabChange(index: number): void {
     this.selectedTabIndex = index;
+    this.customerType = index === 1 ? 2 : 1;
+    this.customerId = '';
+    this.customer = {
+      id: '',
+      name: '',
+      phone: '',
+      address: '',
+      description: '',
+    };
+
+    if (index === 1) {
+      this.orderForm.get('phoneNumber')?.disable();
+      this.orderForm.get('deliveryAddress')?.disable();
+    } else {
+      this.orderForm.get('phoneNumber')?.enable();
+      this.orderForm.get('deliveryAddress')?.enable();
+    }
+
     this.orderForm.patchValue({
       customerName: '',
       phoneNumber: '',
@@ -504,10 +526,15 @@ export class OrderUpdateComponent implements OnInit {
         this.createdDate = res.Order.Order.CreatedDate;
         this.customerId = res.Order.Order.CustomerId;
         this.customerType = res.Order.Order.CustomerType;
+        this.selectedTabIndex = this.customerType === 2 ? 1 : 0;
         if (res.Order.Order.CustomerType === 2) {
           this.orderForm.get('customerName')?.disable();
           this.orderForm.get('phoneNumber')?.disable();
           this.orderForm.get('deliveryAddress')?.disable();
+        } else {
+          this.orderForm.get('customerName')?.enable();
+          this.orderForm.get('phoneNumber')?.enable();
+          this.orderForm.get('deliveryAddress')?.enable();
         }
         //  gọi thêm API để lấy DealerLevelId từ Customer
         if (this.customerId) {
@@ -628,6 +655,24 @@ export class OrderUpdateComponent implements OnInit {
 
   getSerialNumbers(item: InventoryDetail): string[] {
     return item.SerialNumbers ?? [];
+  }
+
+  private getProductId(item: InventoryDetail): string {
+    return item.ProductId || item.Id;
+  }
+
+  private getOrderQuantity(item: InventoryDetail): number {
+    return this.isSerialTracked(item)
+      ? this.getSerialNumbers(item).length
+      : Number(item.Quantity) || 0;
+  }
+
+  private isCommandSuccess(response: any): boolean {
+    return response?.Success ?? response?.success ?? true;
+  }
+
+  private getCommandMessage(response: any, fallback: string): string {
+    return response?.Message ?? response?.message ?? fallback;
   }
 
   private normalizeSerialNumber(value: string): string {
@@ -1130,6 +1175,13 @@ export class OrderUpdateComponent implements OnInit {
 
   submitForm(): void {
     const formValues = this.orderForm.getRawValue();
+    const isDealerOrder = this.customerType === 2;
+
+    if (isDealerOrder && !this.customerId) {
+      this.toastr.warning('Vui lòng chọn đại lý trước khi cập nhật đơn hàng.');
+      return;
+    }
+
     const missingSerialItem = this.listOfData.find(
       (item) => this.isSerialTracked(item) && this.getSerialNumbers(item).length === 0
     );
@@ -1145,29 +1197,49 @@ export class OrderUpdateComponent implements OnInit {
       Id: this.id,
       StatusId: this.statusId,
       RowVersion: this.rowVersion,
-      CustomerId: this.customerId,
-      CustomerType: this.customerType,
+      CustomerId: isDealerOrder ? this.customerId : null,
+      CustomerType: isDealerOrder ? 2 : 1,
       CustomerName: formValues.customerName,
       CustomerPhone: formValues.phoneNumber,
       DeliveryAddress: formValues.deliveryAddress,
-      Description: formValues.description,
-      Details: this.listOfData.map((item) => ({
-        ProductId: item.ProductId ?? item.Id,
-        Quantity: item.Quantity,
-        SerialNumbers: this.isSerialTracked(item)
+      Description: formValues.description || null,
+      Details: this.listOfData.map((item) => {
+        const serialNumbers = this.isSerialTracked(item)
           ? this.getSerialNumbers(item)
-          : [],
-      })),
+          : [];
+
+        return {
+          ProductId: this.getProductId(item),
+          Quantity: this.getOrderQuantity(item),
+          SerialNumbers: serialNumbers,
+        };
+      }),
     };
 
+    this.isSubmitting = true;
     this.orderService.UpdateOrder(payload).subscribe({
-      next: () => {
+      next: (response) => {
+        if (!this.isCommandSuccess(response)) {
+          this.toastr.error(
+            this.getCommandMessage(response, 'Cập nhật đơn hàng thất bại')
+          );
+          this.isSubmitting = false;
+          return;
+        }
+
         this.toastr.success('Cập nhật đơn hàng thành công!');
         this.getOrderDetail(this.id);
       },
       error: (err) => {
-        const userMessage = err.error?.Message || 'Cập nhật thất bại';
+        const userMessage =
+          err.error?.Message ||
+          err.error?.message ||
+          'Cập nhật đơn hàng thất bại';
         this.toastr.error(userMessage);
+        this.isSubmitting = false;
+      },
+      complete: () => {
+        this.isSubmitting = false;
       },
     });
   }

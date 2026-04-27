@@ -189,6 +189,24 @@ export class OrderCreateComponent {
     return item.SerialNumbers ?? [];
   }
 
+  private getProductId(item: InventoryDetail): string {
+    return item.ProductId || item.Id;
+  }
+
+  private getOrderQuantity(item: InventoryDetail): number {
+    return this.isSerialTracked(item)
+      ? this.getSerialNumbers(item).length
+      : Number(item.Quantity) || 0;
+  }
+
+  private isCommandSuccess(response: any): boolean {
+    return response?.Success ?? response?.success ?? true;
+  }
+
+  private getCommandMessage(response: any, fallback: string): string {
+    return response?.Message ?? response?.message ?? fallback;
+  }
+
   private normalizeSerialNumber(value: string): string {
     return value.trim();
   }
@@ -823,6 +841,13 @@ export class OrderCreateComponent {
 
   submitForm(isDraft: boolean): void {
     const formValues = this.orderForm.getRawValue();
+    const isDealerOrder = this.selectedTabIndex === 1;
+
+    if (isDealerOrder && !this.customer.id) {
+      this.toastr.warning('Vui lòng chọn đại lý trước khi tạo đơn hàng.');
+      return;
+    }
+
     const missingSerialItem = this.listOfData.find(
       (item) => this.isSerialTracked(item) && this.getSerialNumbers(item).length === 0
     );
@@ -835,34 +860,46 @@ export class OrderCreateComponent {
     }
 
     const payload: CreateOrderRequest = {
-      CustomerId: this.selectedTabIndex === 1 ? this.customer.id : undefined,
-      CustomerType: this.selectedTabIndex === 0 ? 1 : 2,
+      OrderDate: new Date().toISOString(),
+      CustomerId: isDealerOrder ? this.customer.id : null,
+      CustomerType: isDealerOrder ? 2 : 1,
       IsDraft: isDraft,
       CustomerName: formValues.customerName,
       CustomerPhone: formValues.phoneNumber,
       DeliveryAddress: formValues.deliveryAddress,
-      Description: formValues.description,
-      TotalAmount: this.totalAmount,
-      Details: this.listOfData.map((item) => ({
-        ProductId: item.ProductId ?? item.Id,
-        Quantity: item.Quantity,
-        UnitPrice: item.SalePrice ?? 0,
-        SerialNumbers: this.isSerialTracked(item)
+      Description: formValues.description || null,
+      Details: this.listOfData.map((item) => {
+        const serialNumbers = this.isSerialTracked(item)
           ? this.getSerialNumbers(item)
-          : [],
-      })),
+          : [];
+
+        return {
+          ProductId: this.getProductId(item),
+          Quantity: this.getOrderQuantity(item),
+          SerialNumbers: serialNumbers,
+        };
+      }),
     };
 
     this.isSubmitting = true;
     this.orderService.CreateOrder(payload).subscribe({
-      next: () => {
+      next: (response) => {
+        if (!this.isCommandSuccess(response)) {
+          this.toastr.error(
+            this.getCommandMessage(response, 'Tạo đơn hàng thất bại')
+          );
+          this.isSubmitting = false;
+          return;
+        }
+
         this.toastr.success(
           isDraft ? 'Lưu nháp thành công!' : 'Tạo đơn hàng thành công!'
         );
         this.router.navigateByUrl('/order');
       },
       error: (err) => {
-        const userMessage = err.error?.Message || 'Cập nhật thất bại';
+        const userMessage =
+          err.error?.Message || err.error?.message || 'Tạo đơn hàng thất bại';
         this.toastr.error(userMessage);
         this.isSubmitting = false;
       },

@@ -1,11 +1,11 @@
 export interface CreateOrderRequest {
+  OrderDate?: string;
   CustomerType: number;
-  CustomerId?: string;
+  CustomerId?: string | null;
   DeliveryAddress: string;
   CustomerPhone: string;
   CustomerName: string;
-  Description: string;
-  TotalAmount: number;
+  Description?: string | null;
   IsDraft: boolean;
   Details: CreateOrderDetailRequest[];
 }
@@ -13,6 +13,5 @@ export interface CreateOrderRequest {
 export interface CreateOrderDetailRequest {
   ProductId: string;
   Quantity: number;
-  UnitPrice: number;
-  SerialNumbers?: string[];
+  SerialNumbers: string[];
 }

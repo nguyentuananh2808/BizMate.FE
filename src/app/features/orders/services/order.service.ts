@@ -9,6 +9,15 @@ import { GetOrdersResponse } from '../models/order-search-response.model';
 import { CreateOrderRequest } from '../models/create-order-request.model';
 import { UpdateStatusOrderRequest } from '../models/update-status-order-request.model';
 
+export interface OrderCommandResponse {
+  Success?: boolean;
+  success?: boolean;
+  Message?: string;
+  message?: string;
+  Errors?: unknown;
+  errors?: unknown;
+}
+
 @Injectable({ providedIn: 'root' })
 export class OrderService {
   constructor(private http: HttpClient) {}
@@ -34,8 +43,8 @@ export class OrderService {
     );
   };
 
-  UpdateOrder(body: UpdateOrderRequest): Observable<any> {
-    return this.http.put<any>(
+  UpdateOrder(body: UpdateOrderRequest): Observable<OrderCommandResponse> {
+    return this.http.put<OrderCommandResponse>(
       `${ApiUrls.baseUrl}${ApiUrls.order.update}`,
       body
     );
@@ -50,8 +59,8 @@ UpdateStatusOrder(body: UpdateStatusOrderRequest): Observable<any> {
 
   CreateOrder = (
     createReceiptRequestRequest: CreateOrderRequest
-  ): Observable<any> => {
-    return this.http.post<any>(
+  ): Observable<OrderCommandResponse> => {
+    return this.http.post<OrderCommandResponse>(
       `${ApiUrls.baseUrl}${ApiUrls.order.create}`,
       createReceiptRequestRequest
     );
