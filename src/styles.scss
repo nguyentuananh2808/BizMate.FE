@@ -5,27 +5,70 @@
 
 body {
   font-family: 'Inter', sans-serif;
+  color: #102331;
+  background: #f4f7f8;
 }
 
 #toast-container {
   z-index: 99999 !important;
 }
 
+#toast-container > .ngx-toastr {
+  min-height: 52px;
+  border-radius: 14px !important;
+  box-shadow: 0 18px 45px rgba(15, 35, 49, 0.18) !important;
+  font-weight: 600;
+}
+
+#toast-container > .toast-success {
+  background-color: #059669 !important;
+}
+
+#toast-container > .toast-error {
+  background-color: #dc2626 !important;
+}
+
+#toast-container > .toast-warning {
+  background-color: #d97706 !important;
+}
+
+#toast-container > .toast-info {
+  background-color: #0e7490 !important;
+}
+
 .ant-table,
 .ant-pagination {
-  border-radius: 24px !important;
+  border-radius: 12px !important;
   overflow: hidden;
 }
 
 .ant-pagination-item {
-  border-radius: 24px !important;
+  border-radius: 10px !important;
 }
 
 .ant-pagination-disabled .ant-pagination-item-link,
 .ant-pagination-disabled:hover .ant-pagination-item-link,
 .ant-pagination-prev .ant-pagination-item-link,
 .ant-pagination-next .ant-pagination-item-link {
-  border-radius: 24px;
+  border-radius: 10px;
+}
+
+.ant-btn-primary {
+  border-color: #0f766e !important;
+  background: #0f766e !important;
+  box-shadow: 0 8px 18px rgba(15, 118, 110, 0.22);
+}
+
+.ant-btn-primary:not(:disabled):hover,
+.ant-btn-primary:not(:disabled):focus {
+  border-color: #0d9488 !important;
+  background: #0d9488 !important;
+}
+
+.ant-btn-default:not(:disabled):hover,
+.ant-btn-default:not(:disabled):focus {
+  border-color: #0f766e !important;
+  color: #0f766e !important;
 }
 
 
@@ -42,66 +85,41 @@ body {
 /* Light mode background */
 .bg-login {
   position: relative;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-  background-color: #e7e7e7d8;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: #f4f7f8;
   z-index: 0;
   transition: background-color 0.5s ease;
 }
 
 /* Dark mode background */
 .dark .bg-login {
-  background-color: #192b55 !important;
+  background-color: #0b1520 !important;
   transition: background-color 0.5s ease;
 }
 
 /* Sóng trên - màu sáng (light mode) */
 .bg-login::before {
   content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 70vw;
-  height: 100vh;
-  background: linear-gradient(to bottom right, #daecf9, #90cdf4);
-  clip-path: ellipse(70% 100% at 90% 40%);
-  filter: blur(6px) brightness(1.05);
-  transform: scale(1.05);
-  animation: floatUpDown 10s ease-in-out infinite;
-  z-index: 1;
-  transition: background 0.5s ease, filter 0.5s ease;
+  display: none;
 }
 
 /* Sóng trên - màu tối (dark mode) */
 .dark .bg-login::before {
-  background: linear-gradient(to bottom right, #d7e6ff, #3b82f6);
-  filter: blur(6px) brightness(0.7);
-  transition: background 0.5s ease, filter 0.5s ease;
+  display: none;
 }
 
 /* Sóng dưới - cong lần 2 (light mode) */
 .bg-login::after {
   content: '';
-  position: absolute;
-  bottom: -10%;
-  right: 0;
-  width: 80vw;
-  height: 100vh;
-  background: linear-gradient(to top left, #90cdf4, #e0f2ff);
-  clip-path: ellipse(70% 90% at 85% 70%);
-  filter: blur(6px) brightness(0.97);
-  transform: scale(1.05);
-  animation: floatDownUp 12s ease-in-out infinite;
-  z-index: 0;
-  transition: background 0.5s ease, filter 0.5s ease;
+  display: none;
 }
 
 /* Sóng dưới - màu tối (dark mode) */
 .dark .bg-login::after {
-  background: linear-gradient(to top left, #2563eb, #94aace);
-  filter: blur(6px) brightness(0.8);
-  transition: background 0.5s ease, filter 0.5s ease;
+  display: none;
 }
 
 .logo-login {
@@ -113,9 +131,9 @@ body {
   top: 18%;
   left: 30px;
   background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(15, 70, 87, 0.14);
+  border-radius: 10px;
+  box-shadow: 0 18px 36px rgba(15, 35, 49, 0.12);
   z-index: 100;
   min-width: 80px;
 }
@@ -127,7 +145,7 @@ body {
   white-space: nowrap;
 
   &:hover {
-    background-color: #f5f5f5;
+    background-color: #eef7f5;
   }
 }
 
@@ -164,12 +182,18 @@ body {
     cursor: pointer;
 
     &:hover {
-      background-color: #f0f0f0;
+      background-color: #eef7f5;
     }
 
     ul {
       padding-left: 16px;
     }
+  }
+}
+
+@media (max-width: 767.98px) {
+  main {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom));
   }
 }
 

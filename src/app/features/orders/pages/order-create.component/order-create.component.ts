@@ -27,15 +27,22 @@ import { ToastrService } from 'ngx-toastr';
 import { NgxPrintModule } from 'ngx-print';
 import { InventoryDetail } from '../../../inventory-receipt/models/warehouse-receipt-detail.model';
 import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
-import { debounceTime, distinctUntilChanged, filter, switchMap } from 'rxjs';
-import { Subject, of } from 'rxjs';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  finalize,
+  forkJoin,
+  Subject,
+  switchMap,
+  take,
+} from 'rxjs';
 import { CustomerService } from '../../../customer/services/customer-service';
 import {
   Customer,
   CustomerResponse,
 } from '../../../customer/models/customer-response.model';
 import { PricePipe } from '../../../../shared/pipes/price-pice';
-import { forkJoin } from 'rxjs';
 import { CreateOrderRequest } from '../../models/create-order-request.model';
 import { OrderService } from '../../services/order.service';
 import { DealerLevelService } from '../../../dealer-level/services/dealer-level-service';
@@ -200,7 +207,25 @@ export class OrderCreateComponent {
   }
 
   private isCommandSuccess(response: any): boolean {
-    return response?.Success ?? response?.success ?? true;
+    const value =
+      response?.Success ??
+      response?.success ??
+      response?.IsSuccess ??
+      response?.isSuccess ??
+      response?.Succeeded ??
+      response?.succeeded;
+
+    if (value === undefined || value === null) {
+      return true;
+    }
+
+    if (typeof value === 'string') {
+      return ['true', '1', 'success', 'succeeded'].includes(
+        value.toLowerCase()
+      );
+    }
+
+    return Boolean(value);
   }
 
   private getCommandMessage(response: any, fallback: string): string {
@@ -840,8 +865,17 @@ export class OrderCreateComponent {
   }
 
   submitForm(isDraft: boolean): void {
+    if (this.isSubmitting) {
+      return;
+    }
+
     const formValues = this.orderForm.getRawValue();
     const isDealerOrder = this.selectedTabIndex === 1;
+
+    if (this.isSubmitDisabled) {
+      this.toastr.warning('Vui lòng chọn sản phẩm và nhập số lượng/SN hợp lệ.');
+      return;
+    }
 
     if (isDealerOrder && !this.customer.id) {
       this.toastr.warning('Vui lòng chọn đại lý trước khi tạo đơn hàng.');
@@ -882,30 +916,36 @@ export class OrderCreateComponent {
     };
 
     this.isSubmitting = true;
-    this.orderService.CreateOrder(payload).subscribe({
-      next: (response) => {
-        if (!this.isCommandSuccess(response)) {
-          this.toastr.error(
-            this.getCommandMessage(response, 'Tạo đơn hàng thất bại')
-          );
-          this.isSubmitting = false;
-          return;
-        }
+    this.cdr.detectChanges();
 
-        this.toastr.success(
-          isDraft ? 'Lưu nháp thành công!' : 'Tạo đơn hàng thành công!'
-        );
-        this.router.navigateByUrl('/order');
-      },
-      error: (err) => {
-        const userMessage =
-          err.error?.Message || err.error?.message || 'Tạo đơn hàng thất bại';
-        this.toastr.error(userMessage);
-        this.isSubmitting = false;
-      },
-      complete: () => {
-        this.isSubmitting = false;
-      },
-    });
+    this.orderService
+      .CreateOrder(payload)
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.isSubmitting = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          if (!this.isCommandSuccess(response)) {
+            this.toastr.error(
+              this.getCommandMessage(response, 'Tạo đơn hàng thất bại')
+            );
+            return;
+          }
+
+          this.toastr.success(
+            isDraft ? 'Lưu nháp thành công!' : 'Tạo đơn hàng thành công!'
+          );
+          this.router.navigateByUrl('/order');
+        },
+        error: (err) => {
+          const userMessage =
+            err.error?.Message || err.error?.message || 'Tạo đơn hàng thất bại';
+          this.toastr.error(userMessage);
+        },
+      });
   }
 }

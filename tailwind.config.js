@@ -24,40 +24,40 @@ module.exports = {
       },
     
       colors: {
-        vkStart: "#60A5FA", // xanh nhạt (light blue-400)
-        vkEnd: "#2563EB", // xanh đậm (blue-600)
-        vkDarkStart: "#93C5FD", // màu sáng hơn trong dark mode
-        vkDarkEnd: "#3B82F6", // màu đậm hơn trong dark mode
+        vkStart: "#14B8A6", // teal-500
+        vkEnd: "#155E75", // cyan-800
+        vkDarkStart: "#5EEAD4", // teal-300
+        vkDarkEnd: "#E2E8F0", // slate-200
         primary: {
-          light: "#3B82F6", // blue-500
-          dark: "#60A5FA", // blue-400
+          light: "#0F766E", // teal-700
+          dark: "#5EEAD4", // teal-300
         },
         secondary: {
-          light: "#2563EB",
-          dark: "#FFFF", // blue-600
+          light: "#155E75",
+          dark: "#E2E8F0",
         },
         background: {
-          light: "#EFF6FF", // light blue-gray
-          dark: "rgb(17 24 39)", // dark navy
-          lightblue: "rgba(171,211,249,0.76)",
+          light: "#F4F7F8",
+          dark: "#0B1520",
+          lightblue: "#E8F1F5",
         },
         "text-primary": {
-          light: "#1E293B", // slate-800
-          dark: "#E0E7FF", // light blue-100
+          light: "#102331",
+          dark: "#E8F2F7",
         },
         "text-secondary": {
-          light: "#475569", // slate-600
-          dark: "#A5B4FC", // blue-300
+          light: "#506675",
+          dark: "#AFC1CB",
         },
         "card-bg": {
-          light: "#DCEEFB", // very light blue
-          dark: "#1E293B", // dark slate
+          light: "#FFFFFF",
+          dark: "#101D2A",
         },
 
         // New extended colors
         success: {
-          light: "#34D399", // emerald-400
-          dark: "#10B981", // emerald-500
+          light: "#059669", // emerald-600
+          dark: "#34D399", // emerald-400
         },
         warning: {
           light: "#FBBF24", // yellow-400

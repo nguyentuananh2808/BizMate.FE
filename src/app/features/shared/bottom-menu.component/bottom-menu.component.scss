@@ -1,6 +1,109 @@
-/* Giữ style sạch, bo tròn nổi bật */
-nav {
-  .active {
-    @apply bg-white text-red-500 w-12 h-12 -mt-8 shadow-lg;
+:host {
+  display: block;
+}
+
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767.98px) {
+  .bottom-nav {
+    position: fixed;
+    right: 12px;
+    bottom: 10px;
+    left: 12px;
+    z-index: 80;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+    min-height: 64px;
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    border: 1px solid rgba(15, 70, 87, 0.12);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 20px 50px rgba(15, 35, 49, 0.18);
+    backdrop-filter: blur(18px);
+  }
+
+  .bottom-nav__item {
+    display: flex;
+    min-width: 0;
+    min-height: 48px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border-radius: 16px;
+    color: #6b7f8b;
+    text-decoration: none;
+    transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+  }
+
+  .bottom-nav__icon {
+    display: grid;
+    width: 24px;
+    height: 24px;
+    place-items: center;
+    font-size: 19px;
+    line-height: 1;
+  }
+
+  .bottom-nav__label {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.15;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .bottom-nav__item--active {
+    background: rgba(15, 118, 110, 0.1);
+    color: #0f766e;
+  }
+
+  .bottom-nav__item--accent {
+    color: #0f766e;
+
+    .bottom-nav__icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 14px;
+      background: #0f766e;
+      color: #ffffff;
+      box-shadow: 0 10px 22px rgba(15, 118, 110, 0.28);
+    }
+  }
+
+  .bottom-nav__item--accent.bottom-nav__item--active {
+    background: rgba(15, 118, 110, 0.12);
+  }
+}
+
+:host-context(.dark) {
+  .bottom-nav {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(11, 21, 32, 0.94);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.38);
+  }
+
+  .bottom-nav__item {
+    color: #8ba0ad;
+  }
+
+  .bottom-nav__item--active {
+    background: rgba(99, 210, 189, 0.14);
+    color: #63d2bd;
+  }
+
+  .bottom-nav__item--accent {
+    color: #63d2bd;
+
+    .bottom-nav__icon {
+      background: #14b8a6;
+      color: #07151c;
+    }
   }
 }

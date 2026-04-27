@@ -12,6 +12,10 @@ import { UpdateStatusOrderRequest } from '../models/update-status-order-request.
 export interface OrderCommandResponse {
   Success?: boolean;
   success?: boolean;
+  IsSuccess?: boolean;
+  isSuccess?: boolean;
+  Succeeded?: boolean;
+  succeeded?: boolean;
   Message?: string;
   message?: string;
   Errors?: unknown;
