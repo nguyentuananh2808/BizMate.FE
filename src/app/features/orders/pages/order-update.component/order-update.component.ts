@@ -224,7 +224,7 @@ export class OrderUpdateComponent implements OnInit {
     'Tạo mới': [
       {
         type: 'packing',
-        label: 'Đóng hàng',
+        label: 'Lắp đặt',
         icon: 'gift',
         class: 'bg-green-500 hover:bg-green-600 text-white hover:text-white',
       },
@@ -235,10 +235,10 @@ export class OrderUpdateComponent implements OnInit {
         class: 'bg-red-500 hover:bg-red-600 text-white hover:text-white',
       },
     ],
-    'Đang đóng hàng': [
+    'Đang lắp đặt': [
       {
         type: 'donePacking',
-        label: 'Đã đóng hàng',
+        label: 'Đã lắp đặt',
         icon: 'check-circle',
         class: 'bg-purple-500 hover:bg-purple-600 text-white hover:text-white',
       },
@@ -249,7 +249,7 @@ export class OrderUpdateComponent implements OnInit {
         class: 'bg-red-500 hover:bg-red-600 text-white hover:text-white',
       },
     ],
-    'Đã đóng hàng': [
+    'Đã lắp đặt': [
       {
         type: 'finish',
         label: 'Hoàn thành',
@@ -1219,7 +1219,7 @@ export class OrderUpdateComponent implements OnInit {
     this.isSubmitting = true;
     this.orderService.UpdateOrder(payload).subscribe({
       next: (response) => {
-        if (!this.isCommandSuccess(response)) {
+        if (!this.isCommandSuccess(response.Succeeded == false)) {
           this.toastr.error(
             this.getCommandMessage(response, 'Cập nhật đơn hàng thất bại')
           );

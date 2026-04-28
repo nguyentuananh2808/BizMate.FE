@@ -4,7 +4,9 @@
   (click)="openMobileMenu()"
   aria-label="Mở menu"
 >
-  <img src="assets/images/logo_vuakong.png" alt="" />
+  <!-- <img src="assets/images/logo_vuakong.png" alt="" /> -->
+
+      <i class="text-background-light" nz-icon [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"></i>
 </button>
 
 <div
@@ -39,7 +41,7 @@
 
     <div *ngIf="!isCollapsed" class="brand-copy">
       <span class="brand-kicker">BizMate</span>
-      <strong>VuaKong</strong>
+      <strong>ATP</strong>
     </div>
 
     <button
@@ -109,7 +111,7 @@
     </section>
   </nav>
 
-  <div class="sidebar-footer">
+  <!-- <div class="sidebar-footer">
     <dark-mode-toggle></dark-mode-toggle>
-  </div>
+  </div> -->
 </aside>

@@ -92,8 +92,15 @@
                       *ngSwitchCase="0"
                       formControlName="customerName"
                       class="input-style mt-2"
+                      [ngClass]="{ 'input-error': isInvalid('customerName') }"
                       placeholder="Nhập tên khách hàng..."
                     />
+                    <p
+                      *ngIf="selectedTabIndex === 0 && isInvalid('customerName')"
+                      class="form-error"
+                    >
+                      {{ getValidationMessage("customerName") }}
+                    </p>
 
                     <div *ngSwitchCase="1">
                       <input
@@ -103,7 +110,11 @@
                         (ngModelChange)="onSearchCustomer($event)"
                         placeholder="Tìm kiếm khách hàng..."
                         class="input-style mt-2"
+                        [ngClass]="{ 'input-error': isInvalid('customerSearch') }"
                       />
+                      <p *ngIf="isInvalid('customerSearch')" class="form-error">
+                        {{ getValidationMessage("customerSearch") }}
+                      </p>
 
                       <nz-autocomplete
                         #auto
@@ -129,8 +140,12 @@
                   <input
                     formControlName="phoneNumber"
                     class="input-style w-full"
+                    [ngClass]="{ 'input-error': isInvalid('phoneNumber') }"
                     placeholder="Nhập số điện thoại..."
                   />
+                  <p *ngIf="isInvalid('phoneNumber')" class="form-error">
+                    {{ getValidationMessage("phoneNumber") }}
+                  </p>
                 </div>
 
                 <div>
@@ -142,8 +157,12 @@
                   <input
                     formControlName="deliveryAddress"
                     class="input-style w-full"
+                    [ngClass]="{ 'input-error': isInvalid('deliveryAddress') }"
                     placeholder="Nhập địa chỉ khách hàng..."
                   />
+                  <p *ngIf="isInvalid('deliveryAddress')" class="form-error">
+                    {{ getValidationMessage("deliveryAddress") }}
+                  </p>
                 </div>
 
                 <div>
@@ -156,8 +175,12 @@
                     formControlName="description"
                     rows="3"
                     class="input-style w-full resize-none"
+                    [ngClass]="{ 'input-error': isInvalid('description') }"
                     placeholder="Nhập ghi chú..."
                   ></textarea>
+                  <p *ngIf="isInvalid('description')" class="form-error">
+                    {{ getValidationMessage("description") }}
+                  </p>
                 </div>
 
                 <div class="flex justify-end">
@@ -220,7 +243,7 @@
 
                 <div
                   *ngFor="let item of listOfData"
-                  class="mb-2 p-3 rounded-lg bg-white shadow dark:bg-gray-800 text-sm"
+                  class="mobile-list-card mb-2 p-3 rounded-lg bg-white shadow dark:bg-gray-800 text-sm"
                 >
                   <div
                     class="font-medium text-secondary-light dark:text-secondary-dark text-[18px]"
@@ -479,8 +502,15 @@
                       *ngSwitchCase="0"
                       formControlName="customerName"
                       class="input-style mt-2"
+                      [ngClass]="{ 'input-error': isInvalid('customerName') }"
                       placeholder="Nhập tên khách hàng..."
                     />
+                    <p
+                      *ngIf="selectedTabIndex === 0 && isInvalid('customerName')"
+                      class="form-error"
+                    >
+                      {{ getValidationMessage("customerName") }}
+                    </p>
 
                     <div *ngSwitchCase="1">
                       <input
@@ -490,7 +520,11 @@
                         (ngModelChange)="onSearchCustomer($event)"
                         placeholder="Tìm kiếm khách hàng..."
                         class="input-style mt-2"
+                        [ngClass]="{ 'input-error': isInvalid('customerSearch') }"
                       />
+                      <p *ngIf="isInvalid('customerSearch')" class="form-error">
+                        {{ getValidationMessage("customerSearch") }}
+                      </p>
 
                       <nz-autocomplete
                         #auto
@@ -517,8 +551,12 @@
                   <input
                     formControlName="phoneNumber"
                     class="input-style mt-[28px]"
+                    [ngClass]="{ 'input-error': isInvalid('phoneNumber') }"
                     placeholder="Nhập số điện thoại..."
                   />
+                  <p *ngIf="isInvalid('phoneNumber')" class="form-error">
+                    {{ getValidationMessage("phoneNumber") }}
+                  </p>
                 </div>
               </div>
 
@@ -531,8 +569,12 @@
                   <input
                     formControlName="deliveryAddress"
                     class="input-style"
+                    [ngClass]="{ 'input-error': isInvalid('deliveryAddress') }"
                     placeholder="Nhập địa chỉ khách hàng..."
                   />
+                  <p *ngIf="isInvalid('deliveryAddress')" class="form-error">
+                    {{ getValidationMessage("deliveryAddress") }}
+                  </p>
                 </div>
 
                 <div>
@@ -545,8 +587,12 @@
                     rows="2"
                     cols="8"
                     class="input-style resize-none"
+                    [ngClass]="{ 'input-error': isInvalid('description') }"
                     placeholder="Nhập ghi chú..."
                   ></textarea>
+                  <p *ngIf="isInvalid('description')" class="form-error">
+                    {{ getValidationMessage("description") }}
+                  </p>
                 </div>
               </div>
 

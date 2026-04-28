@@ -1,12 +1,21 @@
 .input-style {
   width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1px solid rgba(15, 70, 87, 0.18);
+  border-radius: 10px;
+  background: #fff;
+  color: #102331;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+
+  &:focus {
+    border-color: #0f766e;
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+  }
 }
 
 .btn-primary {
-  background: #3b82f6;
+  background: #0f766e;
   color: white;
   padding: 6px 16px;
   border-radius: 8px;
@@ -46,7 +55,7 @@
 }
 
 .input-error {
-  border-color: red !important;
+  border-color: #dc2626 !important;
   animation: shake 0.3s ease;
 }
 
@@ -66,14 +75,14 @@ nz-float-button {
 
 
 ::ng-deep .ant-modal-content {
-  background-color: rgba(211, 231, 251, 0.492);
-  border-radius: 24px;
+  background-color: rgba(255, 255, 255, 0.96);
+  border-radius: 16px;
   backdrop-filter: blur(8px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 24px 60px rgba(15, 35, 49, 0.18);
 }
 
 ::ng-deep .ant-modal-confirm-btns .ant-btn {
-  border-radius: 24px;
+  border-radius: 10px;
 }
 
 @media print {

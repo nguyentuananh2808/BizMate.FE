@@ -115,6 +115,22 @@ export class OrderCreateComponent {
   isScanning = false;
   scannerTitle = 'Quét Serial';
   lastScan = '';
+  private readonly customerNameValidators = [
+    Validators.required,
+    Validators.maxLength(120),
+  ];
+  private readonly phoneValidators = [
+    Validators.required,
+    Validators.pattern(/^[0-9+\s().-]{8,20}$/),
+  ];
+  private readonly addressValidators = [
+    Validators.required,
+    Validators.maxLength(250),
+  ];
+  private readonly dealerSearchValidators = [
+    Validators.required,
+    Validators.maxLength(120),
+  ];
   private scanner?: Html5Qrcode;
   private scanLocked = false;
   private scanTargetItem:
@@ -141,13 +157,15 @@ export class OrderCreateComponent {
     private dealerLevelService: DealerLevelService
   ) {
     this.orderForm = this.fb.group({
-      customerName: [''],
-      phoneNumber: [''],
-      deliveryAddress: [''],
-      description: [''],
+      customerName: ['', this.customerNameValidators],
+      phoneNumber: ['', this.phoneValidators],
+      deliveryAddress: ['', this.addressValidators],
+      description: ['', [Validators.maxLength(500)]],
       customerSearch: [''],
       details: this.fb.array([], Validators.required),
     });
+    this.applyCustomerValidators();
+
     this.orderForm
       .get('customerSearch')
       ?.valueChanges.pipe(
@@ -175,6 +193,83 @@ export class OrderCreateComponent {
 
   get details(): FormArray {
     return this.orderForm.get('details') as FormArray;
+  }
+
+  isInvalid(controlName: string): boolean {
+    const control = this.orderForm.get(controlName);
+
+    return !!control && control.invalid && (control.dirty || control.touched);
+  }
+
+  getValidationMessage(controlName: string): string {
+    const control = this.orderForm.get(controlName);
+
+    if (!control?.errors) {
+      return '';
+    }
+
+    if (control.errors['required']) {
+      return 'Vui lòng nhập thông tin này.';
+    }
+
+    if (control.errors['pattern']) {
+      return 'Số điện thoại chưa đúng định dạng.';
+    }
+
+    if (control.errors['maxlength']) {
+      return `Tối đa ${control.errors['maxlength'].requiredLength} ký tự.`;
+    }
+
+    return 'Thông tin chưa hợp lệ.';
+  }
+
+  private applyCustomerValidators(): void {
+    const customerNameControl = this.orderForm.get('customerName');
+    const customerSearchControl = this.orderForm.get('customerSearch');
+    const phoneControl = this.orderForm.get('phoneNumber');
+    const addressControl = this.orderForm.get('deliveryAddress');
+
+    if (this.selectedTabIndex === 1) {
+      customerNameControl?.clearValidators();
+      phoneControl?.clearValidators();
+      addressControl?.clearValidators();
+      customerSearchControl?.setValidators(this.dealerSearchValidators);
+    } else {
+      customerNameControl?.setValidators(this.customerNameValidators);
+      phoneControl?.setValidators(this.phoneValidators);
+      addressControl?.setValidators(this.addressValidators);
+      customerSearchControl?.clearValidators();
+    }
+
+    [customerNameControl, customerSearchControl, phoneControl, addressControl]
+      .filter(Boolean)
+      .forEach((control) =>
+        control?.updateValueAndValidity({ emitEvent: false })
+      );
+  }
+
+  private trimOrderTextValues(): void {
+    const rawValue = this.orderForm.getRawValue();
+
+    this.orderForm.patchValue(
+      {
+        customerName: rawValue.customerName?.trim() ?? '',
+        phoneNumber: rawValue.phoneNumber?.trim() ?? '',
+        deliveryAddress: rawValue.deliveryAddress?.trim() ?? '',
+        description: rawValue.description?.trim() ?? '',
+        customerSearch:
+          typeof rawValue.customerSearch === 'string'
+            ? rawValue.customerSearch.trim()
+            : rawValue.customerSearch,
+      },
+      { emitEvent: false }
+    );
+  }
+
+  private markOrderFormTouched(): void {
+    ['customerName', 'customerSearch', 'phoneNumber', 'deliveryAddress'].forEach(
+      (controlName) => this.orderForm.get(controlName)?.markAsTouched()
+    );
   }
 
   get isSubmitDisabled(): boolean {
@@ -207,6 +302,12 @@ export class OrderCreateComponent {
   }
 
   private isCommandSuccess(response: any): boolean {
+    const message = `${response?.Message ?? response?.message ?? ''}`.toLowerCase();
+
+    if (message.includes('success') || message.includes('thành công')) {
+      return true;
+    }
+
     const value =
       response?.Success ??
       response?.success ??
@@ -439,6 +540,16 @@ export class OrderCreateComponent {
 
   onTabChange(index: number): void {
     this.selectedTabIndex = index;
+    this.customerId = '';
+    this.dealerLevelId = '';
+    this.customer = {
+      id: '',
+      name: '',
+      phone: '',
+      address: '',
+      description: '',
+    };
+
     if (index === 1) {
       this.orderForm.get('phoneNumber')?.disable();
       this.orderForm.get('deliveryAddress')?.disable();
@@ -454,6 +565,8 @@ export class OrderCreateComponent {
       deliveryAddress: '',
       customerSearch: '',
     });
+    this.applyCustomerValidators();
+    this.orderForm.markAsUntouched();
   }
 
   updateExistingProductIds(): void {
@@ -869,6 +982,15 @@ export class OrderCreateComponent {
       return;
     }
 
+    this.trimOrderTextValues();
+    this.applyCustomerValidators();
+
+    // if (this.orderForm.invalid) {
+    //   this.markOrderFormTouched();
+    //   this.toastr.warning('Vui lòng nhập đầy đủ thông tin khách hàng hợp lệ.');
+    //   return;
+    // }
+
     const formValues = this.orderForm.getRawValue();
     const isDealerOrder = this.selectedTabIndex === 1;
 
@@ -929,7 +1051,7 @@ export class OrderCreateComponent {
       )
       .subscribe({
         next: (response) => {
-          if (!this.isCommandSuccess(response)) {
+          if (!this.isCommandSuccess(response.Succeeded == false)) {
             this.toastr.error(
               this.getCommandMessage(response, 'Tạo đơn hàng thất bại')
             );

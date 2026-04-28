@@ -9,9 +9,9 @@ export class StatusColorPipe implements PipeTransform {
     switch (statusName) {
       case 'Tạo mới':
         return 'bg-blue-100 text-blue-700 border border-blue-300';
-      case 'Đang đóng hàng':
+      case 'Đang lắp đặt':
         return 'bg-orange-100 text-orange-700 border border-orange-300';
-      case 'Đã đóng hàng':
+      case 'Đã lắp đặt':
         return 'bg-purple-100 text-purple-700 border border-purple-300';
       case 'Hoàn thành':
         return 'bg-green-100 text-green-700 border border-green-300';
