@@ -119,6 +119,22 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: 'permissions',
+    loadComponent: () =>
+      import(
+        './features/permission/pages/permission-management.component'
+      ).then((m) => m.PermissionManagementComponent),
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'technician-holdings',
+    loadComponent: () =>
+      import(
+        './features/technician/pages/technician-holdings.component/technician-holdings.component'
+      ).then((m) => m.TechnicianHoldingsComponent),
+    canActivate: [AuthGuard],
+  },
+  {
     path: 'customer-list',
     loadComponent: () =>
       import('./features/customer/pages/customer-list.component/customer-list').then(

@@ -131,6 +131,12 @@
                     <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
                     <span>Thêm</span>
                   </button>
+                  <product-qr-scan-button
+                    *ngIf="statusName !== 'Đã duyệt'"
+                    [compact]="true"
+                    [existingProducts]="existingProductIds"
+                    (selectProducts)="onSelectedProducts($event)"
+                  ></product-qr-scan-button>
 
                   <button
                     nz-button
@@ -393,6 +399,11 @@
                       <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
                       Thêm sản phẩm
                     </button>
+                    <product-qr-scan-button
+                      *ngIf="statusName !== 'Đã duyệt'"
+                      [existingProducts]="existingProductIds"
+                      (selectProducts)="onSelectedProducts($event)"
+                    ></product-qr-scan-button>
 
                     <button
                       nz-button

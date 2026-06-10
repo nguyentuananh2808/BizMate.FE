@@ -10,7 +10,6 @@ import {
 } from '@angular/core';
 import { ProductService } from '../product.component/services/product-service';
 import { ProductResponse } from '../product.component/models/product-response.model';
-import { map } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { NzTableComponent, NzTableModule } from 'ng-zorro-antd/table';
 import { UnitTextPipe } from '../../../shared/pipes/unit-text-pipe';

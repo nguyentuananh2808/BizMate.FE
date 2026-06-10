@@ -142,6 +142,11 @@
                     <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
                     Thêm
                   </button>
+                  <product-qr-scan-button
+                    [compact]="true"
+                    [existingProducts]="getExistingProductIds()"
+                    (selectProducts)="onSelectedProducts($event)"
+                  ></product-qr-scan-button>
                 </div>
 
                 <div
@@ -397,6 +402,10 @@
                     <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
                     Thêm sản phẩm
                   </button>
+                  <product-qr-scan-button
+                    [existingProducts]="getExistingProductIds()"
+                    (selectProducts)="onSelectedProducts($event)"
+                  ></product-qr-scan-button>
 
                   <div class="flex justify-end ml-2">
                     <button

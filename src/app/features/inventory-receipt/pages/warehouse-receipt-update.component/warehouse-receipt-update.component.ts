@@ -30,6 +30,7 @@ import { Product } from '../../../product/product.component/models/product-respo
 import { UpdateReceiptRequestRequest } from '../../models/warehouse-receipt-update.model';
 import { NgxPrintModule } from 'ngx-print';
 import { ProductPopupSearchComponent } from '../../../product/product-popup-search.component/product-popup-search.component';
+import { ProductQrScanButtonComponent } from '../../../product/product-qr-scan-button.component/product-qr-scan-button.component';
 import { MenuComponent } from '../../../shared/menu.component/menu.component';
 import { InventoryDetail } from '../../models/warehouse-receipt-detail.model';
 import { UpdateStatusOrderRequest } from '../../../orders/models/update-status-order-request.model';
@@ -53,9 +54,10 @@ import { StatusColorPipe } from '../../../../shared/pipes/status-color.pipe';
     HeaderCommonComponent,
     NzModalModule,
     NzFloatButtonModule,
-    UnitTextPipe,
-    ProductPopupSearchComponent,
-    MenuComponent,
+  UnitTextPipe,
+  ProductPopupSearchComponent,
+  ProductQrScanButtonComponent,
+  MenuComponent,
   ],
   templateUrl: './warehouse-receipt-update.component.html',
   styleUrls: ['./warehouse-receipt-update.component.scss'],

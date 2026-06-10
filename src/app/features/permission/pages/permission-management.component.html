@@ -1,0 +1,286 @@
+<div class="permission-shell">
+  <app-menu></app-menu>
+
+  <main class="permission-page">
+    <div class="permission-layout">
+      <header-common></header-common>
+
+      <section class="permission-hero">
+        <div class="permission-title">
+          <span>Hệ thống</span>
+          <h1>Phân quyền nhân viên</h1>
+        </div>
+
+        <div class="permission-user-tools">
+          <div class="permission-search">
+            <input
+              nz-input
+              [(ngModel)]="userSearchKeyword"
+              placeholder="Tìm nhân viên theo tên, email, mã..."
+              (keyup.enter)="searchUsers()"
+            />
+            <button
+              nz-button
+              nzType="default"
+              [nzLoading]="isSearchingUsers"
+              (click)="searchUsers()"
+              nz-tooltip
+              nzTooltipTitle="Tìm nhân viên"
+            >
+              <nz-icon nzType="search" nzTheme="outline"></nz-icon>
+            </button>
+          </div>
+
+          <nz-select
+            class="permission-user-select"
+            [(ngModel)]="userId"
+            nzShowSearch
+            nzAllowClear
+            nzPlaceHolder="Chọn nhân viên"
+            [nzLoading]="isSearchingUsers"
+            (ngModelChange)="selectUser($event)"
+          >
+            <nz-option
+              *ngFor="let user of users; trackBy: trackUser"
+              [nzValue]="user.Id"
+              [nzLabel]="getUserLabel(user)"
+            ></nz-option>
+          </nz-select>
+
+          <button
+            nz-button
+            nzType="default"
+            (click)="useCurrentUser()"
+            nz-tooltip
+            nzTooltipTitle="Chọn tài khoản đang đăng nhập"
+          >
+            <nz-icon nzType="user" nzTheme="outline"></nz-icon>
+          </button>
+
+          <button
+            nz-button
+            nzType="primary"
+            [nzLoading]="isLoadingUser"
+            [disabled]="!userId"
+            (click)="loadUserPermissions()"
+          >
+            <nz-icon nzType="reload" nzTheme="outline"></nz-icon>
+            Tải quyền
+          </button>
+        </div>
+      </section>
+
+      <section class="permission-selected-user" *ngIf="selectedUser || userId">
+        <div>
+          <span>Nhân viên đang chọn</span>
+          <strong>{{ getSelectedUserName() }}</strong>
+          <p *ngIf="selectedUser">
+            {{ selectedUser.Email }} · {{ selectedUser.StoreName }}
+          </p>
+          <p *ngIf="!selectedUser">{{ userId }}</p>
+        </div>
+
+        <div class="permission-selected-user__meta">
+          <nz-tag nzColor="cyan">{{ selectedUser?.Role || 'Theo userId' }}</nz-tag>
+          <nz-tag nzColor="green">
+            {{ getDirectCount() }} quyền riêng
+          </nz-tag>
+          <nz-tag nzColor="blue">
+            {{ selectedUser?.RoleCount || getAssignedRoles().length }} vai trò
+          </nz-tag>
+        </div>
+      </section>
+
+      <nz-spin [nzSpinning]="isLoadingMaster || isLoadingUser">
+        <section class="permission-summary-grid">
+          <article class="permission-summary-card">
+            <span>Quyền hiệu lực</span>
+            <strong>{{ getEffectiveCount() }}</strong>
+          </article>
+          <article class="permission-summary-card">
+            <span>Quyền riêng</span>
+            <strong>{{ getDirectCount() }}</strong>
+          </article>
+          <article class="permission-summary-card">
+            <span>Từ vai trò</span>
+            <strong>{{ getInheritedCount() }}</strong>
+          </article>
+          <article class="permission-summary-card">
+            <span>Vai trò</span>
+            <strong>{{ getAssignedRoles().length }}</strong>
+          </article>
+          <article class="permission-summary-card">
+            <span>JWT hiện tại</span>
+            <strong>{{ getTokenPermissionCount() }}</strong>
+          </article>
+        </section>
+
+        <nz-alert
+          *ngIf="overview"
+          nzType="info"
+          nzShowIcon
+          nzMessage="Sau khi cập nhật quyền, nhân viên cần đăng nhập lại hoặc refresh token để JWT nhận quyền mới."
+          class="permission-alert"
+        ></nz-alert>
+
+        <section class="permission-workspace" *ngIf="canManagePermissions(); else pickUser">
+          <section class="permission-panel permission-role-panel">
+            <div class="permission-panel__head">
+              <div>
+                <h2>Vai trò của nhân viên</h2>
+                <p>Vai trò cấp quyền kế thừa, quyền này sẽ khóa ở danh sách bên dưới.</p>
+              </div>
+            </div>
+
+            <div class="permission-role-grid">
+              <div class="permission-role-list" *ngIf="getAssignedRoles().length; else emptyRoles">
+                <div
+                  class="permission-role-row"
+                  *ngFor="let role of getAssignedRoles(); trackBy: trackRole"
+                >
+                  <div>
+                    <strong>{{ getRoleLabel(role) }}</strong>
+                    <span>{{ role.name || getRoleId(role) }}</span>
+                  </div>
+                  <button
+                    nz-button
+                    nzDanger
+                    nzSize="small"
+                    [disabled]="role.isSystem"
+                    (click)="removeRole(role)"
+                  >
+                    Gỡ
+                  </button>
+                </div>
+              </div>
+
+              <ng-template #emptyRoles>
+                <nz-empty nzNotFoundContent="Nhân viên chưa có vai trò."></nz-empty>
+              </ng-template>
+
+              <div class="permission-assign-role">
+                <nz-select
+                  [(ngModel)]="selectedRoleId"
+                  nzPlaceHolder="Chọn vai trò để gán"
+                  [nzDisabled]="getAvailableRoles().length === 0"
+                >
+                  <nz-option
+                    *ngFor="let role of getAvailableRoles(); trackBy: trackRole"
+                    [nzValue]="getRoleId(role)"
+                    [nzLabel]="getRoleLabel(role)"
+                  ></nz-option>
+                </nz-select>
+
+                <button
+                  nz-button
+                  nzType="primary"
+                  [nzLoading]="isSavingRole"
+                  [disabled]="getAvailableRoles().length === 0"
+                  (click)="assignRole()"
+                >
+                  <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
+                  Gán vai trò
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section class="permission-panel permission-permission-panel">
+            <div class="permission-panel__head permission-direct-head">
+              <div>
+                <h2>Quyền trực tiếp</h2>
+                <p>Chỉ checkbox quyền riêng được gửi khi lưu. Quyền từ vai trò là kế thừa.</p>
+              </div>
+
+              <div class="permission-direct-actions">
+                <input
+                  nz-input
+                  [(ngModel)]="permissionSearch"
+                  placeholder="Tìm quyền..."
+                />
+                <nz-tag *ngIf="getPendingAddPermissionIds().length" nzColor="green">
+                  +{{ getPendingAddPermissionIds().length }}
+                </nz-tag>
+                <nz-tag *ngIf="getPendingRemovePermissionIds().length" nzColor="red">
+                  -{{ getPendingRemovePermissionIds().length }}
+                </nz-tag>
+                <button
+                  nz-button
+                  nzType="default"
+                  [disabled]="getEditableDirectCount() === 0"
+                  (click)="clearDirectPermissions()"
+                >
+                  Xóa quyền riêng
+                </button>
+                <button
+                  nz-button
+                  nzType="primary"
+                  [nzLoading]="isSavingPermissions"
+                  [disabled]="!hasPermissionMaster() || !hasPendingPermissionChanges()"
+                  (click)="saveDirectPermissions()"
+                >
+                  <nz-icon nzType="save" nzTheme="outline"></nz-icon>
+                  Lưu quyền
+                </button>
+              </div>
+            </div>
+
+            <nz-empty
+              *ngIf="!hasPermissionMaster()"
+              nzNotFoundContent="Chưa tải được danh sách quyền master."
+            ></nz-empty>
+
+            <div class="permission-groups" *ngIf="hasPermissionMaster()">
+              <section
+                class="permission-group"
+                *ngFor="let group of getVisibleGroups(); trackBy: trackGroup"
+              >
+                <header>
+                  <strong>{{ group.group }}</strong>
+                  <span>{{ getDirectPermissionCount(group) }}/{{ getFilteredPermissions(group).length }}</span>
+                </header>
+
+                <div class="permission-table">
+                  <div
+                    class="permission-row"
+                    *ngFor="let permission of getFilteredPermissions(group); trackBy: trackPermission"
+                  >
+                    <label
+                      nz-checkbox
+                      [ngModel]="isPermissionChecked(permission)"
+                      [nzDisabled]="isPermissionDisabled(permission)"
+                      (ngModelChange)="toggleDirectPermission(permission, $event)"
+                    >
+                      <span class="permission-name">{{ permission.displayName }}</span>
+                      <code>{{ permission.name }}</code>
+                    </label>
+
+                    <div class="permission-tags">
+                      <nz-tag *ngIf="isRolePermission(permission)" nzColor="gold">
+                        Từ vai trò
+                      </nz-tag>
+                      <nz-tag *ngIf="isDirectPermission(permission)" nzColor="green">
+                        Quyền riêng
+                      </nz-tag>
+                      <nz-tag *ngIf="isTokenPermission(permission)" nzColor="cyan">
+                        JWT
+                      </nz-tag>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </section>
+        </section>
+
+        <ng-template #pickUser>
+          <section class="permission-empty-state">
+            <nz-empty nzNotFoundContent="Tìm và chọn nhân viên để bắt đầu phân quyền."></nz-empty>
+          </section>
+        </ng-template>
+      </nz-spin>
+
+      <bottom-menu class="mt-6"></bottom-menu>
+    </div>
+  </main>
+</div>

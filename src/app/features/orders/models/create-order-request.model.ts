@@ -7,6 +7,9 @@ export interface CreateOrderRequest {
   CustomerName: string;
   Description?: string | null;
   IsDraft: boolean;
+  TechnicianId?: string | null;
+  TechnicianIds?: string[];
+  InstallationDate?: string | null;
   Details: CreateOrderDetailRequest[];
 }
 

@@ -1,5 +1,5 @@
 export const ApiUrls = {
-  baseUrl: 'http://192.168.1.130:8088/v1',
+  baseUrl: 'http://localhost:5051/v1',
 
   productCategory: {
     getAll: '/product-category/GetAll',
@@ -41,6 +41,8 @@ export const ApiUrls = {
     create: '/order',
     update: '/order',
     updateStatus: '/order/update_status',
+    export: (id: string) => `/order/${id}/export`,
+    useBorrowed: (id: string) => `/order/${id}/use-borrowed`,
   },
 
   notification: {
@@ -71,6 +73,50 @@ export const ApiUrls = {
   },
 
   // ── MỚI THÊM: Quản lý sản phẩm theo serial number ─────────────────────────
+  permission: {
+    getAll: '/permission',
+  },
+
+  role: {
+    getAll: '/role',
+    getById: (id: string) => `/role/${id}`,
+    create: '/role',
+    update: (id: string) => `/role/${id}`,
+    delete: (id: string) => `/role/${id}`,
+  },
+
+  userRole: {
+    roles: (userId: string) => `/user/${userId}/role`,
+    role: (userId: string, roleId: string) => `/user/${userId}/role/${roleId}`,
+  },
+
+  userPermission: {
+    get: (userId: string) => `/user/${userId}/permissions`,
+    permissions: (userId: string) => `/user/${userId}/permissions`,
+    permission: (userId: string, permissionId: string) =>
+      `/user/${userId}/permissions/${permissionId}`,
+  },
+
+  user: {
+    search: '/user/search',
+  },
+
+  technician: {
+    getAll: '/technician',
+    create: '/technician',
+    update: (id: string) => `/technician/${id}`,
+  },
+
+  technicianHolding: {
+    getAll: '/technician-holdings',
+    overdue: '/technician-holdings/overdue',
+    return: '/technician-holdings/return',
+  },
+
+  report: {
+    salesByProduct: '/report/sales-by-product',
+  },
+
   productItem: {
     getByProduct: '/product-item',
     getBySN:      (sn: string) => `/product-item/sn/${encodeURIComponent(sn)}`,

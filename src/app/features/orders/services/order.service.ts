@@ -22,6 +22,27 @@ export interface OrderCommandResponse {
   errors?: unknown;
 }
 
+export interface ExportOrderItemRequest {
+  ProductId: string;
+  OrderedQuantity: number;
+  BorrowedQuantity: number;
+}
+
+export interface TechnicianExportRequest {
+  TechnicianId: string;
+  Items: ExportOrderItemRequest[];
+}
+
+export interface ExportOrderForTechnicianRequest {
+  TechnicianExports: TechnicianExportRequest[];
+}
+
+export interface UseBorrowedProductRequest {
+  TechnicianId?: string;
+  ProductId: string;
+  Quantity: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class OrderService {
   constructor(private http: HttpClient) {}
@@ -54,7 +75,7 @@ export class OrderService {
     );
   }
 
-UpdateStatusOrder(body: UpdateStatusOrderRequest): Observable<any> {
+  UpdateStatusOrder(body: UpdateStatusOrderRequest): Observable<any> {
     return this.http.put<any>(
       `${ApiUrls.baseUrl}${ApiUrls.order.updateStatus}`,
       body
@@ -69,4 +90,24 @@ UpdateStatusOrder(body: UpdateStatusOrderRequest): Observable<any> {
       createReceiptRequestRequest
     );
   };
+
+  ExportForTechnician(
+    orderId: string,
+    body: ExportOrderForTechnicianRequest
+  ): Observable<OrderCommandResponse> {
+    return this.http.post<OrderCommandResponse>(
+      `${ApiUrls.baseUrl}${ApiUrls.order.export(orderId)}`,
+      body
+    );
+  }
+
+  UseBorrowed(
+    orderId: string,
+    body: UseBorrowedProductRequest
+  ): Observable<OrderCommandResponse> {
+    return this.http.post<OrderCommandResponse>(
+      `${ApiUrls.baseUrl}${ApiUrls.order.useBorrowed(orderId)}`,
+      body
+    );
+  }
 }

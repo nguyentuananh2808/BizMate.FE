@@ -1,0 +1,236 @@
+<div class="technician-shell">
+  <app-menu></app-menu>
+
+  <main class="technician-page">
+    <div class="technician-layout">
+      <header-common></header-common>
+
+      <section class="technician-hero">
+        <div>
+          <span>Vận hành kho</span>
+          <h1>Kỹ thuật đang giữ hàng</h1>
+          <p>{{ selectedTechnicianName }}</p>
+        </div>
+
+        <div class="technician-actions">
+          <input
+            nz-input
+            placeholder="Tìm kỹ thuật viên..."
+            [(ngModel)]="keyword"
+            (keyup.enter)="searchTechnicians()"
+          />
+          <button nz-button nzType="default" (click)="searchTechnicians()">
+            <nz-icon nzType="search" nzTheme="outline"></nz-icon>
+          </button>
+          <select
+            class="technician-select"
+            [(ngModel)]="selectedTechnicianId"
+            (ngModelChange)="onTechnicianFilterChange()"
+          >
+            <option value="">Tất cả kỹ thuật viên</option>
+            <option
+              *ngFor="let technician of technicians"
+              [value]="technician.Id"
+            >
+              {{ technician.Name }}{{ technician.Phone ? " - " + technician.Phone : "" }}
+            </option>
+          </select>
+          <button nz-button nzType="primary" (click)="loadHoldings()">
+            <nz-icon nzType="reload" nzTheme="outline"></nz-icon>
+            Tải lại
+          </button>
+          <button nz-button nzType="default" (click)="openCreateTechnician()">
+            <nz-icon nzType="user-add" nzTheme="outline"></nz-icon>
+            Thêm kỹ thuật
+          </button>
+        </div>
+      </section>
+
+      <section class="technician-summary">
+        <article>
+          <span>Kỹ thuật có hàng</span>
+          <strong>{{ holdings.length }}</strong>
+        </article>
+        <article>
+          <span>Tổng SL đang giữ</span>
+          <strong>{{ totalQuantity }}</strong>
+        </article>
+        <article>
+          <span>Đang quá hạn</span>
+          <strong>{{ overdueItemCount }}</strong>
+        </article>
+      </section>
+
+      <section class="technician-toolbar">
+        <div class="technician-segment">
+          <button
+            type="button"
+            [class.active]="mode === 'all'"
+            (click)="changeMode('all')"
+          >
+            Tất cả
+          </button>
+          <button
+            type="button"
+            [class.active]="mode === 'overdue'"
+            (click)="changeMode('overdue')"
+          >
+            Quá hạn 24h
+          </button>
+        </div>
+        <p>
+          Hàng mượn bị trừ kho khi xuất cho kỹ thuật. Khi trả hàng, hệ thống sẽ
+          cộng lại tồn kho.
+        </p>
+      </section>
+
+      <nz-spin [nzSpinning]="isLoading">
+        <section *ngIf="holdings.length; else emptyHoldings" class="holding-list">
+          <article
+            *ngFor="let group of holdings; trackBy: trackGroup"
+            class="holding-card"
+          >
+            <div class="holding-card__head">
+              <div>
+                <h2>{{ group.TechnicianName || "Chưa rõ kỹ thuật" }}</h2>
+                <p>
+                  {{ group.Phone || "Chưa có SĐT" }}
+                  <span *ngIf="group.ZaloPhone"> · Zalo {{ group.ZaloPhone }}</span>
+                </p>
+              </div>
+              <div class="holding-card__meta">
+                <nz-tag nzColor="cyan">{{ group.TotalQuantity }} sản phẩm</nz-tag>
+                <button
+                  nz-button
+                  nzType="default"
+                  nzSize="small"
+                  (click)="openEditHoldingTechnician(group)"
+                >
+                  Sửa
+                </button>
+                <button
+                  nz-button
+                  nzType="default"
+                  nzSize="small"
+                  (click)="openZalo(group.ZaloPhone || group.Phone)"
+                >
+                  Zalo
+                </button>
+              </div>
+            </div>
+
+            <div class="holding-table">
+              <div class="holding-row holding-row--head">
+                <span>Sản phẩm</span>
+                <span>SL giữ</span>
+                <span>Lần mượn cuối</span>
+                <span>Trả hàng</span>
+              </div>
+
+              <div
+                *ngFor="let item of group.Items; trackBy: trackItem"
+                class="holding-row"
+                [class.overdue]="item.IsOverdue"
+              >
+                <div>
+                  <strong>{{ item.ProductName }}</strong>
+                  <p>{{ item.ProductCode || "Chưa có mã" }}</p>
+                  <nz-tag *ngIf="item.IsOverdue" nzColor="error">Quá hạn</nz-tag>
+                </div>
+                <span>{{ item.Quantity }}</span>
+                <span>{{ item.LastBorrowedAt | date : "dd/MM/yyyy HH:mm" }}</span>
+                <div class="return-tools">
+                  <input
+                    type="number"
+                    min="1"
+                    [max]="item.Quantity"
+                    [ngModel]="getReturnQuantity(group, item)"
+                    (ngModelChange)="setReturnQuantity(group, item, $event)"
+                  />
+                  <button
+                    nz-button
+                    nzType="primary"
+                    nzSize="small"
+                    (click)="returnItem(group, item)"
+                  >
+                    Trả
+                  </button>
+                  <button
+                    *ngIf="item.IsOverdue"
+                    nz-button
+                    nzType="default"
+                    nzSize="small"
+                    (click)="copyReminder(group, item)"
+                  >
+                    Copy nhắc
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+      </nz-spin>
+
+      <ng-template #emptyHoldings>
+        <section class="technician-empty">
+          <nz-empty
+            nzNotFoundImage="simple"
+            nzNotFoundContent="Chưa có hàng kỹ thuật đang giữ."
+          ></nz-empty>
+        </section>
+      </ng-template>
+    </div>
+
+    <bottom-menu class="mt-6"></bottom-menu>
+  </main>
+</div>
+
+<div
+  *ngIf="isTechnicianModalOpen"
+  class="technician-modal-backdrop"
+>
+  <section class="technician-modal">
+    <header>
+      <div>
+        <span>Kỹ thuật viên</span>
+        <h2>{{ editingTechnician ? "Cập nhật" : "Thêm mới" }}</h2>
+      </div>
+      <button nz-button nzType="default" (click)="closeTechnicianModal()">
+        Đóng
+      </button>
+    </header>
+
+    <div class="technician-form">
+      <label>
+        Tên kỹ thuật
+        <input nz-input [(ngModel)]="technicianForm.Name" />
+      </label>
+      <label>
+        Số điện thoại
+        <input nz-input [(ngModel)]="technicianForm.Phone" />
+      </label>
+      <label>
+        Số Zalo
+        <input nz-input [(ngModel)]="technicianForm.ZaloPhone" />
+      </label>
+      <label class="checkbox-line">
+        <input type="checkbox" [(ngModel)]="technicianForm.IsActive" />
+        Đang hoạt động
+      </label>
+    </div>
+
+    <footer>
+      <button nz-button nzType="default" (click)="closeTechnicianModal()">
+        Hủy
+      </button>
+      <button
+        nz-button
+        nzType="primary"
+        [disabled]="isSavingTechnician"
+        (click)="saveTechnician()"
+      >
+        {{ isSavingTechnician ? "Đang lưu..." : "Lưu kỹ thuật" }}
+      </button>
+    </footer>
+  </section>
+</div>

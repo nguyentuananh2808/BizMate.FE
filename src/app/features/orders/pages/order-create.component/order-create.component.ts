@@ -22,11 +22,13 @@ import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { Router, RouterModule } from '@angular/router';
 import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
 import { ProductPopupSearchComponent } from '../../../product/product-popup-search.component/product-popup-search.component';
+import { ProductQrScanButtonComponent } from '../../../product/product-qr-scan-button.component/product-qr-scan-button.component';
 import { MenuComponent } from '../../../shared/menu.component/menu.component';
 import { ToastrService } from 'ngx-toastr';
 import { NgxPrintModule } from 'ngx-print';
 import { InventoryDetail } from '../../../inventory-receipt/models/warehouse-receipt-detail.model';
 import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 import {
   debounceTime,
   distinctUntilChanged,
@@ -49,6 +51,8 @@ import { DealerLevelService } from '../../../dealer-level/services/dealer-level-
 import { DealerPriceDetail } from '../../../dealer-level/models/dealer-level-detail.models';
 import { ProductService } from '../../../product/product.component/services/product-service';
 import { Html5Qrcode } from 'html5-qrcode';
+import { Technician } from '../../../technician/models/technician.model';
+import { TechnicianService } from '../../../technician/services/technician.service';
 
 @Component({
   standalone: true,
@@ -56,6 +60,7 @@ import { Html5Qrcode } from 'html5-qrcode';
   imports: [
     NgxPrintModule,
     NzInputModule,
+    NzSelectModule,
     NzAutocompleteModule,
     CommonModule,
     FormsModule,
@@ -73,6 +78,7 @@ import { Html5Qrcode } from 'html5-qrcode';
     NzFloatButtonModule,
     UnitTextPipe,
     ProductPopupSearchComponent,
+    ProductQrScanButtonComponent,
     MenuComponent,
     PricePipe,
     NzTabsModule,
@@ -115,6 +121,10 @@ export class OrderCreateComponent {
   isScanning = false;
   scannerTitle = 'Quét Serial';
   lastScan = '';
+  technicians: Technician[] = [];
+  selectedTechnicianIds: string[] = [];
+  installationDate: string | null = null;
+  isLoadingTechnicians = false;
   private readonly customerNameValidators = [
     Validators.required,
     Validators.maxLength(120),
@@ -154,7 +164,8 @@ export class OrderCreateComponent {
     private router: Router,
     private productService: ProductService,
     private orderService: OrderService,
-    private dealerLevelService: DealerLevelService
+    private dealerLevelService: DealerLevelService,
+    private technicianService: TechnicianService
   ) {
     this.orderForm = this.fb.group({
       customerName: ['', this.customerNameValidators],
@@ -184,6 +195,7 @@ export class OrderCreateComponent {
       });
 
     this.addProduct();
+    this.loadTechnicians();
   }
 
   @HostListener('window:resize', ['$event'])
@@ -193,6 +205,27 @@ export class OrderCreateComponent {
 
   get details(): FormArray {
     return this.orderForm.get('details') as FormArray;
+  }
+
+  loadTechnicians(keyword: string = ''): void {
+    this.isLoadingTechnicians = true;
+    this.technicianService
+      .getTechnicians(keyword, false)
+      .pipe(
+        take(1),
+        finalize(() => {
+          this.isLoadingTechnicians = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          this.technicians = response.Technicians || [];
+        },
+        error: () => {
+          this.toastr.error('Không thể tải danh sách kỹ thuật viên.');
+        },
+      });
   }
 
   isInvalid(controlName: string): boolean {
@@ -1017,7 +1050,6 @@ export class OrderCreateComponent {
 
     const payload: CreateOrderRequest = {
       OrderDate: new Date().toISOString(),
-      CustomerId: isDealerOrder ? this.customer.id : null,
       CustomerType: isDealerOrder ? 2 : 1,
       IsDraft: isDraft,
       CustomerName: formValues.customerName,
@@ -1037,6 +1069,18 @@ export class OrderCreateComponent {
       }),
     };
 
+    if (isDealerOrder) {
+      payload.CustomerId = this.customer.id;
+    }
+
+    if (this.selectedTechnicianIds.length) {
+      payload.TechnicianIds = [...this.selectedTechnicianIds];
+    }
+
+    if (this.installationDate) {
+      payload.InstallationDate = this.installationDate;
+    }
+
     this.isSubmitting = true;
     this.cdr.detectChanges();
 
@@ -1051,7 +1095,7 @@ export class OrderCreateComponent {
       )
       .subscribe({
         next: (response) => {
-          if (!this.isCommandSuccess(response.Succeeded == false)) {
+          if (!this.isCommandSuccess(response)) {
             this.toastr.error(
               this.getCommandMessage(response, 'Tạo đơn hàng thất bại')
             );

@@ -8,6 +8,9 @@ export interface UpdateOrderRequest {
   CustomerName: string;
   Description?: string | null;
   StatusId: string;
+  TechnicianId?: string | null;
+  TechnicianIds?: string[];
+  InstallationDate?: string | null;
   Details: UpdateOrderDetailRequest[];
 }
 

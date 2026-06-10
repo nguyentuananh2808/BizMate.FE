@@ -9,7 +9,7 @@
       <!-- Mobile header bar -->
       <div
         *ngIf="isMobile"
-        class="fixed bg-background-light dark:bg-background-dark p-3 rounded-[24px] w-[92%] m-auto"
+        class="mobile-list-toolbar fixed z-[2147482000] overflow-visible bg-background-light dark:bg-background-dark p-3 rounded-[24px] w-[92%] m-auto"
       >
         <!-- Header -->
         <header-common></header-common>
@@ -63,10 +63,10 @@
           </div>
 
           <!-- Nút Lọc -->
-          <div class="relative inline-block" (clickOutside)="hideTooltip()">
+          <div class="list-filter-anchor relative inline-block">
             <button
               nz-button
-              (click)="toggleTooltip()"
+              (click)="toggleTooltip($event)"
               class="flex items-center whitespace-nowrap rounded-[24px] w-8 bg-white hover:bg-gray-100 transition-all border"
             >
               <nz-icon nzType="filter" nzTheme="outline" class="ml-2" />
@@ -74,8 +74,8 @@
 
             <!-- Tooltip -->
             <div
-              *ngIf="showTooltip"
-              class="absolute right-0 mt-2 z-50 bg-white p-3 rounded-[24px] shadow-lg border w-[300px]"
+              *ngIf="!isMobile && showTooltip"
+              class="list-filter-popover absolute right-0 z-[2147482500] mt-2 bg-white p-3 rounded-[24px] shadow-lg border w-[300px]"
             >
               <!-- fillter date -->
               <label class="block text-sm font-medium text-gray-700 mb-1"
@@ -183,10 +183,10 @@
           <!-- Nhóm nút -->
           <div class="flex gap-3">
             <!-- Nút Lọc -->
-            <div class="relative inline-block" (clickOutside)="hideTooltip()">
+            <div class="list-filter-anchor relative inline-block" (clickOutside)="hideTooltip()">
               <button
                 nz-button
-                (click)="toggleTooltip()"
+                (click)="toggleTooltip($event)"
                 class="flex items-center gap-2 whitespace-nowrap rounded-[24px] h-10 px-4 bg-white hover:bg-gray-100 transition-all border"
               >
                 <nz-icon nzType="filter" nzTheme="outline" />
@@ -196,7 +196,7 @@
               <!-- Tooltip -->
               <div
                 *ngIf="showTooltip"
-                class="fixed z-[9998] mt-2 bg-white p-3 rounded-[24px] shadow-lg border w-[300px]"
+                class="list-filter-popover absolute right-0 z-[2147482500] mt-2 bg-white p-3 rounded-[24px] shadow-lg border w-[300px]"
               >
                 <label class="block text-sm font-medium text-gray-700 mb-1"
                   >Chọn ngày:</label
@@ -496,6 +496,63 @@
 
       <!-- Bottom menu -->
       <bottom-menu class="mt-6"></bottom-menu>
+    </div>
+  </div>
+</div>
+
+<div
+  *ngIf="isMobile && showTooltip"
+  class="list-filter-portal"
+  (click)="hideTooltip()"
+>
+  <div
+    class="list-filter-popover list-filter-portal__panel bg-white p-3 rounded-[24px] shadow-lg border"
+    [style.top.px]="filterPopoverTop"
+    (click)="$event.stopPropagation()"
+  >
+    <label class="block text-sm font-medium text-gray-700 mb-1"
+      >Chọn ngày:</label
+    >
+    <nz-range-picker
+      [(ngModel)]="dateRange"
+      [nzPlacement]="placement"
+      class="w-full"
+    ></nz-range-picker>
+
+    <label class="block text-sm font-medium text-gray-700 mb-1 mt-3">
+      Trạng thái:
+    </label>
+    <nz-select
+      [(ngModel)]="selectedStatuses"
+      nzMode="multiple"
+      nzPlaceHolder="Chọn trạng thái"
+      class="w-full"
+    >
+      <nz-option
+        *ngFor="let status of statusList"
+        [nzValue]="status.Id"
+        [nzLabel]="status.Name"
+      >
+      </nz-option>
+    </nz-select>
+
+    <div class="flex justify-end pt-2 gap-2">
+      <button
+        nz-button
+        nzType="default"
+        class="rounded-[24px]"
+        (click)="clearDateFilter()"
+      >
+        Xóa
+      </button>
+      <button
+        nz-button
+        class="rounded-[24px]"
+        nzType="primary"
+        (click)="applyDateFilter()"
+      >
+        Áp dụng
+      </button>
     </div>
   </div>
 </div>

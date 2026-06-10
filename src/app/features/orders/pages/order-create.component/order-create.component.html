@@ -183,6 +183,43 @@
                   </p>
                 </div>
 
+                <div class="grid grid-cols-1 gap-3">
+                  <div>
+                    <label
+                      class="block mb-1 text-secondary-light dark:text-secondary-dark"
+                    >
+                      Kỹ thuật viên
+                    </label>
+                    <nz-select
+                      nzMode="multiple"
+                      nzPlaceHolder="Chọn kỹ thuật viên"
+                      class="w-full"
+                      [(ngModel)]="selectedTechnicianIds"
+                      [ngModelOptions]="{ standalone: true }"
+                    >
+                      <nz-option
+                        *ngFor="let technician of technicians"
+                        [nzValue]="technician.Id"
+                        [nzLabel]="technician.Name + (technician.Phone ? ' - ' + technician.Phone : '')"
+                      ></nz-option>
+                    </nz-select>
+                  </div>
+
+                  <div>
+                    <label
+                      class="block mb-1 text-secondary-light dark:text-secondary-dark"
+                    >
+                      Ngày lắp
+                    </label>
+                    <input
+                      type="date"
+                      class="input-style w-full"
+                      [(ngModel)]="installationDate"
+                      [ngModelOptions]="{ standalone: true }"
+                    />
+                  </div>
+                </div>
+
                 <div class="flex justify-end">
                   <!-- Lưu nháp -->
                   <button
@@ -232,6 +269,12 @@
                     <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
                     Thêm
                   </button>
+                  <product-qr-scan-button
+                    [compact]="true"
+                    [existingProducts]="existingProductIds"
+                    [productQuantity]="false"
+                    (selectProducts)="onSelectedProducts($event)"
+                  ></product-qr-scan-button>
                 </div>
 
                 <div
@@ -596,6 +639,43 @@
                 </div>
               </div>
 
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
+                  >
+                    Kỹ thuật viên
+                  </label>
+                  <nz-select
+                      nzMode="multiple"
+                      nzPlaceHolder="Chọn kỹ thuật viên"
+                      class="w-full"
+                      [(ngModel)]="selectedTechnicianIds"
+                      [ngModelOptions]="{ standalone: true }"
+                    >
+                      <nz-option
+                        *ngFor="let technician of technicians"
+                        [nzValue]="technician.Id"
+                        [nzLabel]="technician.Name + (technician.Phone ? ' - ' + technician.Phone : '')"
+                      ></nz-option>
+                    </nz-select>
+                </div>
+
+                <div>
+                  <label
+                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
+                  >
+                    Ngày lắp
+                  </label>
+                  <input
+                    type="date"
+                    class="input-style"
+                    [(ngModel)]="installationDate"
+                    [ngModelOptions]="{ standalone: true }"
+                  />
+                </div>
+              </div>
+
               <!-- Table Section -->
               <div class="grid grid-cols-2">
                 <div>
@@ -616,6 +696,11 @@
                     <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
                     Thêm sản phẩm
                   </button>
+                  <product-qr-scan-button
+                    [existingProducts]="existingProductIds"
+                    [productQuantity]="false"
+                    (selectProducts)="onSelectedProducts($event)"
+                  ></product-qr-scan-button>
 
                   <div class="flex justify-end ml-2">
                     <!-- Lưu nháp -->

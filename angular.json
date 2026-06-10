@@ -33,6 +33,7 @@
               "src/theme.less",
               "src/styles.scss"
             ],
+            "allowedCommonJsDependencies": ["file-saver"],
             "stylePreprocessorOptions": {
               "includePaths": ["src/styles"]
             }
@@ -90,6 +91,5 @@
   },
   "cli": {
     "analytics": "5092764d-9889-4788-8bf2-dc46b2012880"
-  },
-  "allowedCommonJsDependencies": ["file-saver"]
+  }
 }

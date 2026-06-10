@@ -1,4 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ElementRef,
+  HostListener,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NzBadgeModule } from 'ng-zorro-antd/badge';
 import { NzListModule } from 'ng-zorro-antd/list';
@@ -38,8 +44,19 @@ export class NotificationComponent implements OnInit, OnDestroy {
 
   constructor(
     private notificationService: NotificationService,
-    private router: Router
+    private router: Router,
+    private elementRef: ElementRef<HTMLElement>
   ) {}
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.isTooltipOpen) return;
+
+    const target = event.target as Node | null;
+    if (target && !this.elementRef.nativeElement.contains(target)) {
+      this.isTooltipOpen = false;
+    }
+  }
 
   ngOnInit(): void {
     this.fetchNotifications();
@@ -58,10 +75,9 @@ export class NotificationComponent implements OnInit, OnDestroy {
     this.routerSub?.unsubscribe();
   }
 
-  toggleTooltip(): void {
-    setTimeout(() => {
-      this.isTooltipOpen = !this.isTooltipOpen;
-    });
+  toggleTooltip(event: MouseEvent): void {
+    event.stopPropagation();
+    this.isTooltipOpen = !this.isTooltipOpen;
   }
 
   fetchNotifications(): void {

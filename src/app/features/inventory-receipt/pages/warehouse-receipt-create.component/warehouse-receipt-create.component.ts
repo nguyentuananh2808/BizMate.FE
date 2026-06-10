@@ -21,6 +21,7 @@ import { Router, RouterModule } from '@angular/router';
 import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
 import { InventoryDetail } from '../../models/warehouse-receipt-detail.model';
 import { ProductPopupSearchComponent } from '../../../product/product-popup-search.component/product-popup-search.component';
+import { ProductQrScanButtonComponent } from '../../../product/product-qr-scan-button.component/product-qr-scan-button.component';
 import { MenuComponent } from '../../../shared/menu.component/menu.component';
 import { CreateReceiptRequestRequest } from '../../models/warehouse-receipt-create.model';
 import { WarehouseReceiptService } from '../../services/warehouse-receipt.service';
@@ -45,9 +46,10 @@ import { Html5Qrcode } from 'html5-qrcode';
     HeaderCommonComponent,
     NzModalModule,
     NzFloatButtonModule,
-    UnitTextPipe,
-    ProductPopupSearchComponent,
-    MenuComponent,
+  UnitTextPipe,
+  ProductPopupSearchComponent,
+  ProductQrScanButtonComponent,
+  MenuComponent,
   ],
   templateUrl: './warehouse-receipt-create.component.html',
   styleUrls: ['./warehouse-receipt-create.component.scss'],
@@ -542,6 +544,13 @@ export class WarehouseReceiptCreateComponent {
   trackById(index: number, item: InventoryDetail): string {
     return item.Id;
   }
+
+  getExistingProductIds(): string[] {
+    return this.listOfData
+      .map((item) => item.ProductId || item.Id)
+      .filter(Boolean);
+  }
+
   submitForm(): void {
     const formValues = this.receiptForm.value;
     const missingSerialItem = this.listOfData.find(

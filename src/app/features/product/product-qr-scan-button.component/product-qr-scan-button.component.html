@@ -1,0 +1,29 @@
+<button
+  type="button"
+  nz-button
+  nzType="default"
+  class="qr-scan-button"
+  [class.qr-scan-button--compact]="compact"
+  [disabled]="disabled || isResolvingQrProduct"
+  (click)="openProductQrScanner()"
+>
+  <nz-icon nzType="scan" nzTheme="outline"></nz-icon>
+  <span>Scan QR</span>
+</button>
+
+<div *ngIf="isQrScannerOpen" class="qr-scanner-backdrop">
+  <div class="qr-scanner-modal">
+    <div class="qr-scanner-header">
+      <div>
+        <span>QR sản phẩm</span>
+        <h3>Quét tên sản phẩm</h3>
+      </div>
+      <button type="button" (click)="closeProductQrScanner()">Đóng</button>
+    </div>
+
+    <div [id]="productQrReaderId" class="qr-scanner-reader"></div>
+    <p>
+      Đưa mã QR vào khung. QR cần chứa đúng tên sản phẩm đang có trong hệ thống.
+    </p>
+  </div>
+</div>

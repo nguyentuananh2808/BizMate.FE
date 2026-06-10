@@ -1,5 +1,8 @@
 import { NzListModule } from 'ng-zorro-antd/list';
-import { OrderService } from './../../services/order.service';
+import {
+  ExportOrderForTechnicianRequest,
+  OrderService,
+} from './../../services/order.service';
 import { Product } from '../../../product/product.component/models/product-response.model';
 import { CommonModule, Location } from '@angular/common';
 import {
@@ -27,6 +30,7 @@ import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
 import { ProductPopupSearchComponent } from '../../../product/product-popup-search.component/product-popup-search.component';
+import { ProductQrScanButtonComponent } from '../../../product/product-qr-scan-button.component/product-qr-scan-button.component';
 import { MenuComponent } from '../../../shared/menu.component/menu.component';
 import { ToastrService } from 'ngx-toastr';
 import { NgxPrintModule } from 'ngx-print';
@@ -37,10 +41,11 @@ import {
   Customer,
   CustomerResponse,
 } from '../../../customer/models/customer-response.model';
-import { Subject } from 'rxjs';
+import { Subject, take } from 'rxjs';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
 import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 import { StatusColorPipe } from '../../../../shared/pipes/status-color.pipe';
 import { UpdateStatusOrderRequest } from '../../models/update-status-order-request.model';
 import {
@@ -53,6 +58,23 @@ import { CustomerService } from '../../../customer/services/customer-service';
 import { DealerLevelService } from '../../../dealer-level/services/dealer-level-service';
 import { DealerPriceDetail } from '../../../dealer-level/models/dealer-level-detail.models';
 import { Html5Qrcode } from 'html5-qrcode';
+import { Technician } from '../../../technician/models/technician.model';
+import { TechnicianService } from '../../../technician/services/technician.service';
+
+interface ExportBorrowUiItem {
+  ProductId: string;
+  ProductName: string;
+  ProductCode?: string;
+  OrderedQuantity: number;
+  BorrowedQuantity: number;
+  IsSerialTracked?: boolean;
+  IsExtraBorrow?: boolean;
+}
+
+interface ExportBorrowGroup {
+  TechnicianId: string;
+  Items: ExportBorrowUiItem[];
+}
 
 @Component({
   standalone: true,
@@ -60,6 +82,7 @@ import { Html5Qrcode } from 'html5-qrcode';
   imports: [
     NgxPrintModule,
     NzInputModule,
+    NzSelectModule,
     NzAutocompleteModule,
     CommonModule,
     FormsModule,
@@ -77,6 +100,7 @@ import { Html5Qrcode } from 'html5-qrcode';
     NzFloatButtonModule,
     UnitTextPipe,
     ProductPopupSearchComponent,
+    ProductQrScanButtonComponent,
     MenuComponent,
     PricePipe,
     StatusColorPipe,
@@ -125,6 +149,24 @@ export class OrderUpdateComponent implements OnInit {
   isScanning = false;
   scannerTitle = 'Quét Serial';
   lastScan = '';
+  technicians: Technician[] = [];
+  selectedTechnicianIds: string[] = [];
+  technicianName = '';
+  installationDate: string | null = null;
+  technicianExportedAt: string | null = null;
+  isLoadingTechnicians = false;
+  isExportBorrowVisible = false;
+  isExportingBorrowed = false;
+  isBorrowProductPopupVisible = false;
+  exportBorrowGroups: ExportBorrowGroup[] = [];
+  activeBorrowTechnicianId = '';
+  isUseBorrowedVisible = false;
+  isSavingUseBorrowed = false;
+  useBorrowedTechnicianId = '';
+  selectedUseBorrowedItem:
+    | (InventoryDetail & { SalePrice?: number; TotalPrice?: number })
+    | null = null;
+  useBorrowedQuantity = 1;
   private scanner?: Html5Qrcode;
   private scanLocked = false;
   private scanTargetItem:
@@ -147,7 +189,8 @@ export class OrderUpdateComponent implements OnInit {
     private router: ActivatedRoute,
     private orderService: OrderService,
     private customerService: CustomerService,
-    private dealerLevelService: DealerLevelService
+    private dealerLevelService: DealerLevelService,
+    private technicianService: TechnicianService
   ) {
     this.orderForm = this.fb.group({
       customerName: [''],
@@ -183,10 +226,78 @@ export class OrderUpdateComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadTechnicians();
     this.id = this.router.snapshot.paramMap.get('id')!;
     if (this.id) {
       this.getOrderDetail(this.id);
     }
+  }
+
+  loadTechnicians(keyword: string = ''): void {
+    this.isLoadingTechnicians = true;
+    this.technicianService
+      .getTechnicians(keyword, false)
+      .pipe(take(1))
+      .subscribe({
+        next: (response) => {
+          this.technicians = response.Technicians || [];
+          this.isLoadingTechnicians = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.isLoadingTechnicians = false;
+          this.toastr.error('Không thể tải danh sách kỹ thuật viên.');
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  get canEditOrder(): boolean {
+    return this.statusName !== 'Hoàn thành' && this.statusName !== 'Hủy';
+  }
+
+  get canEditProducts(): boolean {
+    return this.canEditOrder && !this.technicianExportedAt;
+  }
+
+  get canExportForTechnician(): boolean {
+    return (
+      this.listOfData.length > 0 &&
+      this.selectedTechnicianIds.length > 0 &&
+      !this.technicianExportedAt
+    );
+  }
+
+  get borrowExistingProductIds(): string[] {
+    return this.exportBorrowItems.map((item) => item.ProductId);
+  }
+
+  get exportBorrowItems(): ExportBorrowUiItem[] {
+    return this.exportBorrowGroups[0]?.Items || [];
+  }
+
+  getSelectedTechnicianLabel(): string {
+    const labels = this.selectedTechnicianIds
+      .map((id) => this.getTechnicianLabel(id))
+      .filter(Boolean);
+
+    return labels.length ? labels.join(', ') : this.technicianName;
+  }
+
+  getTechnicianLabel(technicianId: string): string {
+    const selected = this.technicians.find(
+      (technician) => technician.Id === technicianId
+    );
+
+    if (!selected) return technicianId;
+
+    return `${selected.Name}${selected.Phone ? ' - ' + selected.Phone : ''}`;
+  }
+
+  private toDateInputValue(value?: string | null): string | null {
+    if (!value) return null;
+
+    return value.includes('T') ? value.split('T')[0] : value.slice(0, 10);
   }
 
   statusActions: Record<
@@ -524,6 +635,19 @@ export class OrderUpdateComponent implements OnInit {
         console.log('res.Order.Order.CreatedDate:', res.Order.Order);
 
         this.createdDate = res.Order.Order.CreatedDate;
+        const orderTechnicians = res.Order.Order.Technicians || [];
+        this.selectedTechnicianIds = orderTechnicians.length
+          ? orderTechnicians
+              .map((technician) => technician.TechnicianId)
+              .filter(Boolean)
+          : res.Order.Order.TechnicianId
+            ? [res.Order.Order.TechnicianId]
+            : [];
+        this.technicianName = res.Order.Order.TechnicianName || '';
+        this.installationDate = this.toDateInputValue(
+          res.Order.Order.InstallationDate
+        );
+        this.technicianExportedAt = res.Order.Order.TechnicianExportedAt || null;
         this.customerId = res.Order.Order.CustomerId;
         this.customerType = res.Order.Order.CustomerType;
         this.selectedTabIndex = this.customerType === 2 ? 1 : 0;
@@ -588,6 +712,12 @@ export class OrderUpdateComponent implements OnInit {
               item.IsSerialTracked ?? item.isSerialTracked ?? false,
             ],
             SerialNumbers: [item.SerialNumbers ?? item.serialNumbers ?? []],
+            BorrowedQuantity: [
+              item.BorrowedQuantity ?? item.borrowedQuantity ?? 0,
+            ],
+            UsedBorrowedQuantity: [
+              item.UsedBorrowedQuantity ?? item.usedBorrowedQuantity ?? 0,
+            ],
           });
           detailsFormArray.push(detailGroup);
         });
@@ -667,8 +797,338 @@ export class OrderUpdateComponent implements OnInit {
       : Number(item.Quantity) || 0;
   }
 
+  getBorrowedQuantity(item: InventoryDetail): number {
+    return Number(
+      (item as any).BorrowedQuantity ?? (item as any).borrowedQuantity ?? 0
+    );
+  }
+
+  getUsedBorrowedQuantity(item: InventoryDetail): number {
+    return Number(
+      (item as any).UsedBorrowedQuantity ?? (item as any).usedBorrowedQuantity ?? 0
+    );
+  }
+
+  getBorrowedRemaining(item: InventoryDetail): number {
+    return Math.max(
+      this.getBorrowedQuantity(item) - this.getUsedBorrowedQuantity(item),
+      0
+    );
+  }
+
+  get selectedUseBorrowedRemaining(): number {
+    return this.selectedUseBorrowedItem
+      ? this.getBorrowedRemaining(this.selectedUseBorrowedItem)
+      : 0;
+  }
+
+  openTechnicianExportModal(): void {
+    if (!this.selectedTechnicianIds.length) {
+      this.toastr.warning('Vui lòng chọn ít nhất một kỹ thuật viên trước khi xuất hàng.');
+      return;
+    }
+
+    if (!this.listOfData.length) {
+      this.toastr.warning('Đơn hàng chưa có sản phẩm để xuất.');
+      return;
+    }
+
+    const serialTrackedItem = this.listOfData.find((item) =>
+      this.isSerialTracked(item)
+    );
+
+    if (serialTrackedItem) {
+      this.toastr.warning(
+        `Flow mượn hàng hiện chưa hỗ trợ sản phẩm quản lý serial: ${serialTrackedItem.ProductName}.`
+      );
+      return;
+    }
+
+    this.exportBorrowGroups = [{
+      TechnicianId: this.selectedTechnicianIds[0],
+      Items: this.listOfData.map((item) => ({
+        ProductId: this.getProductId(item),
+        ProductName: item.ProductName,
+        ProductCode: item.ProductCode,
+        OrderedQuantity: this.getOrderQuantity(item),
+        BorrowedQuantity: 0,
+        IsSerialTracked: this.isSerialTracked(item),
+        IsExtraBorrow: false,
+      })),
+    }];
+    this.isExportBorrowVisible = true;
+  }
+
+  closeTechnicianExportModal(): void {
+    if (this.isExportingBorrowed) return;
+    this.isExportBorrowVisible = false;
+    this.isBorrowProductPopupVisible = false;
+  }
+
+  openBorrowProductPopup(): void {
+    this.isBorrowProductPopupVisible = true;
+  }
+
+  closeBorrowProductPopup(): void {
+    this.isBorrowProductPopupVisible = false;
+  }
+
+  onSelectedBorrowProducts(productList: InventoryDetail[]): void {
+    if (!productList?.length) {
+      this.closeBorrowProductPopup();
+      return;
+    }
+
+    const targetGroup = this.exportBorrowGroups[0];
+
+    if (!targetGroup) {
+      this.toastr.warning('Vui lòng chọn kỹ thuật viên cần mượn thêm sản phẩm.');
+      this.closeBorrowProductPopup();
+      return;
+    }
+
+    const serialTrackedItem = productList.find((item) =>
+      this.isSerialTracked(item)
+    );
+
+    if (serialTrackedItem) {
+      this.toastr.warning(
+        `Flow mượn hàng hiện chưa hỗ trợ sản phẩm quản lý serial: ${serialTrackedItem.ProductName}.`
+      );
+      this.closeBorrowProductPopup();
+      return;
+    }
+
+    const existingIds = new Set(targetGroup.Items.map((item) => item.ProductId));
+    const extraItems = productList
+      .filter((item) => !existingIds.has(this.getProductId(item)))
+      .map((item) => ({
+        ProductId: this.getProductId(item),
+        ProductName: item.ProductName,
+        ProductCode: item.ProductCode,
+        OrderedQuantity: 0,
+        BorrowedQuantity: 1,
+        IsSerialTracked: this.isSerialTracked(item),
+        IsExtraBorrow: true,
+      }));
+
+    if (!extraItems.length) {
+      this.toastr.info('Các sản phẩm chọn thêm đã có trong danh sách xuất.');
+      this.closeBorrowProductPopup();
+      return;
+    }
+
+    targetGroup.Items = [...targetGroup.Items, ...extraItems];
+    this.closeBorrowProductPopup();
+  }
+
+  removeExtraBorrowItem(item: ExportBorrowUiItem): void {
+    if (!item.IsExtraBorrow) return;
+
+    const group = this.exportBorrowGroups[0];
+    if (!group) return;
+
+    group.Items = group.Items.filter(
+      (current) => current.ProductId !== item.ProductId
+    );
+  }
+
+  submitTechnicianExport(): void {
+    if (!this.exportBorrowGroups.length) {
+      this.toastr.warning('Vui lòng chọn ít nhất một kỹ thuật viên.');
+      return;
+    }
+
+    const invalidItem = this.exportBorrowGroups
+      .flatMap((group) => group.Items)
+      .find(
+        (item) =>
+          item.OrderedQuantity < 0 ||
+          item.BorrowedQuantity < 0 ||
+          !Number.isInteger(Number(item.OrderedQuantity)) ||
+          !Number.isInteger(Number(item.BorrowedQuantity)) ||
+          (Number(item.OrderedQuantity) === 0 && Number(item.BorrowedQuantity) === 0)
+      );
+
+    if (invalidItem) {
+      this.toastr.warning(
+        'Số lượng chưa hợp lệ: mỗi dòng phải là số nguyên >= 0; dòng trong đơn cần SL bán hoặc SL mượn > 0; dòng mượn ngoài đơn phải có SL mượn > 0.'
+      );
+      return;
+    }
+
+    const invalidAllocation = this.listOfData.find((orderItem) => {
+      const productId = this.getProductId(orderItem);
+      const expectedQuantity = this.getOrderQuantity(orderItem);
+      const allocatedQuantity = this.exportBorrowGroups.reduce((sum, group) => {
+        const item = group.Items.find(
+          (current) => current.ProductId === productId && !current.IsExtraBorrow
+        );
+
+        return sum + (Number(item?.OrderedQuantity) || 0);
+      }, 0);
+
+      return allocatedQuantity !== expectedQuantity;
+    });
+
+    if (invalidAllocation) {
+      this.toastr.warning(
+        `Tổng SL bán phân bổ cho ${invalidAllocation.ProductName} phải bằng ${this.getOrderQuantity(invalidAllocation)}.`
+      );
+      return;
+    }
+
+    const payload: ExportOrderForTechnicianRequest = {
+      TechnicianExports: this.exportBorrowGroups
+        .map((group) => ({
+          TechnicianId: group.TechnicianId,
+          Items: group.Items
+            .map((item) => ({
+              ProductId: item.ProductId,
+              OrderedQuantity: Number(item.OrderedQuantity) || 0,
+              BorrowedQuantity: Number(item.BorrowedQuantity) || 0,
+            }))
+            .filter(
+              (item) => item.OrderedQuantity > 0 || item.BorrowedQuantity > 0
+            ),
+        }))
+        .filter((group) => group.Items.length > 0),
+    };
+
+    this.isExportingBorrowed = true;
+    this.orderService.ExportForTechnician(this.id, payload).subscribe({
+      next: (response) => {
+        this.isExportingBorrowed = false;
+        if (!this.isCommandSuccess(response)) {
+          this.toastr.error(
+            this.getCommandMessage(response, 'Xuất hàng cho kỹ thuật thất bại.')
+          );
+          return;
+        }
+
+        this.toastr.success(
+          this.getCommandMessage(response, 'Xuất hàng cho kỹ thuật thành công.')
+        );
+        this.isExportBorrowVisible = false;
+        this.getOrderDetail(this.id);
+      },
+      error: (err) => {
+        this.isExportingBorrowed = false;
+        this.toastr.error(
+          err.error?.Message ||
+            err.error?.message ||
+            'Xuất hàng cho kỹ thuật thất bại.'
+        );
+      },
+    });
+  }
+  openUseBorrowedModal(item: InventoryDetail): void {
+    const remaining = this.getBorrowedRemaining(item);
+
+    if (remaining <= 0) {
+      this.toastr.info('Sản phẩm này không còn hàng mượn để dùng.');
+      return;
+    }
+
+    this.selectedUseBorrowedItem = item;
+    this.useBorrowedTechnicianId =
+      this.selectedTechnicianIds.length === 1 ? this.selectedTechnicianIds[0] : '';
+    this.useBorrowedQuantity = 1;
+    this.isUseBorrowedVisible = true;
+  }
+
+  closeUseBorrowedModal(): void {
+    if (this.isSavingUseBorrowed) return;
+
+    this.isUseBorrowedVisible = false;
+    this.selectedUseBorrowedItem = null;
+    this.useBorrowedTechnicianId = '';
+    this.useBorrowedQuantity = 1;
+  }
+
+  submitUseBorrowedFromModal(): void {
+    if (!this.selectedUseBorrowedItem) {
+      return;
+    }
+
+    const quantity = Number(this.useBorrowedQuantity || 0);
+    const remaining = this.selectedUseBorrowedRemaining;
+
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > remaining) {
+      this.toastr.warning(`Số lượng phải từ 1 đến ${remaining}.`);
+      return;
+    }
+
+    if (this.selectedTechnicianIds.length > 1 && !this.useBorrowedTechnicianId) {
+      this.toastr.warning('Vui lòng chọn kỹ thuật viên đã dùng hàng mượn.');
+      return;
+    }
+
+    this.submitUseBorrowed(this.selectedUseBorrowedItem, quantity);
+  }
+
+  private submitUseBorrowed(
+    item: InventoryDetail,
+    quantity: number
+  ): void {
+    this.isSavingUseBorrowed = true;
+    this.orderService
+      .UseBorrowed(this.id, {
+        TechnicianId: this.useBorrowedTechnicianId || this.selectedTechnicianIds[0],
+        ProductId: this.getProductId(item),
+        Quantity: quantity,
+      })
+      .pipe(take(1))
+      .subscribe({
+        next: (response) => {
+          this.isSavingUseBorrowed = false;
+          if (!this.isCommandSuccess(response)) {
+            this.toastr.error(
+              this.getCommandMessage(response, 'Ghi nhận dùng hàng mượn thất bại.')
+            );
+            return;
+          }
+
+          this.toastr.success(
+            this.getCommandMessage(response, 'Đã ghi nhận dùng hàng mượn.')
+          );
+          this.isUseBorrowedVisible = false;
+          this.selectedUseBorrowedItem = null;
+          this.useBorrowedTechnicianId = '';
+          this.useBorrowedQuantity = 1;
+          this.getOrderDetail(this.id);
+        },
+        error: (err) => {
+          this.isSavingUseBorrowed = false;
+          this.toastr.error(
+            err.error?.Message ||
+              err.error?.message ||
+              'Ghi nhận dùng hàng mượn thất bại.'
+          );
+        },
+      });
+  }
+
   private isCommandSuccess(response: any): boolean {
-    return response?.Success ?? response?.success ?? true;
+    const value =
+      response?.Success ??
+      response?.success ??
+      response?.IsSuccess ??
+      response?.isSuccess ??
+      response?.Succeeded ??
+      response?.succeeded;
+
+    if (value === undefined || value === null) {
+      return true;
+    }
+
+    if (typeof value === 'string') {
+      return ['true', '1', 'success', 'succeeded'].includes(
+        value.toLowerCase()
+      );
+    }
+
+    return Boolean(value);
   }
 
   private getCommandMessage(response: any, fallback: string): string {
@@ -758,6 +1218,11 @@ export class OrderUpdateComponent implements OnInit {
   openSerialTextModal(
     item: InventoryDetail & { SalePrice?: number; TotalPrice?: number }
   ): void {
+    if (!this.canEditProducts) {
+      this.toastr.info('Đơn đã xuất hàng cho kỹ thuật, không thể sửa serial.');
+      return;
+    }
+
     if (!this.isSerialTracked(item)) {
       return;
     }
@@ -807,6 +1272,11 @@ export class OrderUpdateComponent implements OnInit {
   async openCameraScanner(
     item: InventoryDetail & { SalePrice?: number; TotalPrice?: number }
   ): Promise<void> {
+    if (!this.canEditProducts) {
+      this.toastr.info('Đơn đã xuất hàng cho kỹ thuật, không thể quét serial.');
+      return;
+    }
+
     if (!this.isSerialTracked(item)) {
       this.toastr.info('Sản phẩm này bán theo số lượng, không cần quét SN.');
       return;
@@ -881,6 +1351,11 @@ export class OrderUpdateComponent implements OnInit {
   }
 
   startEdit(item: InventoryDetail): void {
+    if (!this.canEditProducts) {
+      this.toastr.info('Đơn đã xuất hàng cho kỹ thuật, không thể sửa sản phẩm.');
+      return;
+    }
+
     if (this.isSerialTracked(item)) {
       this.openSerialTextModal(item);
       return;
@@ -993,6 +1468,11 @@ export class OrderUpdateComponent implements OnInit {
   }
 
   deleteItem(itemToDelete: any): void {
+    if (!this.canEditProducts) {
+      this.toastr.info('Đơn đã xuất hàng cho kỹ thuật, không thể xóa sản phẩm.');
+      return;
+    }
+
     this.modal.confirm({
       nzTitle: `Bạn có chắc muốn xóa sản phẩm "<b>${itemToDelete.ProductName}</b>" này?`,
       nzOkText: 'Xóa',
@@ -1028,6 +1508,11 @@ export class OrderUpdateComponent implements OnInit {
   }
 
   onSelectedProducts(productList: InventoryDetail[]) {
+    if (!this.canEditProducts) {
+      this.toastr.info('Đơn đã xuất hàng cho kỹ thuật, không thể thêm sản phẩm.');
+      return;
+    }
+
     if (!productList || productList.length === 0) {
       this.closeProductPopup();
       return;
@@ -1096,6 +1581,11 @@ export class OrderUpdateComponent implements OnInit {
   }
 
   addProducts(): void {
+    if (!this.canEditProducts) {
+      this.toastr.info('Đơn đã xuất hàng cho kỹ thuật, không thể thêm sản phẩm.');
+      return;
+    }
+
     this.isPopupSearchProducts = true;
   }
 
@@ -1197,7 +1687,6 @@ export class OrderUpdateComponent implements OnInit {
       Id: this.id,
       StatusId: this.statusId,
       RowVersion: this.rowVersion,
-      CustomerId: isDealerOrder ? this.customerId : null,
       CustomerType: isDealerOrder ? 2 : 1,
       CustomerName: formValues.customerName,
       CustomerPhone: formValues.phoneNumber,
@@ -1216,10 +1705,22 @@ export class OrderUpdateComponent implements OnInit {
       }),
     };
 
+    if (isDealerOrder) {
+      payload.CustomerId = this.customerId;
+    }
+
+    if (this.selectedTechnicianIds.length) {
+      payload.TechnicianIds = [...this.selectedTechnicianIds];
+    }
+
+    if (this.installationDate) {
+      payload.InstallationDate = this.installationDate;
+    }
+
     this.isSubmitting = true;
     this.orderService.UpdateOrder(payload).subscribe({
       next: (response) => {
-        if (!this.isCommandSuccess(response.Succeeded == false)) {
+        if (!this.isCommandSuccess(response)) {
           this.toastr.error(
             this.getCommandMessage(response, 'Cập nhật đơn hàng thất bại')
           );

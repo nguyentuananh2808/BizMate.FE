@@ -24,7 +24,6 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
 import { MenuComponent } from '../../../shared/menu.component/menu.component';
 import { ToastrService } from 'ngx-toastr';
 import { NgxPrintModule } from 'ngx-print';
@@ -56,7 +55,6 @@ import { DealerPriceUpdateRequest } from '../../../dealer-price/models/dealer-pr
     HeaderCommonComponent,
     NzModalModule,
     NzFloatButtonModule,
-    UnitTextPipe,
     MenuComponent,
     ProductPopupSearchComponent,
     PricePipe,

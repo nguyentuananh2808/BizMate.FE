@@ -1,6 +1,12 @@
 import { BaseCoreRespone } from '../../shared/models/base-core-response.model';
 import { StatusDto } from '../../status/models/status-dto.model';
 
+export interface OrderTechnicianDto {
+  TechnicianId: string;
+  TechnicianName: string;
+  Phone?: string | null;
+}
+
 export interface GetOrderResponse {
   Order: OrderWrapper;
 }
@@ -20,6 +26,11 @@ export interface OrderDto extends BaseCoreRespone {
   StatusId: string;
   StatusName: string;
   Status: StatusDto;
+  TechnicianId?: string | null;
+  TechnicianName?: string | null;
+  Technicians?: OrderTechnicianDto[];
+  InstallationDate?: string | null;
+  TechnicianExportedAt?: string | null;
   Details: OrderDetailDto[];
 }
 
@@ -35,4 +46,6 @@ export interface OrderDetailDto {
   Total: number;
   IsSerialTracked?: boolean;
   SerialNumbers?: string[];
+  BorrowedQuantity?: number;
+  UsedBorrowedQuantity?: number;
 }

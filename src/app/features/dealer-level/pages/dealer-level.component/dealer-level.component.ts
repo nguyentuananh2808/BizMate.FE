@@ -69,6 +69,7 @@ export class DealerLevelComponent implements OnInit {
   pageIndex = 1;
   totalCount = 0;
   showTooltip = false;
+  filterPopoverTop = 280;
   dateRange: [Date, Date] | null = null;
   placement: 'bottomLeft' | 'bottomRight' = 'bottomLeft';
 
@@ -257,8 +258,21 @@ export class DealerLevelComponent implements OnInit {
     return item.Id;
   }
 
-  toggleTooltip() {
-    this.showTooltip = !this.showTooltip;
+  toggleTooltip(event?: MouseEvent) {
+    event?.stopPropagation();
+    const shouldOpen = !this.showTooltip;
+
+    if (shouldOpen && this.isMobile) {
+      const trigger = event?.currentTarget as HTMLElement | null;
+      const rect = trigger?.getBoundingClientRect();
+      const panelTop = rect ? rect.bottom + 10 : 280;
+      this.filterPopoverTop = Math.max(
+        12,
+        Math.min(panelTop, window.innerHeight - 300)
+      );
+    }
+
+    this.showTooltip = shouldOpen;
   }
 
   hideTooltip() {

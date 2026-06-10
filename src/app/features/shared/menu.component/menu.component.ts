@@ -5,7 +5,6 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { filter, Subscription } from 'rxjs';
-import { DarkModeToggleComponent } from '../dark-mode/pages/dark-mode-toggle.component';
 import { DarkModeService } from '../dark-mode/services/dark-mode.service';
 
 interface MenuItem {
@@ -29,7 +28,6 @@ interface MenuSection {
     NzMenuModule,
     NzIconModule,
     NzTableModule,
-    DarkModeToggleComponent,
   ],
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.scss'],
@@ -194,6 +192,12 @@ export class MenuComponent implements OnInit, OnDestroy {
           label: 'Đơn hàng',
           route: '/order',
         },
+        {
+          key: 'technician-holdings',
+          icon: 'inbox',
+          label: 'Kỹ thuật giữ hàng',
+          route: '/technician-holdings',
+        },
       ],
     },
     {
@@ -217,6 +221,17 @@ export class MenuComponent implements OnInit, OnDestroy {
               route: '/dealer-level',
             },
           ],
+        },
+      ],
+    },
+    {
+      title: 'Hàng tháng',
+      items: [
+        {
+          key: 'permissions',
+          icon: 'safety-certificate',
+          label: 'Phân quyền',
+          route: '/permissions',
         },
       ],
     },
