@@ -163,6 +163,7 @@
                       class="w-full"
                       [(ngModel)]="selectedTechnicianIds"
                       [ngModelOptions]="{ standalone: true }"
+                      [nzDisabled]="isDescriptionOnlyOrder"
                     >
                       <nz-option
                         *ngFor="let technician of technicians"
@@ -183,6 +184,7 @@
                       class="input-style w-full"
                       [(ngModel)]="installationDate"
                       [ngModelOptions]="{ standalone: true }"
+                      [disabled]="isDescriptionOnlyOrder"
                     />
                   </div>
 
@@ -197,7 +199,6 @@
 
                 <div
                   class="flex justify-end"
-                  *ngIf="canEditOrder"
                 >
                   <button
                     nz-button
@@ -217,7 +218,7 @@
                 class="flex flex-wrap gap-2"
                 *ngIf="canEditOrder"
               >
-                <ng-container *ngFor="let action of statusActions[statusName]">
+                <ng-container *ngFor="let action of visibleStatusActions">
                   <button
                     nz-button
                     class="flex-1 min-w-[45%] items-center justify-center gap-2 whitespace-nowrap rounded-[24px] h-10 px-4"
@@ -237,7 +238,7 @@
                   (click)="openTechnicianExportModal()"
                 >
                   <nz-icon nzType="export" nzTheme="outline"></nz-icon>
-                  <span>Xuất hàng</span>
+                  <span>{{ isBorrowMoreMode ? "Mượn thêm" : "Xuất cho kỹ thuật" }}</span>
                 </button>
               </div>
 
@@ -269,14 +270,14 @@
                 </div>
 
                 <div
-                  *ngIf="listOfData.length === 0"
+                  *ngIf="orderLineItems.length === 0"
                   class="text-sm text-gray-500"
                 >
                   Chưa có sản phẩm nào.
                 </div>
 
                 <div
-                  *ngFor="let item of listOfData"
+                  *ngFor="let item of orderLineItems"
                   class="mb-2 p-3 rounded-lg bg-white shadow dark:bg-gray-800 text-sm"
                 >
                   <div
@@ -429,7 +430,7 @@
                         <strong>{{ getUsedBorrowedQuantity(item) }}</strong>
                       </div>
                       <button
-                        *ngIf="getBorrowedRemaining(item) > 0"
+                        *ngIf="canUseBorrowedProducts && getBorrowedRemaining(item) > 0"
                         type="button"
                         nz-button
                         nzType="primary"
@@ -450,8 +451,52 @@
                 </div>
 
                 <!-- Tổng tiền -->
+                <div *ngIf="extraBorrowedItems.length > 0" class="mt-4">
+                  <h3
+                    class="mb-2 text-base font-semibold text-secondary-light dark:text-secondary-dark"
+                  >
+                    S&#7843;n ph&#7849;m ph&#225;t sinh th&#7921;c t&#7871;
+                  </h3>
+
+                  <div
+                    *ngFor="let item of extraBorrowedItems"
+                    class="mb-2 rounded-lg border border-amber-500/20 bg-amber-50 p-3 text-sm shadow-sm dark:bg-amber-500/10"
+                  >
+                    <div class="font-medium text-secondary-light dark:text-secondary-dark">
+                      {{ item.ProductName }}
+                    </div>
+                    <div class="mt-1 text-xs text-slate-500 dark:text-slate-300">
+                      M&#227;: {{ item.ProductCode }}
+                    </div>
+                    <div class="mt-2 grid grid-cols-3 gap-2 text-xs">
+                      <div>
+                        <span class="block text-slate-500">M&#432;&#7907;n</span>
+                        <strong>{{ getBorrowedQuantity(item) }}</strong>
+                      </div>
+                      <div>
+                        <span class="block text-slate-500">&#272;&#227; d&#249;ng</span>
+                        <strong>{{ getUsedBorrowedQuantity(item) }}</strong>
+                      </div>
+                      <div>
+                        <span class="block text-slate-500">C&#242;n</span>
+                        <strong>{{ getBorrowedRemaining(item) }}</strong>
+                      </div>
+                    </div>
+                    <button
+                      *ngIf="canUseBorrowedProducts && getBorrowedRemaining(item) > 0"
+                      type="button"
+                      nz-button
+                      nzType="primary"
+                      class="mt-3 h-8 rounded-full px-3 text-xs"
+                      (click)="openUseBorrowedModal(item)"
+                    >
+                      D&#249;ng h&#224;ng m&#432;&#7907;n
+                    </button>
+                  </div>
+                </div>
+
                 <div
-                  *ngIf="listOfData.length > 0"
+                  *ngIf="orderLineItems.length > 0"
                   class="mt-3 text-right font-bold text-lg text-secondary-light dark:text-secondary-dark"
                 >
                   Tổng đơn hàng: {{ totalAmount | price }}
@@ -615,6 +660,7 @@
                       class="w-full"
                       [(ngModel)]="selectedTechnicianIds"
                       [ngModelOptions]="{ standalone: true }"
+                      [nzDisabled]="isDescriptionOnlyOrder"
                     >
                       <nz-option
                         *ngFor="let technician of technicians"
@@ -635,6 +681,7 @@
                     class="input-style"
                     [(ngModel)]="installationDate"
                     [ngModelOptions]="{ standalone: true }"
+                    [disabled]="isDescriptionOnlyOrder"
                   />
                 </div>
               </div>
@@ -659,12 +706,11 @@
                 </div>
                 <div
                   class="flex justify-end"
-                  *ngIf="canEditOrder"
                 >
                   <!-- Nút Đóng hàng -->
-                  <div class="flex space-x-2">
+                  <div class="flex space-x-2" *ngIf="canEditOrder">
                     <ng-container
-                      *ngFor="let action of statusActions[statusName]"
+                      *ngFor="let action of visibleStatusActions"
                     >
                       <button
                         nz-button
@@ -686,12 +732,13 @@
                       type="button"
                       nz-button
                       nzType="primary"
+                      *ngIf="canEditOrder"
                       class="items-center gap-2 whitespace-nowrap rounded-[24px] h-10 mb-3 mr-2 bg-teal-600 hover:bg-teal-700"
                       [disabled]="!canExportForTechnician || isExportingBorrowed"
                       (click)="openTechnicianExportModal()"
                     >
                       <nz-icon nzType="export" nzTheme="outline"></nz-icon>
-                      Xuất hàng
+                      {{ isBorrowMoreMode ? "Mượn thêm" : "Xuất cho kỹ thuật" }}
                     </button>
                     <button
                       *ngIf="canEditProducts"
@@ -726,7 +773,7 @@
               </div>
 
               <nz-table
-                [nzData]="listOfData"
+                [nzData]="orderLineItems"
                 [nzBordered]="false"
                 [nzSize]="'middle'"
                 [nzScroll]="{ x: '1260px', y: '300px' }"
@@ -749,7 +796,7 @@
                 </thead>
 
                 <tbody>
-                  <tr *ngFor="let item of listOfData; let i = index">
+                  <tr *ngFor="let item of orderLineItems; let i = index">
                     <td class="text-center">{{ i + 1 }}</td>
                     <td class="space-x-2 flex">
                       <button
@@ -895,7 +942,7 @@
                         <span>Mượn: {{ getBorrowedQuantity(item) }}</span>
                         <span>Đã dùng: {{ getUsedBorrowedQuantity(item) }}</span>
                         <button
-                          *ngIf="getBorrowedRemaining(item) > 0"
+                          *ngIf="canUseBorrowedProducts && getBorrowedRemaining(item) > 0"
                           type="button"
                           nz-button
                           nzType="primary"
@@ -917,6 +964,58 @@
                   </tr>
                 </tbody>
               </nz-table>
+
+              <section
+                *ngIf="extraBorrowedItems.length > 0"
+                class="mt-4 rounded-2xl border border-amber-500/20 bg-amber-50 p-4 dark:bg-amber-500/10"
+              >
+                <div class="mb-3 flex items-center justify-between">
+                  <h3 class="text-base font-semibold text-secondary-light dark:text-secondary-dark">
+                    S&#7843;n ph&#7849;m ph&#225;t sinh th&#7921;c t&#7871;
+                  </h3>
+                </div>
+
+                <nz-table
+                  [nzData]="extraBorrowedItems"
+                  [nzBordered]="false"
+                  [nzSize]="'middle'"
+                  [nzShowPagination]="false"
+                  [nzScroll]="{ x: '760px' }"
+                >
+                  <thead>
+                    <tr class="text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+                      <th [nzWidth]="'120px'">M&#227;</th>
+                      <th>S&#7843;n ph&#7849;m</th>
+                      <th [nzWidth]="'110px'" class="text-right">M&#432;&#7907;n</th>
+                      <th [nzWidth]="'110px'" class="text-right">&#272;&#227; d&#249;ng</th>
+                      <th [nzWidth]="'110px'" class="text-right">C&#242;n</th>
+                      <th [nzWidth]="'120px'" class="text-right">Thao t&#225;c</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of extraBorrowedItems">
+                      <td>{{ item.ProductCode }}</td>
+                      <td class="font-medium">{{ item.ProductName }}</td>
+                      <td class="text-right">{{ getBorrowedQuantity(item) }}</td>
+                      <td class="text-right">{{ getUsedBorrowedQuantity(item) }}</td>
+                      <td class="text-right">{{ getBorrowedRemaining(item) }}</td>
+                      <td class="text-right">
+                        <button
+                          *ngIf="canUseBorrowedProducts && getBorrowedRemaining(item) > 0"
+                          type="button"
+                          nz-button
+                          nzType="primary"
+                          class="h-8 rounded-full px-3 text-xs"
+                          (click)="openUseBorrowedModal(item)"
+                        >
+                          D&#249;ng
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </nz-table>
+              </section>
+
               <div
                 class="text-right text-xl mr-6 font-bold mt-4 text-secondary-light dark:text-secondary-dark mb-8"
               >
@@ -949,10 +1048,14 @@
         <div class="mb-4 flex items-start justify-between gap-4">
           <div>
             <h3 class="text-lg font-bold text-slate-900 dark:text-white">
-              Xu&#7845;t h&#224;ng cho k&#7929; thu&#7853;t
+              {{ isBorrowMoreMode ? "Mượn thêm sản phẩm" : "Xuất hàng cho kỹ thuật" }}
             </h3>
             <p class="mt-1 text-sm text-slate-500 dark:text-slate-300">
-              M&#7897;t b&#7843;ng xu&#7845;t/m&#432;&#7907;n chung cho &#273;&#417;n h&#224;ng. SL b&#225;n l&#224; h&#224;ng b&#225;n theo &#273;&#417;n, SL m&#432;&#7907;n th&#234;m l&#224; h&#224;ng k&#7929; thu&#7853;t gi&#7919; th&#234;m.
+              {{
+                isBorrowMoreMode
+                  ? "Chọn sản phẩm kỹ thuật cần mượn thêm. Hệ thống sẽ cộng vào hàng kỹ thuật đang giữ và trừ kho."
+                  : "Một bảng xuất/mượn chung cho đơn hàng. SL bán là hàng bán theo đơn, SL mượn thêm là hàng kỹ thuật giữ thêm."
+              }}
             </p>
           </div>
           <button
@@ -966,9 +1069,30 @@
           </button>
         </div>
 
-        <div class="mb-3 rounded-2xl bg-teal-50 p-3 text-sm text-teal-800 dark:bg-teal-500/10 dark:text-teal-100">
-          K&#7929; thu&#7853;t vi&#234;n:
-          <strong>{{ getSelectedTechnicianLabel() }}</strong>
+        <div
+          *ngIf="activeExportBorrowGroup as exportGroup"
+          class="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-teal-50 p-3 text-sm text-teal-800 dark:bg-teal-500/10 dark:text-teal-100"
+        >
+          <div>
+            <span>K&#7929; thu&#7853;t vi&#234;n nh&#7853;n h&#224;ng:</span>
+            <strong *ngIf="selectedTechnicianIds.length <= 1" class="ml-1">
+              {{ getExportTechnicianLabel() }}
+            </strong>
+          </div>
+
+          <nz-select
+            *ngIf="selectedTechnicianIds.length > 1"
+            class="min-w-[280px]"
+            [(ngModel)]="exportGroup.TechnicianId"
+            [ngModelOptions]="{ standalone: true }"
+            nzPlaceHolder="Ch&#7885;n k&#7929; thu&#7853;t vi&#234;n"
+          >
+            <nz-option
+              *ngFor="let technicianId of selectedTechnicianIds"
+              [nzValue]="technicianId"
+              [nzLabel]="getTechnicianLabel(technicianId)"
+            ></nz-option>
+          </nz-select>
         </div>
 
         <div class="max-h-[64vh] space-y-4 overflow-auto pr-1">
@@ -988,7 +1112,7 @@
                   (click)="openBorrowProductPopup()"
                 >
                   <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
-                  Th&#234;m m&#432;&#7907;n ngo&#224;i &#273;&#417;n
+                  {{ isBorrowMoreMode ? "Thêm sản phẩm mượn" : "Thêm mượn ngoài đơn" }}
                 </button>
                 <product-qr-scan-button
                   [compact]="true"
@@ -1006,12 +1130,20 @@
                     <th class="px-3 py-2">M&#227;</th>
                     <th class="px-3 py-2">S&#7843;n ph&#7849;m</th>
                     <th class="px-3 py-2">Lo&#7841;i</th>
-                    <th class="px-3 py-2 text-right">SL b&#225;n</th>
+                    <th *ngIf="!isBorrowMoreMode" class="px-3 py-2 text-right">SL b&#225;n</th>
                     <th class="px-3 py-2 text-right">SL m&#432;&#7907;n th&#234;m</th>
                     <th class="px-3 py-2 text-right">Thao t&#225;c</th>
                   </tr>
                 </thead>
                 <tbody>
+                  <tr *ngIf="!exportBorrowItems.length">
+                    <td
+                      class="px-3 py-6 text-center text-slate-500 dark:text-slate-300"
+                      [attr.colspan]="isBorrowMoreMode ? 5 : 6"
+                    >
+                      Chọn sản phẩm cần mượn thêm.
+                    </td>
+                  </tr>
                   <tr
                     *ngFor="let item of exportBorrowItems"
                     class="border-b border-slate-100 dark:border-slate-700"
@@ -1032,7 +1164,7 @@
                         {{ item.IsExtraBorrow ? "Mượn ngoài đơn" : "Trong đơn" }}
                       </span>
                     </td>
-                    <td class="px-3 py-3 text-right">
+                    <td *ngIf="!isBorrowMoreMode" class="px-3 py-3 text-right">
                       <input
                         type="number"
                         min="0"
@@ -1053,7 +1185,7 @@
                     </td>
                     <td class="px-3 py-3 text-right">
                       <button
-                        *ngIf="item.IsExtraBorrow"
+                        *ngIf="item.IsExtraBorrow || isBorrowMoreMode"
                         type="button"
                         nz-button
                         nzType="link"
@@ -1089,7 +1221,11 @@
             [disabled]="isExportingBorrowed"
             (click)="submitTechnicianExport()"
           >
-            {{ isExportingBorrowed ? "Đang xuất..." : "Xác nhận xuất" }}
+            {{
+              isExportingBorrowed
+                ? (isBorrowMoreMode ? "Đang mượn..." : "Đang xuất...")
+                : (isBorrowMoreMode ? "Xác nhận mượn thêm" : "Xác nhận xuất")
+            }}
           </button>
         </div>
       </div>

@@ -4,7 +4,9 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiUrls } from '../../../config/api.config';
 import {
+  CreateStoreUserRequest,
   StoreUserItem,
+  UserMutationResponse,
   UserSearchRequest,
   UserSearchResponse,
 } from '../models/permission.model';
@@ -17,6 +19,13 @@ export class UserApiService {
     return this.http
       .post<unknown>(`${ApiUrls.baseUrl}${ApiUrls.user.search}`, body)
       .pipe(map((response) => this.normalizeSearchResponse(response)));
+  }
+
+  createUser(body: CreateStoreUserRequest): Observable<UserMutationResponse> {
+    return this.http.post<UserMutationResponse>(
+      `${ApiUrls.baseUrl}${ApiUrls.user.create}`,
+      body
+    );
   }
 
   private normalizeSearchResponse(response: unknown): UserSearchResponse {

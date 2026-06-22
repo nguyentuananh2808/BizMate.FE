@@ -1,11 +1,11 @@
 <!-- ========== Desktop Layout ========== -->
 <div
   *ngIf="!isMobile"
-  class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[9998] transition-opacity duration-500 w-full m-auto"
+  class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[2147483000] transition-opacity duration-500 p-4"
   [ngClass]="{ 'opacity-100': !isClosing, 'opacity-0': isClosing }"
 >
   <div
-    class="overflow-y-auto max-h-[98%] max-w-[80%] bg-background-lightblue dark:bg-card-bg-dark rounded-2xl shadow-xl backdrop-blur-xl m-4 p-6 relative border border-white/40 transform transition-all duration-300"
+    class="relative flex max-h-[88vh] w-[96vw] max-w-[1360px] min-w-0 flex-col overflow-hidden rounded-2xl border border-white/40 bg-background-lightblue p-6 shadow-2xl backdrop-blur-xl transition-all duration-300 dark:bg-card-bg-dark"
     [ngClass]="{
       'opacity-100 scale-100': !isClosing,
       'opacity-0 scale-95': isClosing
@@ -25,11 +25,11 @@
     >
       Thêm sản phẩm
     </h2>
-    <div class="flex items-center mb-3">
+    <div class="mb-4 flex items-center gap-3 pr-10">
       <!-- Input tìm kiếm -->
       <input
         type="text"
-        class="flex-1 border border-gray-300 rounded-[24px] px-3 py-2 mx-2"
+        class="min-w-0 flex-1 rounded-[24px] border border-gray-300 px-4 py-2"
         [(ngModel)]="searchKeyword"
         placeholder="Tìm kiếm sản phẩm..."
         [ngClass]="{
@@ -40,7 +40,7 @@
       <!-- Nút tìm kiếm -->
       <button
         (click)="onSearch()"
-        class="text-white bg-blue-600 hover:bg-blue-700 rounded-full p-2 mr-2 transition duration-200"
+        class="shrink-0 rounded-full bg-blue-600 p-3 text-white transition duration-200 hover:bg-blue-700"
         [ngClass]="{ 'dark:bg-blue-500 hover:dark:bg-blue-600': isDark }"
         title="Tìm kiếm "
       >
@@ -49,12 +49,12 @@
     </div>
 
     <div
-      class="overflow-x-auto rounded-[24px] shadow-sm bg-background-light dark:bg-background-dark p-3 w-full"
+      class="min-h-0 flex-1 overflow-hidden rounded-2xl bg-background-light p-3 shadow-sm dark:bg-background-dark"
       [ngClass]="{ 'dark:bg-gray-900': isDark }"
     >
       <nz-table
         [nzData]="listOfData"
-        [nzScroll]="{ y: '400px' }"
+        [nzScroll]="{ x: '980px', y: '46vh' }"
         [nzTotal]="totalCount"
         [nzPageSize]="pageSize"
         [nzPageIndex]="pageIndex"
@@ -150,7 +150,7 @@
           </tr>
         </tbody>
       </nz-table>
-      <div class="mt-4 flex justify-end gap-4">
+      <div class="mt-4 flex shrink-0 justify-end gap-3">
         <button
           class="bg-gray-400 text-white px-4 py-2 rounded-full hover:bg-gray-500 transition"
           (click)="close()"
@@ -171,11 +171,11 @@
 <!-- ========== Mobile Layout ========== -->
 <div
   *ngIf="isMobile"
-  class="fixed inset-0 bg-black/40 backdrop-blur-sm flex flex-col z-[9998] transition-opacity duration-500"
+  class="fixed inset-0 bg-black/40 backdrop-blur-sm flex flex-col z-[2147483000] transition-opacity duration-500"
   [ngClass]="{ 'opacity-100': !isClosing, 'opacity-0': isClosing }"
 >
   <div
-    class="ml-3 mr-3 transform transition-transform duration-300 bg-white dark:bg-gray-900 rounded-t-2xl p-4 overflow-y-auto mt-auto max-h-[90vh]"
+    class="ml-3 mr-3 mt-auto flex max-h-[90vh] flex-col overflow-y-auto rounded-t-2xl bg-white p-4 shadow-2xl transition-transform duration-300 dark:bg-gray-900"
     [ngClass]="{
       'translate-y-0': !isClosing,
       'translate-y-full': isClosing
@@ -298,7 +298,7 @@
     </div>
 
     <!-- Buttons -->
-    <div class="sticky mt-6 flex justify-end gap-3">
+    <div class="sticky bottom-0 mt-6 flex justify-end gap-3 border-t border-slate-200 bg-white pt-3 dark:border-slate-700 dark:bg-gray-900">
       <button
         class="bg-gray-400 text-white px-4 py-2 rounded-full"
         (click)="close()"

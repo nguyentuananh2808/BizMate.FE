@@ -31,7 +31,9 @@ export class ProductQrScanButtonComponent implements OnDestroy {
   @Output() selectProducts = new EventEmitter<InventoryDetail[]>();
 
   isQrScannerOpen = false;
+  isStartingQrScanner = false;
   isResolvingQrProduct = false;
+  scannerErrorMessage = '';
   readonly productQrReaderId = `product-qr-reader-${Math.random()
     .toString(36)
     .slice(2)}`;
@@ -50,9 +52,12 @@ export class ProductQrScanButtonComponent implements OnDestroy {
   }
 
   async openProductQrScanner(): Promise<void> {
-    if (this.disabled || this.isResolvingQrProduct) return;
+    if (this.disabled || this.isResolvingQrProduct || this.isStartingQrScanner)
+      return;
 
     this.isQrScannerOpen = true;
+    this.isStartingQrScanner = true;
+    this.scannerErrorMessage = '';
     this.qrScanLocked = false;
     this.cdr.detectChanges();
 
@@ -62,12 +67,22 @@ export class ProductQrScanButtonComponent implements OnDestroy {
   async closeProductQrScanner(): Promise<void> {
     await this.stopProductQrScanner();
     this.isQrScannerOpen = false;
+    this.isStartingQrScanner = false;
+    this.scannerErrorMessage = '';
     this.qrScanLocked = false;
     this.cdr.detectChanges();
   }
 
   private async startProductQrScanner(): Promise<void> {
     try {
+      if (!this.canUseCameraInCurrentContext()) {
+        this.scannerErrorMessage = this.getInsecureContextMessage();
+        this.toastr.error(this.scannerErrorMessage);
+        this.isStartingQrScanner = false;
+        this.cdr.detectChanges();
+        return;
+      }
+
       this.productQrScanner = new Html5Qrcode(this.productQrReaderId);
       const cameras = await Html5Qrcode.getCameras();
 
@@ -90,10 +105,14 @@ export class ProductQrScanButtonComponent implements OnDestroy {
         (decodedText) => this.handleProductQrScan(decodedText),
         () => {}
       );
+      this.isStartingQrScanner = false;
+      this.cdr.detectChanges();
     } catch (error) {
       console.error('Cannot start product QR scanner:', error);
-      this.toastr.error('Không thể bật camera quét QR sản phẩm.');
-      await this.closeProductQrScanner();
+      this.scannerErrorMessage = this.getCameraErrorMessage(error);
+      this.toastr.error(this.scannerErrorMessage);
+      this.isStartingQrScanner = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -101,10 +120,17 @@ export class ProductQrScanButtonComponent implements OnDestroy {
     if (!this.productQrScanner) return;
 
     try {
-      await this.productQrScanner.stop();
-      await this.productQrScanner.clear();
+      if (this.productQrScanner.isScanning) {
+        await this.productQrScanner.stop();
+      }
     } catch (error) {
       console.warn('Cannot stop product QR scanner:', error);
+    }
+
+    try {
+      this.productQrScanner.clear();
+    } catch (error) {
+      console.warn('Cannot clear product QR scanner:', error);
     } finally {
       this.productQrScanner = undefined;
     }
@@ -129,7 +155,12 @@ export class ProductQrScanButtonComponent implements OnDestroy {
     this.isResolvingQrProduct = true;
     this.productService
       .SearchProduct(productName, 20, 1, false)
-      .pipe(finalize(() => (this.isResolvingQrProduct = false)))
+      .pipe(
+        finalize(() => {
+          this.isResolvingQrProduct = false;
+          this.cdr.markForCheck();
+        })
+      )
       .subscribe({
         next: (response) => {
           const product = this.pickProductFromQrSearch(
@@ -222,6 +253,38 @@ export class ProductQrScanButtonComponent implements OnDestroy {
       IsSerialTracked: isSerialTracked,
       SerialNumbers: [],
     };
+  }
+
+  private canUseCameraInCurrentContext(): boolean {
+    if (typeof window === 'undefined') return false;
+
+    return window.isSecureContext;
+  }
+
+  private getInsecureContextMessage(): string {
+    return 'Camera chỉ hoạt động khi mở app bằng HTTPS hoặc localhost. Nếu đang dùng IP LAN, hãy chạy frontend bằng HTTPS.';
+  }
+
+  private getCameraErrorMessage(error: unknown): string {
+    const message = error instanceof Error ? error.message : String(error ?? '');
+
+    if (!this.canUseCameraInCurrentContext()) {
+      return this.getInsecureContextMessage();
+    }
+
+    if (message.includes('NotAllowed') || message.includes('Permission')) {
+      return 'Trình duyệt đang chặn quyền camera. Hãy cho phép camera rồi thử lại.';
+    }
+
+    if (message.includes('NotFound') || message.includes('No camera')) {
+      return 'Không tìm thấy camera khả dụng trên thiết bị.';
+    }
+
+    if (message.includes('NotReadable') || message.includes('Could not start')) {
+      return 'Camera đang bị ứng dụng khác sử dụng hoặc chưa sẵn sàng.';
+    }
+
+    return 'Không thể bật camera quét QR sản phẩm. Vui lòng kiểm tra quyền camera và thử lại.';
   }
 
   private normalizeText(value: string): string {

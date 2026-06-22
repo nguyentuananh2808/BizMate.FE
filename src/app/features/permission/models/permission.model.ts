@@ -70,6 +70,20 @@ export interface UserSearchResponse {
   TotalCount: number;
 }
 
+export interface CreateStoreUserRequest {
+  FullName: string;
+  Email: string;
+  Password: string;
+  RoleId: string;
+  IsActive: boolean;
+}
+
+export interface UserMutationResponse {
+  Success: boolean;
+  Message: string;
+  UserId?: string;
+}
+
 export interface StoreUserItem {
   Id: string;
   Code: string;

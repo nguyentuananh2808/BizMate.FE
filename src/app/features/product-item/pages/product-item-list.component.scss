@@ -165,15 +165,33 @@ select {
 .status-pill {
   display: inline-flex;
   border-radius: 999px;
-  background: #e8f7f2;
-  color: #0f766e;
   padding: 5px 10px;
   font-size: 12px;
   font-weight: 800;
 
+  &.in-stock {
+    background: #e8f7f2;
+    color: #0f766e;
+  }
+
+  &.reserved {
+    background: #e8eefc;
+    color: #3346a3;
+  }
+
   &.sold {
     background: #fff2db;
     color: #a15c06;
+  }
+
+  &.defective {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  &.neutral {
+    background: #eef2f7;
+    color: #52606d;
   }
 }
 

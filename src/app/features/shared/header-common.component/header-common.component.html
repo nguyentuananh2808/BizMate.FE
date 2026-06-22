@@ -1,7 +1,7 @@
 <header
-  class="flex flex-col md:flex-row items-center justify-between mb-4 gap-4 md:gap-0 bg-background-light dark:bg-background-dark rounded-[24px] pl-4 pr-4 pt-1 pb-1 transition-colors duration-500 z-[9998]"
+  class="flex items-center justify-between mb-4 gap-3 bg-background-light dark:bg-background-dark rounded-[22px] px-3 py-2 md:px-4 md:py-1 transition-colors duration-500 z-[9998]"
 >
-  <div class="flex items-center">
+  <div class="flex min-w-0 items-center">
     <!-- logo -->
     <img
       src="assets/images/logo_vuakong.png"
@@ -11,12 +11,12 @@
 
     <a routerLink="/dashboard">
       <h1
-        class="text-2xl font-bold bg-gradient-to-l from-vkStart to-vkEnd bg-clip-text text-transparent dark:text-secondary-dark"
+        class="max-w-[52vw] truncate text-xl md:text-2xl font-bold bg-gradient-to-l from-vkStart to-vkEnd bg-clip-text text-transparent dark:text-secondary-dark"
       >
         {{ nameStore }}
       </h1>
     </a>
-  <notification class="md:hidden ml-3"></notification>
+  <notification class="md:hidden ml-3 flex-shrink-0"></notification>
 
   </div>
   <div class="hidden md:flex items-center gap-9">

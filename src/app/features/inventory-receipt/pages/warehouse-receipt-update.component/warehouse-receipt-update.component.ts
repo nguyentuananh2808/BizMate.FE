@@ -36,6 +36,7 @@ import { InventoryDetail } from '../../models/warehouse-receipt-detail.model';
 import { UpdateStatusOrderRequest } from '../../../orders/models/update-status-order-request.model';
 import { UpdateStatusWarehouseReceiptRequest } from '../../models/update-status-model';
 import { StatusColorPipe } from '../../../../shared/pipes/status-color.pipe';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'warehouse-receipt-update',
@@ -64,6 +65,8 @@ import { StatusColorPipe } from '../../../../shared/pipes/status-color.pipe';
   providers: [DatePipe],
 })
 export class WarehouseReceiptUpdateComponent implements OnInit {
+  private readonly approvedReceiptStatusName = '\u0110\u00e3 duy\u1ec7t';
+
   id: string = '';
   rowVersion: string = '';
   receiptForm: FormGroup;
@@ -124,7 +127,39 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
     }
   }
 
+  get isApprovedReceipt(): boolean {
+    return (this.statusName || '').trim() === this.approvedReceiptStatusName;
+  }
+
+  get canEditReceiptDetails(): boolean {
+    return !this.isApprovedReceipt;
+  }
+
+  private applyReceiptFormState(): void {
+    const lockedControls = ['supplierName', 'deliveryAddress'];
+
+    for (const controlName of lockedControls) {
+      const control = this.receiptForm.get(controlName);
+      if (!control) {
+        continue;
+      }
+
+      if (this.isApprovedReceipt) {
+        control.disable({ emitEvent: false });
+      } else {
+        control.enable({ emitEvent: false });
+      }
+    }
+
+    this.receiptForm.get('description')?.enable({ emitEvent: false });
+  }
+
   finishOrder(): void {
+    if (this.isApprovedReceipt) {
+      this.toastr.info('Phi\u1ebfu nh\u1eadp \u0111\u00e3 duy\u1ec7t, ch\u1ec9 c\u00f3 th\u1ec3 c\u1eadp nh\u1eadt ghi ch\u00fa.');
+      return;
+    }
+
     const payload: UpdateStatusWarehouseReceiptRequest = {
       Id: this.id,
       RowVersion: this.rowVersion,
@@ -159,6 +194,7 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
           (d: any) => d.ProductId
         );
         this.statusName = res.ImportReceipt.ImportReceipt.StatusName;
+        this.applyReceiptFormState();
         this.importCode = res.ImportReceipt.ImportReceipt.Code;
         // Gán dữ liệu sản phẩm
         this.listOfData = res.ImportReceipt.ImportReceipt.Details || [];
@@ -188,6 +224,10 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
   }
 
   get isSubmitDisabled(): boolean {
+    if (this.isApprovedReceipt) {
+      return false;
+    }
+
     return (
       this.listOfData.length === 0 ||
       this.listOfData.some((item) => item.Quantity <= 0)
@@ -195,12 +235,17 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
   }
 
   startEdit(item: InventoryDetail): void {
+    if (!this.canEditReceiptDetails) {
+      this.toastr.info('Phi\u1ebfu nh\u1eadp \u0111\u00e3 duy\u1ec7t, ch\u1ec9 c\u00f3 th\u1ec3 c\u1eadp nh\u1eadt ghi ch\u00fa.');
+      return;
+    }
+
     this.editingId = item.Id;
     this.editingQuantity = item.Quantity;
   }
   onPrint() {
     const { supplierName, deliveryAddress, description } =
-      this.receiptForm.value;
+      this.receiptForm.getRawValue();
 
     this.supplier = {
       name: supplierName,
@@ -216,6 +261,10 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
     }, 100);
   }
   saveEdit(item: InventoryDetail): void {
+    if (!this.canEditReceiptDetails) {
+      return;
+    }
+
     if (this.editingQuantity === null || this.editingQuantity < 1) {
       this.inputError = true;
       // Tự động bỏ hiệu ứng sau khi shake xong
@@ -253,6 +302,11 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
   }
 
   deleteItem(itemToDelete: InventoryDetail): void {
+    if (!this.canEditReceiptDetails) {
+      this.toastr.info('Phi\u1ebfu nh\u1eadp \u0111\u00e3 duy\u1ec7t, ch\u1ec9 c\u00f3 th\u1ec3 c\u1eadp nh\u1eadt ghi ch\u00fa.');
+      return;
+    }
+
     this.modal.confirm({
       nzTitle: `Bạn có chắc muốn xóa sản phẩm "<b>${itemToDelete.ProductName}</b>" này?`,
       nzOkText: 'Xóa',
@@ -269,6 +323,12 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
   }
 
   onSelectedProducts(productList: InventoryDetail[]) {
+    if (!this.canEditReceiptDetails) {
+      this.toastr.info('Phi\u1ebfu nh\u1eadp \u0111\u00e3 duy\u1ec7t, ch\u1ec9 c\u00f3 th\u1ec3 c\u1eadp nh\u1eadt ghi ch\u00fa.');
+      this.closeProductPopup();
+      return;
+    }
+
     if (!productList || productList.length === 0) {
       this.updateExistingProductIds();
       this.closeProductPopup();
@@ -322,6 +382,11 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
   }
 
   addProducts(): void {
+    if (!this.canEditReceiptDetails) {
+      this.toastr.info('Phi\u1ebfu nh\u1eadp \u0111\u00e3 duy\u1ec7t, ch\u1ec9 c\u00f3 th\u1ec3 c\u1eadp nh\u1eadt ghi ch\u00fa.');
+      return;
+    }
+
     this.isPopupSearchProducts = true;
   }
 
@@ -399,7 +464,7 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
   }
 
   submitForm(): void {
-    const formValues = this.receiptForm.value;
+    const formValues = this.receiptForm.getRawValue();
 
     const payload: UpdateReceiptRequestRequest = {
       id: this.id,
@@ -415,7 +480,11 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
       })),
     };
 
-    this.receiptService.UpdateWarehouseReceipt(payload).subscribe({
+    this.isSubmitting = true;
+    this.receiptService
+      .UpdateWarehouseReceipt(payload)
+      .pipe(finalize(() => (this.isSubmitting = false)))
+      .subscribe({
       next: () => {
         this.toastr.success('Câp nhật phiếu nhập thành công!');
         // this.router.navigateByUrl('/warehouse-receipt');

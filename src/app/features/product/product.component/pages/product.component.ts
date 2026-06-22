@@ -167,7 +167,14 @@ export class ProductComponent implements OnInit {
             this.cdr.detectChanges();
           });
         },
-        error: () => (this.isLoading = false),
+        error: (err) => {
+          this.isLoading = false;
+          this.toastr.error(
+            err.error?.Message ||
+              err.error?.message ||
+              'Không thể tải danh sách sản phẩm.'
+          );
+        },
       });
   }
 
@@ -263,7 +270,7 @@ export class ProductComponent implements OnInit {
       i.Code,
       i.Name,
       i.Quantity,
-      i.Name,
+      this.getUnitText(i.Unit),
       this.isSerialTracked(i) ? 'Có' : 'Không',
       i.SupplierName,
       i.Description || '',
@@ -277,6 +284,25 @@ export class ProductComponent implements OnInit {
     };
     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     this.saveAsExcelFile(excelBuffer, 'danh_sach_san_pham');
+  }
+
+  private getUnitText(unit: number): string {
+    switch (unit) {
+      case 1:
+        return 'Cái';
+      case 2:
+        return 'Hộp';
+      case 3:
+        return 'Thùng';
+      case 4:
+        return 'Kg';
+      case 5:
+        return 'Lít';
+      case 6:
+        return 'Cây';
+      default:
+        return 'Khác';
+    }
   }
 
   deleteProduct(item: Product): void {

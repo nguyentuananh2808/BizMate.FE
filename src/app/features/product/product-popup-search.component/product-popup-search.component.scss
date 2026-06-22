@@ -10,9 +10,13 @@
 
 .type {
     position: fixed;
-    z-index: 9999;
+    z-index: 2147483001;
 }
 
 .ant-pagination-item:hover a {
     color: #f0f0f0 !important;
+}
+
+:host ::ng-deep .ant-table-wrapper {
+    min-width: 0;
 }

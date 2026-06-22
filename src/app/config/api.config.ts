@@ -1,5 +1,13 @@
+const apiHost = '192.168.1.204';
+const apiProtocol =
+  typeof window !== 'undefined' && window.location.protocol === 'https:'
+    ? 'https'
+    : 'http';
+const apiPort = apiProtocol === 'https' ? '5052' : '5051';
+const apiBaseUrl = `${apiProtocol}://${apiHost}:${apiPort}/v1`;
+
 export const ApiUrls = {
-  baseUrl: 'http://localhost:5051/v1',
+  baseUrl: apiBaseUrl,
 
   productCategory: {
     getAll: '/product-category/GetAll',
@@ -25,6 +33,8 @@ export const ApiUrls = {
     login: '/auth/login',
     register: '/user/register',
     verifyOtp: '/user/verify',
+    forgotPassword: '/auth/forgot-password',
+    resetPassword: '/auth/reset-password',
   },
 
   warehouseReceipt: {
@@ -99,6 +109,9 @@ export const ApiUrls = {
 
   user: {
     search: '/user/search',
+    create: '/user',
+    update: (id: string) => `/user/${id}`,
+    delete: (id: string) => `/user/${id}`,
   },
 
   technician: {

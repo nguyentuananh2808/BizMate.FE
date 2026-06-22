@@ -76,6 +76,14 @@ interface ExportBorrowGroup {
   Items: ExportBorrowUiItem[];
 }
 
+type OrderInventoryItem = InventoryDetail & {
+  SalePrice?: number;
+  TotalPrice?: number;
+  BorrowedQuantity?: number;
+  UsedBorrowedQuantity?: number;
+  IsExtraBorrow?: boolean;
+};
+
 @Component({
   standalone: true,
   selector: 'order-update',
@@ -132,10 +140,7 @@ export class OrderUpdateComponent implements OnInit {
   checked = false;
   setOfCheckedId = new Set<string>();
   isMobile = window.innerWidth < 768;
-  listOfData: (InventoryDetail & {
-    SalePrice?: number;
-    TotalPrice?: number;
-  })[] = [];
+  listOfData: OrderInventoryItem[] = [];
   totalAmount: number = 0;
   customerId: string = '';
   listOfCurrentPageData: Product[] = [];
@@ -163,15 +168,11 @@ export class OrderUpdateComponent implements OnInit {
   isUseBorrowedVisible = false;
   isSavingUseBorrowed = false;
   useBorrowedTechnicianId = '';
-  selectedUseBorrowedItem:
-    | (InventoryDetail & { SalePrice?: number; TotalPrice?: number })
-    | null = null;
+  selectedUseBorrowedItem: OrderInventoryItem | null = null;
   useBorrowedQuantity = 1;
   private scanner?: Html5Qrcode;
   private scanLocked = false;
-  private scanTargetItem:
-    | (InventoryDetail & { SalePrice?: number; TotalPrice?: number })
-    | null = null;
+  private scanTargetItem: OrderInventoryItem | null = null;
   customer = {
     id: '',
     name: '',
@@ -253,27 +254,73 @@ export class OrderUpdateComponent implements OnInit {
   }
 
   get canEditOrder(): boolean {
-    return this.statusName !== 'Hoàn thành' && this.statusName !== 'Hủy';
+    return !this.isOrderClosed;
   }
 
   get canEditProducts(): boolean {
-    return this.canEditOrder && !this.technicianExportedAt;
+    return this.canEditOrder && !this.isDescriptionOnlyOrder;
+  }
+
+  get canUseBorrowedProducts(): boolean {
+    return !this.isOrderClosed;
+  }
+
+  get isOrderClosed(): boolean {
+    const closedStatuses = new Set([
+      'Ho\u00e0n th\u00e0nh',
+      'H\u1ee7y',
+      '\u0110\u00e3 duy\u1ec7t',
+    ]);
+
+    return closedStatuses.has((this.statusName || '').trim());
+  }
+
+  get isDescriptionOnlyOrder(): boolean {
+    const contentLockedStatuses = new Set([
+      'Ho\u00e0n th\u00e0nh',
+      'H\u1ee7y',
+      '\u0110\u00e3 duy\u1ec7t',
+      '\u0110\u00e3 l\u1eafp \u0111\u1eb7t',
+    ]);
+
+    return (
+      contentLockedStatuses.has((this.statusName || '').trim()) ||
+      !!this.technicianExportedAt
+    );
+  }
+
+  get isBorrowMoreMode(): boolean {
+    return !!this.technicianExportedAt;
   }
 
   get canExportForTechnician(): boolean {
+    const exportableStatuses = ['Tạo mới', 'Đang lắp đặt', 'Đã lắp đặt'];
+
     return (
-      this.listOfData.length > 0 &&
+      this.orderLineItems.length > 0 &&
       this.selectedTechnicianIds.length > 0 &&
-      !this.technicianExportedAt
+      exportableStatuses.includes(this.statusName)
     );
+  }
+
+  get orderLineItems(): OrderInventoryItem[] {
+    return this.listOfData.filter((item) => !this.isExtraBorrowItem(item));
+  }
+
+  get extraBorrowedItems(): OrderInventoryItem[] {
+    return this.listOfData.filter((item) => this.isExtraBorrowItem(item));
   }
 
   get borrowExistingProductIds(): string[] {
     return this.exportBorrowItems.map((item) => item.ProductId);
   }
 
+  get activeExportBorrowGroup(): ExportBorrowGroup | null {
+    return this.exportBorrowGroups[0] || null;
+  }
+
   get exportBorrowItems(): ExportBorrowUiItem[] {
-    return this.exportBorrowGroups[0]?.Items || [];
+    return this.activeExportBorrowGroup?.Items || [];
   }
 
   getSelectedTechnicianLabel(): string {
@@ -282,6 +329,11 @@ export class OrderUpdateComponent implements OnInit {
       .filter(Boolean);
 
     return labels.length ? labels.join(', ') : this.technicianName;
+  }
+
+  getExportTechnicianLabel(): string {
+    const technicianId = this.activeExportBorrowGroup?.TechnicianId;
+    return technicianId ? this.getTechnicianLabel(technicianId) : '';
   }
 
   getTechnicianLabel(technicianId: string): string {
@@ -377,6 +429,16 @@ export class OrderUpdateComponent implements OnInit {
     'Hoàn thành': [],
   };
 
+  get visibleStatusActions(): { type: string; label: string; icon: string; class: string }[] {
+    const actions = this.statusActions[this.statusName] || [];
+
+    if (!this.technicianExportedAt) {
+      return actions;
+    }
+
+    return actions.filter((action) => action.type !== 'cancel');
+  }
+
   // Xử lý hành động
   handleAction(action: string): void {
     switch (action) {
@@ -412,8 +474,7 @@ export class OrderUpdateComponent implements OnInit {
         this.getOrderDetail(this.id);
       },
       error: (err) => {
-        console.error('Lỗi khi gọi ReadByIdWarehouseReceipt:', err);
-        this.toastr.error('Cập nhật trạng thái đơn hàng thất bại!');
+        this.toastr.error(this.getHttpErrorMessage(err, 'Cập nhật trạng thái đơn hàng thất bại!'));
       },
     });
   }
@@ -437,8 +498,7 @@ export class OrderUpdateComponent implements OnInit {
             this.getOrderDetail(this.id);
           },
           error: (err) => {
-            console.error('Lỗi khi cập nhật trạng thái đơn hàng:', err);
-            this.toastr.error('Cập nhật trạng thái đơn hàng thất bại!');
+            this.toastr.error(this.getHttpErrorMessage(err, 'Cập nhật trạng thái đơn hàng thất bại!'));
           },
         });
       },
@@ -465,8 +525,7 @@ export class OrderUpdateComponent implements OnInit {
             this.getOrderDetail(this.id);
           },
           error: (err) => {
-            console.error('Lỗi khi cập nhật trạng thái đơn hàng:', err);
-            this.toastr.error('Hủy đơn hàng thất bại!');
+            this.toastr.error(this.getHttpErrorMessage(err, 'Hủy đơn hàng thất bại!'));
           },
         });
       },
@@ -487,8 +546,7 @@ export class OrderUpdateComponent implements OnInit {
         this.getOrderDetail(this.id);
       },
       error: (err) => {
-        console.error('Lỗi khi gọi ReadByIdWarehouseReceipt:', err);
-        this.toastr.error('Cập nhật trạng thái đơn hàng thất bại!');
+        this.toastr.error(this.getHttpErrorMessage(err, 'Cập nhật trạng thái đơn hàng thất bại!'));
       },
     });
   }
@@ -507,8 +565,7 @@ export class OrderUpdateComponent implements OnInit {
         this.getOrderDetail(this.id);
       },
       error: (err) => {
-        console.error('Lỗi khi gọi ReadByIdWarehouseReceipt:', err);
-        this.toastr.error('Cập nhật trạng thái đơn hàng thất bại!');
+        this.toastr.error(this.getHttpErrorMessage(err, 'Cập nhật trạng thái đơn hàng thất bại!'));
       },
     });
   }
@@ -580,6 +637,12 @@ export class OrderUpdateComponent implements OnInit {
 
   selectCustomer(customer: Customer): void {
     if (!customer) return;
+
+    if (this.isDescriptionOnlyOrder) {
+      this.toastr.info('\u0110\u01a1n h\u00e0ng \u0111\u00e3 kh\u00f3a, ch\u1ec9 c\u00f3 th\u1ec3 c\u1eadp nh\u1eadt ghi ch\u00fa.');
+      return;
+    }
+
     this.orderForm.patchValue({
       customerName: customer.Name,
       phoneNumber: customer.Phone,
@@ -599,6 +662,11 @@ export class OrderUpdateComponent implements OnInit {
 
   //đổi tab
   onTabChange(index: number): void {
+    if (this.isDescriptionOnlyOrder) {
+      this.applyOrderFormState();
+      return;
+    }
+
     this.selectedTabIndex = index;
     this.customerType = index === 1 ? 2 : 1;
     this.customerId = '';
@@ -624,16 +692,46 @@ export class OrderUpdateComponent implements OnInit {
       deliveryAddress: '',
       customerSearch: '',
     });
+    this.applyOrderFormState();
+  }
+
+  private applyOrderFormState(): void {
+    const lockInfoControls = this.isDescriptionOnlyOrder;
+    const controls = ['customerName', 'phoneNumber', 'deliveryAddress'];
+
+    for (const controlName of controls) {
+      const control = this.orderForm.get(controlName);
+      if (!control) {
+        continue;
+      }
+
+      if (lockInfoControls || this.customerType === 2) {
+        control.disable({ emitEvent: false });
+      } else {
+        control.enable({ emitEvent: false });
+      }
+    }
+
+    const customerSearchControl = this.orderForm.get('customerSearch');
+    if (customerSearchControl) {
+      if (lockInfoControls) {
+        customerSearchControl.disable({ emitEvent: false });
+      } else {
+        customerSearchControl.enable({ emitEvent: false });
+      }
+    }
+
+    this.orderForm.get('description')?.enable({ emitEvent: false });
   }
 
   updateExistingProductIds(): void {
-    this.existingProductIds = this.listOfData.map((item) => item.ProductId);
+    this.existingProductIds = this.orderLineItems.map((item) =>
+      this.getProductId(item)
+    );
   }
   getOrderDetail(id: string): void {
     this.orderService.ReadByIdOrder(id).subscribe({
       next: (res) => {
-        console.log('res.Order.Order.CreatedDate:', res.Order.Order);
-
         this.createdDate = res.Order.Order.CreatedDate;
         const orderTechnicians = res.Order.Order.Technicians || [];
         this.selectedTechnicianIds = orderTechnicians.length
@@ -674,9 +772,9 @@ export class OrderUpdateComponent implements OnInit {
 
         this.orderCode = res.Order.Order.Code;
         this.rowVersion = res.Order.Order.RowVersion;
-        this.existingProductIds = res.Order.Order.Details.map(
-          (d: any) => d.ProductId
-        );
+        this.existingProductIds = (res.Order.Order.Details || [])
+          .filter((d: any) => !this.isExtraBorrowResponse(d))
+          .map((d: any) => d.ProductId);
         this.customerId = res.Order.Order.CustomerId;
 
         this.statusId = res.Order.Order.StatusId;
@@ -688,6 +786,7 @@ export class OrderUpdateComponent implements OnInit {
             deliveryAddress: res.Order.Order.DeliveryAddress || '',
             description: res.Order.Order.Description || '',
           });
+        this.applyOrderFormState();
 
         // ======= ĐỒNG BỘ DETAILS FORMARRAY =======
         const detailsFormArray = this.orderForm.get('details') as FormArray;
@@ -755,11 +854,13 @@ export class OrderUpdateComponent implements OnInit {
             if (mA !== mB) return mA - mB;
             return dA - dB;
           });
+        this.allData = [...this.listOfData];
+        this.updateExistingProductIds();
 
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Lỗi khi gọi ReadByIdWarehouseReceipt:', err);
+        this.toastr.error(this.getHttpErrorMessage(err, 'Không thể tải chi tiết đơn hàng.'));
       },
     });
   }
@@ -769,9 +870,13 @@ export class OrderUpdateComponent implements OnInit {
   }
 
   get isSubmitDisabled(): boolean {
+    if (this.isDescriptionOnlyOrder) {
+      return false;
+    }
+
     return (
-      this.listOfData.length === 0 ||
-      this.listOfData.some((item) =>
+      this.orderLineItems.length === 0 ||
+      this.orderLineItems.some((item) =>
         this.isSerialTracked(item)
           ? this.getSerialNumbers(item).length === 0
           : item.Quantity <= 0
@@ -816,6 +921,19 @@ export class OrderUpdateComponent implements OnInit {
     );
   }
 
+  isExtraBorrowItem(item: InventoryDetail): boolean {
+    return Number(item.Quantity ?? 0) === 0 && this.getBorrowedQuantity(item) > 0;
+  }
+
+  private isExtraBorrowResponse(item: any): boolean {
+    const quantity = Number(item?.Quantity ?? item?.quantity ?? 0);
+    const borrowedQuantity = Number(
+      item?.BorrowedQuantity ?? item?.borrowedQuantity ?? 0
+    );
+
+    return quantity === 0 && borrowedQuantity > 0;
+  }
+
   get selectedUseBorrowedRemaining(): number {
     return this.selectedUseBorrowedItem
       ? this.getBorrowedRemaining(this.selectedUseBorrowedItem)
@@ -828,33 +946,44 @@ export class OrderUpdateComponent implements OnInit {
       return;
     }
 
-    if (!this.listOfData.length) {
+    if (!this.orderLineItems.length) {
       this.toastr.warning('Đơn hàng chưa có sản phẩm để xuất.');
       return;
     }
 
-    const serialTrackedItem = this.listOfData.find((item) =>
-      this.isSerialTracked(item)
-    );
-
-    if (serialTrackedItem) {
-      this.toastr.warning(
-        `Flow mượn hàng hiện chưa hỗ trợ sản phẩm quản lý serial: ${serialTrackedItem.ProductName}.`
-      );
+    if (!this.canExportForTechnician) {
+      this.toastr.warning('Đơn hàng đã hoàn thành hoặc đã hủy nên không thể xuất/mượn thêm.');
       return;
     }
 
+    if (!this.isBorrowMoreMode) {
+      const serialTrackedItem = this.orderLineItems.find((item) =>
+        this.isSerialTracked(item)
+      );
+
+      if (serialTrackedItem) {
+        this.toastr.warning(
+          `Flow mượn hàng hiện chưa hỗ trợ sản phẩm quản lý serial: ${serialTrackedItem.ProductName}.`
+        );
+        return;
+      }
+    }
+
+    const initialItems: ExportBorrowUiItem[] = this.isBorrowMoreMode
+      ? []
+      : this.orderLineItems.map((item) => ({
+          ProductId: this.getProductId(item),
+          ProductName: item.ProductName,
+          ProductCode: item.ProductCode,
+          OrderedQuantity: this.getOrderQuantity(item),
+          BorrowedQuantity: 0,
+          IsSerialTracked: this.isSerialTracked(item),
+          IsExtraBorrow: false,
+        }));
+
     this.exportBorrowGroups = [{
       TechnicianId: this.selectedTechnicianIds[0],
-      Items: this.listOfData.map((item) => ({
-        ProductId: this.getProductId(item),
-        ProductName: item.ProductName,
-        ProductCode: item.ProductCode,
-        OrderedQuantity: this.getOrderQuantity(item),
-        BorrowedQuantity: 0,
-        IsSerialTracked: this.isSerialTracked(item),
-        IsExtraBorrow: false,
-      })),
+      Items: initialItems,
     }];
     this.isExportBorrowVisible = true;
   }
@@ -902,15 +1031,19 @@ export class OrderUpdateComponent implements OnInit {
     const existingIds = new Set(targetGroup.Items.map((item) => item.ProductId));
     const extraItems = productList
       .filter((item) => !existingIds.has(this.getProductId(item)))
-      .map((item) => ({
-        ProductId: this.getProductId(item),
-        ProductName: item.ProductName,
-        ProductCode: item.ProductCode,
-        OrderedQuantity: 0,
-        BorrowedQuantity: 1,
-        IsSerialTracked: this.isSerialTracked(item),
-        IsExtraBorrow: true,
-      }));
+      .map((item) => {
+        const productId = this.getProductId(item);
+
+        return {
+          ProductId: productId,
+          ProductName: item.ProductName,
+          ProductCode: item.ProductCode,
+          OrderedQuantity: 0,
+          BorrowedQuantity: 1,
+          IsSerialTracked: this.isSerialTracked(item),
+          IsExtraBorrow: !this.isProductInOriginalOrder(productId),
+        };
+      });
 
     if (!extraItems.length) {
       this.toastr.info('Các sản phẩm chọn thêm đã có trong danh sách xuất.');
@@ -923,7 +1056,7 @@ export class OrderUpdateComponent implements OnInit {
   }
 
   removeExtraBorrowItem(item: ExportBorrowUiItem): void {
-    if (!item.IsExtraBorrow) return;
+    if (!item.IsExtraBorrow && !this.isBorrowMoreMode) return;
 
     const group = this.exportBorrowGroups[0];
     if (!group) return;
@@ -934,21 +1067,55 @@ export class OrderUpdateComponent implements OnInit {
   }
 
   submitTechnicianExport(): void {
+    if (this.isExportingBorrowed) return;
+
     if (!this.exportBorrowGroups.length) {
       this.toastr.warning('Vui lòng chọn ít nhất một kỹ thuật viên.');
       return;
     }
 
-    const invalidItem = this.exportBorrowGroups
-      .flatMap((group) => group.Items)
-      .find(
+    if (this.exportBorrowGroups.some((group) => !group.TechnicianId)) {
+      this.toastr.warning('Vui lòng chọn kỹ thuật viên nhận hàng.');
+      return;
+    }
+
+    const allExportItems = this.exportBorrowGroups.flatMap(
+      (group) => group.Items
+    );
+
+    if (!allExportItems.length) {
+      this.toastr.warning(
+        this.isBorrowMoreMode
+          ? 'Vui lòng thêm ít nhất một sản phẩm cần mượn.'
+          : 'Danh sách xuất/mượn chưa có sản phẩm.'
+      );
+      return;
+    }
+
+    if (
+      this.isBorrowMoreMode &&
+      allExportItems.some((item) => Number(item.OrderedQuantity) > 0)
+    ) {
+      this.toastr.warning('Đơn hàng đã xuất cho kỹ thuật; lần này chỉ nhập SL mượn thêm.');
+      return;
+    }
+
+    if (
+      this.isBorrowMoreMode &&
+      !allExportItems.some((item) => Number(item.BorrowedQuantity) > 0)
+    ) {
+      this.toastr.warning('Vui lòng nhập SL mượn thêm lớn hơn 0.');
+      return;
+    }
+
+    const invalidItem = allExportItems.find(
         (item) =>
           item.OrderedQuantity < 0 ||
           item.BorrowedQuantity < 0 ||
           !Number.isInteger(Number(item.OrderedQuantity)) ||
           !Number.isInteger(Number(item.BorrowedQuantity)) ||
           (Number(item.OrderedQuantity) === 0 && Number(item.BorrowedQuantity) === 0)
-      );
+    );
 
     if (invalidItem) {
       this.toastr.warning(
@@ -957,25 +1124,27 @@ export class OrderUpdateComponent implements OnInit {
       return;
     }
 
-    const invalidAllocation = this.listOfData.find((orderItem) => {
-      const productId = this.getProductId(orderItem);
-      const expectedQuantity = this.getOrderQuantity(orderItem);
-      const allocatedQuantity = this.exportBorrowGroups.reduce((sum, group) => {
-        const item = group.Items.find(
-          (current) => current.ProductId === productId && !current.IsExtraBorrow
+    if (!this.isBorrowMoreMode) {
+      const invalidAllocation = this.orderLineItems.find((orderItem) => {
+        const productId = this.getProductId(orderItem);
+        const expectedQuantity = this.getOrderQuantity(orderItem);
+        const allocatedQuantity = this.exportBorrowGroups.reduce((sum, group) => {
+          const item = group.Items.find(
+            (current) => current.ProductId === productId && !current.IsExtraBorrow
+          );
+
+          return sum + (Number(item?.OrderedQuantity) || 0);
+        }, 0);
+
+        return allocatedQuantity !== expectedQuantity;
+      });
+
+      if (invalidAllocation) {
+        this.toastr.warning(
+          `Tổng SL bán phân bổ cho ${invalidAllocation.ProductName} phải bằng ${this.getOrderQuantity(invalidAllocation)}.`
         );
-
-        return sum + (Number(item?.OrderedQuantity) || 0);
-      }, 0);
-
-      return allocatedQuantity !== expectedQuantity;
-    });
-
-    if (invalidAllocation) {
-      this.toastr.warning(
-        `Tổng SL bán phân bổ cho ${invalidAllocation.ProductName} phải bằng ${this.getOrderQuantity(invalidAllocation)}.`
-      );
-      return;
+        return;
+      }
     }
 
     const payload: ExportOrderForTechnicianRequest = {
@@ -995,34 +1164,60 @@ export class OrderUpdateComponent implements OnInit {
         .filter((group) => group.Items.length > 0),
     };
 
+    const successMessage = this.isBorrowMoreMode
+      ? 'Mượn thêm sản phẩm thành công.'
+      : 'Xuất hàng cho kỹ thuật thành công.';
+    const errorMessage = this.isBorrowMoreMode
+      ? 'Mượn thêm sản phẩm thất bại.'
+      : 'Xuất hàng cho kỹ thuật thất bại.';
+
     this.isExportingBorrowed = true;
     this.orderService.ExportForTechnician(this.id, payload).subscribe({
       next: (response) => {
         this.isExportingBorrowed = false;
         if (!this.isCommandSuccess(response)) {
           this.toastr.error(
-            this.getCommandMessage(response, 'Xuất hàng cho kỹ thuật thất bại.')
+            this.getCommandMessage(response, errorMessage)
           );
           return;
         }
 
         this.toastr.success(
-          this.getCommandMessage(response, 'Xuất hàng cho kỹ thuật thành công.')
+          this.getCommandMessage(response, successMessage)
         );
         this.isExportBorrowVisible = false;
         this.getOrderDetail(this.id);
       },
       error: (err) => {
         this.isExportingBorrowed = false;
-        this.toastr.error(
+        const message =
           err.error?.Message ||
-            err.error?.message ||
-            'Xuất hàng cho kỹ thuật thất bại.'
+          err.error?.message ||
+          errorMessage;
+
+        this.toastr.error(
+          message
         );
+
+        if (message.includes('vừa thay đổi')) {
+          this.isExportBorrowVisible = false;
+          this.getOrderDetail(this.id);
+        }
       },
     });
   }
+
+  private isProductInOriginalOrder(productId: string): boolean {
+    return this.orderLineItems.some(
+      (item) => this.getProductId(item) === productId
+    );
+  }
   openUseBorrowedModal(item: InventoryDetail): void {
+    if (!this.canUseBorrowedProducts) {
+      this.toastr.info('\u0110\u01a1n h\u00e0ng \u0111\u00e3 ho\u00e0n th\u00e0nh ho\u1eb7c \u0111\u00e3 h\u1ee7y, kh\u00f4ng th\u1ec3 ghi nh\u1eadn d\u00f9ng h\u00e0ng m\u01b0\u1ee3n.');
+      return;
+    }
+
     const remaining = this.getBorrowedRemaining(item);
 
     if (remaining <= 0) {
@@ -1047,6 +1242,12 @@ export class OrderUpdateComponent implements OnInit {
   }
 
   submitUseBorrowedFromModal(): void {
+    if (!this.canUseBorrowedProducts) {
+      this.toastr.info('\u0110\u01a1n h\u00e0ng \u0111\u00e3 ho\u00e0n th\u00e0nh ho\u1eb7c \u0111\u00e3 h\u1ee7y, kh\u00f4ng th\u1ec3 ghi nh\u1eadn d\u00f9ng h\u00e0ng m\u01b0\u1ee3n.');
+      this.closeUseBorrowedModal();
+      return;
+    }
+
     if (!this.selectedUseBorrowedItem) {
       return;
     }
@@ -1135,6 +1336,10 @@ export class OrderUpdateComponent implements OnInit {
     return response?.Message ?? response?.message ?? fallback;
   }
 
+  private getHttpErrorMessage(error: any, fallback: string): string {
+    return error?.error?.Message ?? error?.error?.message ?? fallback;
+  }
+
   private normalizeSerialNumber(value: string): string {
     return value.trim();
   }
@@ -1142,7 +1347,7 @@ export class OrderUpdateComponent implements OnInit {
   private hasSerialInOrder(serialNumber: string, targetItem: InventoryDetail): boolean {
     const normalized = serialNumber.toLowerCase();
 
-    return this.listOfData.some((item) => {
+    return this.orderLineItems.some((item) => {
       if (item.ProductId === targetItem.ProductId) {
         return false;
       }
@@ -1423,7 +1628,7 @@ export class OrderUpdateComponent implements OnInit {
 
   // Hàm tính tổng tiền
   updateTotalAmount() {
-    this.totalAmount = this.listOfData.reduce(
+    this.totalAmount = this.orderLineItems.reduce(
       (sum, item) => sum + (item.TotalPrice ?? 0),
       0
     );
@@ -1520,11 +1725,13 @@ export class OrderUpdateComponent implements OnInit {
 
     // Gộp sản phẩm mới vào list
     this.listOfData = [...this.listOfData, ...productList];
-    this.existingProductIds = this.listOfData.map((p) => p.Id);
+    this.updateExistingProductIds();
 
     // Loại bỏ trùng sản phẩm
     this.listOfData = this.listOfData.filter(
-      (item, index, self) => index === self.findIndex((t) => t.Id === item.Id)
+      (item, index, self) =>
+        index ===
+        self.findIndex((t) => this.getProductId(t) === this.getProductId(item))
     );
     this.listOfData = [...this.listOfData].sort((a, b) =>
       a.ProductName.localeCompare(b.ProductName)
@@ -1573,6 +1780,7 @@ export class OrderUpdateComponent implements OnInit {
       this.updateTotalAmount();
     }
 
+    this.updateExistingProductIds();
     this.closeProductPopup();
   }
 
@@ -1660,21 +1868,24 @@ export class OrderUpdateComponent implements OnInit {
       !this.checked;
   }
   trackById(index: number, item: InventoryDetail): string {
-    return item.Id;
+    return item.Id || this.getProductId(item);
   }
 
   submitForm(): void {
     const formValues = this.orderForm.getRawValue();
     const isDealerOrder = this.customerType === 2;
+    const isDescriptionOnlyUpdate = this.isDescriptionOnlyOrder;
 
-    if (isDealerOrder && !this.customerId) {
+    if (!isDescriptionOnlyUpdate && isDealerOrder && !this.customerId) {
       this.toastr.warning('Vui lòng chọn đại lý trước khi cập nhật đơn hàng.');
       return;
     }
 
-    const missingSerialItem = this.listOfData.find(
-      (item) => this.isSerialTracked(item) && this.getSerialNumbers(item).length === 0
-    );
+    const missingSerialItem = isDescriptionOnlyUpdate
+      ? undefined
+      : this.orderLineItems.find(
+          (item) => this.isSerialTracked(item) && this.getSerialNumbers(item).length === 0
+        );
 
     if (missingSerialItem) {
       this.toastr.warning(
@@ -1692,7 +1903,7 @@ export class OrderUpdateComponent implements OnInit {
       CustomerPhone: formValues.phoneNumber,
       DeliveryAddress: formValues.deliveryAddress,
       Description: formValues.description || null,
-      Details: this.listOfData.map((item) => {
+      Details: this.orderLineItems.map((item) => {
         const serialNumbers = this.isSerialTracked(item)
           ? this.getSerialNumbers(item)
           : [];
@@ -1705,7 +1916,7 @@ export class OrderUpdateComponent implements OnInit {
       }),
     };
 
-    if (isDealerOrder) {
+    if (isDealerOrder && this.customerId) {
       payload.CustomerId = this.customerId;
     }
 

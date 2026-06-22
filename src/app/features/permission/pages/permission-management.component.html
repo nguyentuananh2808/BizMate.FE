@@ -60,6 +60,15 @@
           <button
             nz-button
             nzType="primary"
+            (click)="openCreateUserModal()"
+          >
+            <nz-icon nzType="user-add" nzTheme="outline"></nz-icon>
+            Tạo nhân viên
+          </button>
+
+          <button
+            nz-button
+            nzType="default"
             [nzLoading]="isLoadingUser"
             [disabled]="!userId"
             (click)="loadUserPermissions()"
@@ -279,6 +288,150 @@
           </section>
         </ng-template>
       </nz-spin>
+
+      <nz-modal
+        [(nzVisible)]="isCreateUserModalOpen"
+        nzTitle="Tạo tài khoản nhân viên"
+        [nzFooter]="null"
+        [nzMaskClosable]="!isCreatingUser"
+        [nzClosable]="!isCreatingUser"
+        (nzOnCancel)="closeCreateUserModal()"
+        nzWrapClassName="employee-create-modal"
+      >
+        <ng-container *nzModalContent>
+          <div class="employee-create-intro">
+            <nz-icon nzType="safety-certificate" nzTheme="outline"></nz-icon>
+            <div>
+              <strong>Tài khoản thuộc công ty hiện tại</strong>
+              <span>
+                Nhân viên sẽ dùng vai trò được chọn để nhận quyền khi đăng nhập.
+              </span>
+            </div>
+          </div>
+
+          <div class="employee-create-form">
+            <label>
+              <span>Họ và tên</span>
+              <input
+                nz-input
+                [(ngModel)]="newEmployee.fullName"
+                placeholder="Nguyễn Văn A"
+                [disabled]="isCreatingUser"
+              />
+            </label>
+
+            <label>
+              <span>Email đăng nhập</span>
+              <input
+                nz-input
+                type="email"
+                [(ngModel)]="newEmployee.email"
+                placeholder="employee@company.com"
+                [disabled]="isCreatingUser"
+              />
+            </label>
+
+            <label>
+              <span>Vai trò</span>
+              <nz-select
+                [(ngModel)]="newEmployee.roleId"
+                nzPlaceHolder="Chọn vai trò"
+                [nzDisabled]="isCreatingUser"
+              >
+                <nz-option
+                  *ngFor="let role of getAssignableRoles(); trackBy: trackRole"
+                  [nzValue]="getRoleId(role)"
+                  [nzLabel]="getRoleLabel(role)"
+                ></nz-option>
+              </nz-select>
+            </label>
+
+            <label>
+              <span>Mật khẩu ban đầu</span>
+              <div class="employee-password-input">
+                <input
+                  nz-input
+                  [type]="showNewUserPassword ? 'text' : 'password'"
+                  [(ngModel)]="newEmployee.password"
+                  placeholder="Tối thiểu 8 ký tự"
+                  [disabled]="isCreatingUser"
+                />
+                <button
+                  type="button"
+                  [disabled]="isCreatingUser"
+                  (click)="showNewUserPassword = !showNewUserPassword"
+                  aria-label="Hiện hoặc ẩn mật khẩu"
+                >
+                  <nz-icon
+                    [nzType]="showNewUserPassword ? 'eye-invisible' : 'eye'"
+                    nzTheme="outline"
+                  ></nz-icon>
+                </button>
+              </div>
+            </label>
+
+            <label>
+              <span>Xác nhận mật khẩu</span>
+              <div class="employee-password-input">
+                <input
+                  nz-input
+                  [type]="showNewUserConfirmPassword ? 'text' : 'password'"
+                  [(ngModel)]="newEmployee.confirmPassword"
+                  placeholder="Nhập lại mật khẩu"
+                  [disabled]="isCreatingUser"
+                />
+                <button
+                  type="button"
+                  [disabled]="isCreatingUser"
+                  (click)="showNewUserConfirmPassword = !showNewUserConfirmPassword"
+                  aria-label="Hiện hoặc ẩn mật khẩu xác nhận"
+                >
+                  <nz-icon
+                    [nzType]="
+                      showNewUserConfirmPassword ? 'eye-invisible' : 'eye'
+                    "
+                    nzTheme="outline"
+                  ></nz-icon>
+                </button>
+              </div>
+            </label>
+
+            <label
+              nz-checkbox
+              [(ngModel)]="newEmployee.isActive"
+              [nzDisabled]="isCreatingUser"
+              class="employee-active-checkbox"
+            >
+              Kích hoạt tài khoản ngay
+            </label>
+
+            <p class="employee-password-rule">
+              Mật khẩu cần có ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và
+              ký tự đặc biệt.
+            </p>
+          </div>
+
+          <div class="employee-create-actions">
+            <button
+              nz-button
+              nzType="default"
+              [disabled]="isCreatingUser"
+              (click)="closeCreateUserModal()"
+            >
+              Hủy
+            </button>
+            <button
+              nz-button
+              nzType="primary"
+              [nzLoading]="isCreatingUser"
+              (click)="createEmployee()"
+            >
+              <nz-icon nzType="user-add" nzTheme="outline"></nz-icon>
+              Tạo tài khoản
+            </button>
+          </div>
+        </ng-container>
+      </nz-modal>
 
       <bottom-menu class="mt-6"></bottom-menu>
     </div>

@@ -113,7 +113,7 @@
                   <button
                     nz-button
                     nzType="primary"
-                    *ngIf="statusName !== 'Đã duyệt'"
+                    *ngIf="canEditReceiptDetails"
                     class="flex-1 flex items-center justify-center gap-2 rounded-[24px] h-12 bg-green-500"
                     (click)="finishOrder()"
                   >
@@ -124,7 +124,7 @@
                   <button
                     nz-button
                     nzType="default"
-                    *ngIf="statusName !== 'Đã duyệt'"
+                    *ngIf="canEditReceiptDetails"
                     class="flex-1 flex items-center justify-center gap-2 rounded-[24px] h-12"
                     (click)="addProducts()"
                   >
@@ -132,7 +132,7 @@
                     <span>Thêm</span>
                   </button>
                   <product-qr-scan-button
-                    *ngIf="statusName !== 'Đã duyệt'"
+                    *ngIf="canEditReceiptDetails"
                     [compact]="true"
                     [existingProducts]="existingProductIds"
                     (selectProducts)="onSelectedProducts($event)"
@@ -141,7 +141,6 @@
                   <button
                     nz-button
                     nzType="primary"
-                    *ngIf="statusName !== 'Đã duyệt'"
                     [disabled]="isSubmitting || isSubmitDisabled"
                     (click)="submitForm()"
                     class="flex-1 flex items-center justify-center gap-2 rounded-[24px] h-12"
@@ -212,14 +211,16 @@
 
                       <ng-template #displayQuantity>
                         <span
-                          class="cursor-pointer font-semibol"
-                          (click)="startEdit(item)"
+                          class="font-semibol"
+                          (click)="canEditReceiptDetails && startEdit(item)"
                           [ngClass]="{
                             'text-danger-light dark:text-danger-dark font-bold':
                               item.Quantity <= 0,
                             'text-success-light dark:text-success-dark font-medium':
                               item.Quantity > 0,
-                            'input-error': inputError
+                            'input-error': inputError,
+                            'cursor-pointer': canEditReceiptDetails,
+                            'cursor-not-allowed opacity-70': !canEditReceiptDetails
                           }"
                         >
                           {{ item.Quantity }}
@@ -230,6 +231,7 @@
                     <div>Đơn vị: {{ item.Unit | unitText }}</div>
                   </div>
                   <button
+                    *ngIf="canEditReceiptDetails"
                     class="mt-2 text-red-500 text-xs"
                     (click)="deleteItem(item)"
                   >
@@ -372,14 +374,13 @@
                 </div>
                 <div
                   class="flex justify-end"
-                  *ngIf="statusName !== 'Hoàn thành' && statusName !== 'Hủy'"
                 >
                   <!-- Nút Đóng hàng -->
                   <div class="flex space-x-2">
                     <button
                       nz-button
                       nzType="primary"
-                      *ngIf="statusName !== 'Đã duyệt'"
+                      *ngIf="canEditReceiptDetails"
                       class="flex items-center gap-2 whitespace-nowrap rounded-[24px] h-10 px-4 bg-green-500"
                       (click)="finishOrder()"
                     >
@@ -392,7 +393,7 @@
                     <button
                       nz-button
                       nzType="default"
-                      *ngIf="statusName !== 'Đã duyệt'"
+                      *ngIf="canEditReceiptDetails"
                       class="items-center gap-2 whitespace-nowrap rounded-[24px] h-10 mb-3 mr-2"
                       (click)="addProducts()"
                     >
@@ -400,7 +401,7 @@
                       Thêm sản phẩm
                     </button>
                     <product-qr-scan-button
-                      *ngIf="statusName !== 'Đã duyệt'"
+                      *ngIf="canEditReceiptDetails"
                       [existingProducts]="existingProductIds"
                       (selectProducts)="onSelectedProducts($event)"
                     ></product-qr-scan-button>
@@ -409,7 +410,6 @@
                       nz-button
                       nzType="primary"
                       class="rounded-[24px] h-10 px-6"
-                      *ngIf="statusName !== 'Đã duyệt'"
                       [disabled]="isSubmitting || isSubmitDisabled"
                       (click)="submitForm()"
                     >
@@ -451,6 +451,7 @@
                     <td class="text-center">{{ i + 1 }}</td>
                     <td class="space-x-2 flex">
                       <button
+                        *ngIf="canEditReceiptDetails"
                         nz-button
                         nzType="link"
                         class="text-red-600"
@@ -469,7 +470,7 @@
                         'text-success-light dark:text-success-dark font-medium':
                           item.Quantity > 0
                       }"
-                      (click)="startEdit(item)"
+                      (click)="canEditReceiptDetails && startEdit(item)"
                     >
                       <ng-container
                         *ngIf="editingId === item.Id; else displayQuantity"
@@ -488,7 +489,12 @@
                         </div>
                       </ng-container>
                       <ng-template #displayQuantity>
-                        <span class="cursor-pointer">{{ item.Quantity }}</span>
+                        <span
+                          [ngClass]="{
+                            'cursor-pointer': canEditReceiptDetails,
+                            'cursor-not-allowed opacity-70': !canEditReceiptDetails
+                          }"
+                        >{{ item.Quantity }}</span>
                       </ng-template>
                     </td>
                   </tr>

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
@@ -66,7 +67,8 @@ export class TechnicianHoldingsComponent implements OnInit {
     private technicianService: TechnicianService,
     private holdingService: TechnicianHoldingService,
     private toastr: ToastrService,
-    private modal: NzModalService
+    private modal: NzModalService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -104,14 +106,17 @@ export class TechnicianHoldingsComponent implements OnInit {
   }
 
   loadTechnicians(): void {
-    this.technicianService.getTechnicians(this.keyword, false).subscribe({
-      next: (response) => {
-        this.technicians = response.Technicians || [];
-      },
-      error: () => {
-        this.toastr.error('Không thể tải danh sách kỹ thuật viên.');
-      },
-    });
+    this.technicianService
+      .getTechnicians(this.keyword, false)
+      .pipe(finalize(() => this.refreshView()))
+      .subscribe({
+        next: (response) => {
+          this.technicians = response.Technicians || [];
+        },
+        error: () => {
+          this.toastr.error('Không thể tải danh sách kỹ thuật viên.');
+        },
+      });
   }
 
   searchTechnicians(): void {
@@ -125,23 +130,29 @@ export class TechnicianHoldingsComponent implements OnInit {
 
   loadHoldings(): void {
     this.isLoading = true;
+    this.refreshView();
     const request =
       this.mode === 'overdue'
         ? this.holdingService.getOverdue()
         : this.holdingService.getHoldings(this.selectedTechnicianId || undefined);
 
-    request.subscribe({
-      next: (response) => {
-        this.holdings = response.Technicians || [];
-        this.seedReturnQuantities();
-        this.isLoading = false;
-      },
-      error: () => {
-        this.holdings = [];
-        this.isLoading = false;
-        this.toastr.error('Không thể tải danh sách hàng kỹ thuật đang giữ.');
-      },
-    });
+    request
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.refreshView();
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          this.holdings = response.Technicians || [];
+          this.seedReturnQuantities();
+        },
+        error: () => {
+          this.holdings = [];
+          this.toastr.error('Không thể tải danh sách hàng kỹ thuật đang giữ.');
+        },
+      });
   }
 
   onTechnicianFilterChange(): void {
@@ -207,30 +218,36 @@ export class TechnicianHoldingsComponent implements OnInit {
     };
 
     this.isSavingTechnician = true;
+    this.refreshView();
     const request = this.editingTechnician
       ? this.technicianService.updateTechnician(this.editingTechnician.Id, payload)
       : this.technicianService.createTechnician(payload);
 
-    request.subscribe({
-      next: () => {
-        this.isSavingTechnician = false;
-        this.isTechnicianModalOpen = false;
-        this.toastr.success(
-          this.editingTechnician
-            ? 'Cập nhật kỹ thuật viên thành công.'
-            : 'Tạo kỹ thuật viên thành công.'
-        );
-        this.loadTechnicians();
-      },
-      error: (err) => {
-        this.isSavingTechnician = false;
-        this.toastr.error(
-          err.error?.Message ||
-            err.error?.message ||
-            'Lưu kỹ thuật viên thất bại.'
-        );
-      },
-    });
+    request
+      .pipe(
+        finalize(() => {
+          this.isSavingTechnician = false;
+          this.refreshView();
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.isTechnicianModalOpen = false;
+          this.toastr.success(
+            this.editingTechnician
+              ? 'Cập nhật kỹ thuật viên thành công.'
+              : 'Tạo kỹ thuật viên thành công.'
+          );
+          this.loadTechnicians();
+        },
+        error: (err) => {
+          this.toastr.error(
+            err.error?.Message ||
+              err.error?.message ||
+              'Lưu kỹ thuật viên thất bại.'
+          );
+        },
+      });
   }
 
   getReturnKey(
@@ -252,7 +269,12 @@ export class TechnicianHoldingsComponent implements OnInit {
     item: TechnicianHoldingItem,
     value: number
   ): void {
-    this.returnQuantities[this.getReturnKey(group, item)] = Number(value) || 0;
+    const quantity = Number(value);
+    const safeQuantity = Number.isFinite(quantity)
+      ? Math.min(Math.max(Math.trunc(quantity), 0), item.Quantity)
+      : 0;
+
+    this.returnQuantities[this.getReturnKey(group, item)] = safeQuantity;
   }
 
   returnItem(group: TechnicianHoldingGroup, item: TechnicianHoldingItem): void {
@@ -326,10 +348,14 @@ export class TechnicianHoldingsComponent implements OnInit {
 
     for (const group of this.holdings) {
       for (const item of group.Items) {
-        next[this.getReturnKey(group, item)] = Math.min(1, item.Quantity);
+        next[this.getReturnKey(group, item)] = item.Quantity;
       }
     }
 
     this.returnQuantities = next;
+  }
+
+  private refreshView(): void {
+    this.cdr.markForCheck();
   }
 }

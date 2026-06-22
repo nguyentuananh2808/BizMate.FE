@@ -7,6 +7,10 @@ import { RegisterRequest } from '../models/register-request.model';
 import { RegisterResponse } from '../models/register-response.model';
 import { VerifyOtpRequest } from '../models/verify-otp-request.model';
 import { ApiUrls } from '../../../config/api.config';
+import {
+  ForgotPasswordResponse,
+  ResetPasswordResponse,
+} from '../models/password-recovery.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -47,6 +51,24 @@ export class AuthService {
     return this.http.post<VerifyOtpResponse>(
       `${ApiUrls.baseUrl}${ApiUrls.auth.verifyOtp}`,
       body
+    );
+  }
+
+  forgotPassword(email: string): Observable<ForgotPasswordResponse> {
+    return this.http.post<ForgotPasswordResponse>(
+      `${ApiUrls.baseUrl}${ApiUrls.auth.forgotPassword}`,
+      { email }
+    );
+  }
+
+  resetPassword(
+    email: string,
+    otp: string,
+    newPassword: string
+  ): Observable<ResetPasswordResponse> {
+    return this.http.post<ResetPasswordResponse>(
+      `${ApiUrls.baseUrl}${ApiUrls.auth.resetPassword}`,
+      { email, otp, newPassword }
     );
   }
 }

@@ -125,8 +125,8 @@
                 <td class="text-center">{{ (pageIndex - 1) * pageSize + i + 1 }}</td>
                 <td class="serial-code">{{ item.SerialNumber }}</td>
                 <td>
-                  <span class="status-pill" [ngClass]="{ sold: item.SoldAt }">
-                    {{ item.StatusName || item.Status }}
+                  <span class="status-pill" [ngClass]="getStatusClass(item.Status)">
+                    {{ getStatusLabel(item.Status) }}
                   </span>
                 </td>
                 <td>{{ item.ProductCode }}</td>

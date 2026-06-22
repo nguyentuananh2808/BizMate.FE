@@ -23,8 +23,6 @@ export class ProductService {
       pageSize,
       isActive,
     };
-    console.log('keyseach: ', keySearch);
-
     return this.http.post<ProductResponse>(
       `${ApiUrls.baseUrl}${ApiUrls.product.search}`,
       payload
@@ -57,7 +55,6 @@ export class ProductService {
       IsSerialTracked,
       Description,
     };
-    console.log('payload:', ProductCategoryId);
     return this.http.put<Product>(
       `${ApiUrls.baseUrl}${ApiUrls.product.update}`,
       body

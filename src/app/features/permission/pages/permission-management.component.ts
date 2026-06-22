@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
@@ -31,6 +31,15 @@ import { PermissionClaimService } from '../services/permission-claim.service';
 import { RoleApiService } from '../services/role-api.service';
 import { UserApiService } from '../services/user-api.service';
 import { UserPermissionApiService } from '../services/user-permission-api.service';
+
+interface NewEmployeeForm {
+  fullName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  roleId: string;
+  isActive: boolean;
+}
 
 @Component({
   selector: 'permission-management',
@@ -78,12 +87,18 @@ export class PermissionManagementComponent implements OnInit {
   isLoadingUser = false;
   isSavingPermissions = false;
   isSavingRole = false;
+  isCreateUserModalOpen = false;
+  isCreatingUser = false;
+  showNewUserPassword = false;
+  showNewUserConfirmPassword = false;
+  newEmployee: NewEmployeeForm = this.createEmptyEmployeeForm();
 
   private directPermissionIds = new Set<string>();
   private originalDirectPermissionIds = new Set<string>();
   private rolePermissionKeys = new Set<string>();
   private directPermissionKeys = new Set<string>();
   private tokenPermissionKeys = new Set<string>();
+  private pendingSelectedUserId = '';
 
   readonly trackUser = (_index: number, user: StoreUserItem): string =>
     user.Id || user.Email || String(_index);
@@ -106,7 +121,8 @@ export class PermissionManagementComponent implements OnInit {
     private userApi: UserApiService,
     private userPermissionApi: UserPermissionApiService,
     private toastr: ToastrService,
-    private modal: NzModalService
+    private modal: NzModalService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -117,6 +133,7 @@ export class PermissionManagementComponent implements OnInit {
 
   loadMasterData(): void {
     this.isLoadingMaster = true;
+    this.refreshView();
     forkJoin({
       permissions: this.permissionApi.getPermissionGroups().pipe(
         catchError(() => {
@@ -131,34 +148,57 @@ export class PermissionManagementComponent implements OnInit {
         })
       ),
     })
-      .pipe(finalize(() => (this.isLoadingMaster = false)))
+      .pipe(
+        finalize(() => {
+          this.isLoadingMaster = false;
+          this.refreshView();
+        })
+      )
       .subscribe(({ permissions, roles }) => {
         this.permissionGroups = Array.isArray(permissions) ? permissions : [];
         this.roles = Array.isArray(roles) ? roles : [];
         this.rebuildDirectPermissionKeys();
         this.rebuildTokenPermissionKeys();
+        this.refreshView();
       });
   }
 
   searchUsers(pageIndex = 0): void {
     this.userPageIndex = pageIndex;
     this.isSearchingUsers = true;
+    this.refreshView();
     this.userApi
       .searchUsers({
         KeySearch: this.userSearchKeyword.trim() || null,
         PageIndex: this.userPageIndex,
         PageSize: this.userPageSize,
-        IsActive: false,
+        IsActive: null,
       })
-      .pipe(finalize(() => (this.isSearchingUsers = false)))
+      .pipe(
+        finalize(() => {
+          this.isSearchingUsers = false;
+          this.refreshView();
+        })
+      )
       .subscribe({
         next: (response) => {
           this.users = response.Users || [];
           this.userTotalCount = response.TotalCount || this.users.length;
+          if (this.pendingSelectedUserId) {
+            const createdUser = this.users.find(
+              (user) => user.Id === this.pendingSelectedUserId
+            );
+            this.pendingSelectedUserId = '';
+            if (createdUser) {
+              this.selectUser(createdUser.Id);
+            }
+          }
+          this.refreshView();
         },
         error: () => {
           this.users = [];
           this.userTotalCount = 0;
+          this.refreshView();
           this.toastr.error('Không thể tải danh sách nhân viên.');
         },
       });
@@ -172,6 +212,8 @@ export class PermissionManagementComponent implements OnInit {
 
     if (this.userId) {
       this.loadUserPermissions();
+    } else {
+      this.refreshView();
     }
   }
 
@@ -188,6 +230,108 @@ export class PermissionManagementComponent implements OnInit {
     this.loadUserPermissions();
   }
 
+  openCreateUserModal(): void {
+    const defaultRole =
+      this.getAssignableRoles().find(
+        (role) => role.name?.toLowerCase() === 'staff'
+      ) || this.getAssignableRoles()[0];
+
+    if (!defaultRole) {
+      this.toastr.warning(
+        'Chưa có vai trò phù hợp để tạo nhân viên. Vui lòng cấu hình vai trò trước.'
+      );
+      return;
+    }
+
+    this.newEmployee = {
+      ...this.createEmptyEmployeeForm(),
+      roleId: this.getRoleId(defaultRole),
+    };
+    this.showNewUserPassword = false;
+    this.showNewUserConfirmPassword = false;
+    this.isCreateUserModalOpen = true;
+    this.refreshView();
+  }
+
+  closeCreateUserModal(): void {
+    if (this.isCreatingUser) return;
+
+    this.isCreateUserModalOpen = false;
+    this.newEmployee = this.createEmptyEmployeeForm();
+    this.refreshView();
+  }
+
+  createEmployee(): void {
+    if (this.isCreatingUser) return;
+
+    const fullName = this.newEmployee.fullName.trim();
+    const email = this.newEmployee.email.trim().toLowerCase();
+    const password = this.newEmployee.password;
+
+    if (!fullName || !email || !password || !this.newEmployee.roleId) {
+      this.toastr.warning('Vui lòng nhập đầy đủ thông tin nhân viên.');
+      return;
+    }
+
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      this.toastr.warning('Email không đúng định dạng.');
+      return;
+    }
+
+    if (
+      password.length < 8 ||
+      !/[A-Z]/.test(password) ||
+      !/[a-z]/.test(password) ||
+      !/\d/.test(password) ||
+      !/[^A-Za-z0-9]/.test(password)
+    ) {
+      this.toastr.warning(
+        'Mật khẩu cần ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.'
+      );
+      return;
+    }
+
+    if (password !== this.newEmployee.confirmPassword) {
+      this.toastr.warning('Mật khẩu xác nhận chưa khớp.');
+      return;
+    }
+
+    this.isCreatingUser = true;
+    this.refreshView();
+    this.userApi
+      .createUser({
+        FullName: fullName,
+        Email: email,
+        Password: password,
+        RoleId: this.newEmployee.roleId,
+        IsActive: this.newEmployee.isActive,
+      })
+      .pipe(
+        finalize(() => {
+          this.isCreatingUser = false;
+          this.refreshView();
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          this.toastr.success(
+            response.Message || 'Tạo tài khoản nhân viên thành công.'
+          );
+          this.pendingSelectedUserId = response.UserId || '';
+          this.isCreateUserModalOpen = false;
+          this.newEmployee = this.createEmptyEmployeeForm();
+          this.searchUsers(0);
+        },
+        error: (error) => {
+          const message =
+            error?.error?.Message ||
+            error?.error?.message ||
+            'Không thể tạo tài khoản nhân viên.';
+          this.toastr.error(message);
+        },
+      });
+  }
+
   loadUserPermissions(): void {
     const targetUserId = this.userId.trim();
     if (!targetUserId) {
@@ -196,17 +340,25 @@ export class PermissionManagementComponent implements OnInit {
     }
 
     this.isLoadingUser = true;
+    this.refreshView();
     this.userPermissionApi
       .getUserPermissions(targetUserId)
-      .pipe(finalize(() => (this.isLoadingUser = false)))
+      .pipe(
+        finalize(() => {
+          this.isLoadingUser = false;
+          this.refreshView();
+        })
+      )
       .subscribe({
         next: (overview) => {
           this.overview = this.ensureOverview(overview);
           this.syncPermissionState(this.overview);
+          this.refreshView();
         },
         error: () => {
           this.overview = this.createEmptyOverview(targetUserId);
           this.syncPermissionState(this.overview);
+          this.refreshView();
           this.toastr.error('Không thể tải quyền hiện tại của nhân viên.');
         },
       });
@@ -224,9 +376,15 @@ export class PermissionManagementComponent implements OnInit {
     }
 
     this.isSavingRole = true;
+    this.refreshView();
     this.userPermissionApi
       .assignRole(this.userId.trim(), this.selectedRoleId)
-      .pipe(finalize(() => (this.isSavingRole = false)))
+      .pipe(
+        finalize(() => {
+          this.isSavingRole = false;
+          this.refreshView();
+        })
+      )
       .subscribe({
         next: () => {
           this.toastr.success('Đã gán vai trò cho nhân viên.');
@@ -285,11 +443,17 @@ export class PermissionManagementComponent implements OnInit {
     }
 
     this.isSavingPermissions = true;
+    this.refreshView();
     this.userPermissionApi
       .replaceDirectPermissions(this.userId.trim(), {
         PermissionIds: Array.from(this.directPermissionIds),
       })
-      .pipe(finalize(() => (this.isSavingPermissions = false)))
+      .pipe(
+        finalize(() => {
+          this.isSavingPermissions = false;
+          this.refreshView();
+        })
+      )
       .subscribe({
         next: (response) => {
           this.toastr.success(
@@ -344,7 +508,17 @@ export class PermissionManagementComponent implements OnInit {
     const assigned = new Set(
       this.getAssignedRoles().map((role) => this.getRoleId(role))
     );
-    return this.roles.filter((role) => !assigned.has(this.getRoleId(role)));
+    return this.getAssignableRoles().filter(
+      (role) => !assigned.has(this.getRoleId(role))
+    );
+  }
+
+  getAssignableRoles(): UserRoleItem[] {
+    return this.roles.filter(
+      (role) =>
+        role.name?.toLowerCase() !== 'owner' &&
+        !(role.isSystem && role.name?.toLowerCase() === 'owner')
+    );
   }
 
   getAssignedRoles(): UserRoleItem[] {
@@ -556,5 +730,20 @@ export class PermissionManagementComponent implements OnInit {
         ? overview.effectivePermissions
         : [],
     };
+  }
+
+  private createEmptyEmployeeForm(): NewEmployeeForm {
+    return {
+      fullName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      roleId: '',
+      isActive: true,
+    };
+  }
+
+  private refreshView(): void {
+    this.cdr.markForCheck();
   }
 }

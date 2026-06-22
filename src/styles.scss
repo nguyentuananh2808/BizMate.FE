@@ -3,14 +3,34 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   font-family: 'Inter', sans-serif;
   color: #102331;
   background: #f4f7f8;
+  overflow-x: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 
 #toast-container {
-  z-index: 99999 !important;
+  z-index: 2147483600 !important;
 }
 
 #toast-container > .ngx-toastr {
@@ -47,7 +67,7 @@ notification {
 .ant-select-dropdown,
 .ant-dropdown,
 .ant-tooltip {
-  z-index: 2147483000 !important;
+  z-index: 2147483200 !important;
 }
 
 .list-filter-anchor {
@@ -260,6 +280,7 @@ notification {
   position: relative;
   min-height: 100vh;
   width: 100%;
+  min-width: 0;
   overflow-x: hidden;
   overflow-y: auto;
   background-color: #f4f7f8;
@@ -367,6 +388,188 @@ notification {
 @media (max-width: 767.98px) {
   main {
     padding-bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+
+  .mobile-list-toolbar {
+    top: 8px !important;
+    right: 12px !important;
+    left: 12px !important;
+    width: auto !important;
+    margin: 0 !important;
+    border: 1px solid rgba(15, 70, 87, 0.12);
+    box-shadow: 0 18px 46px rgba(15, 35, 49, 0.16);
+    backdrop-filter: blur(18px);
+  }
+
+  .mobile-list-toolbar header {
+    margin-bottom: 10px !important;
+  }
+
+  .ant-picker-panels {
+    flex-direction: column;
+  }
+}
+
+.ant-spin-nested-loading,
+.ant-spin-container,
+.ant-table-wrapper {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ant-table {
+  border-radius: 12px !important;
+}
+
+.ant-table-content {
+  overflow-x: auto !important;
+}
+
+.ant-table-cell {
+  vertical-align: middle;
+}
+
+.ant-select-dropdown,
+.ant-picker-dropdown,
+.ant-dropdown,
+.ant-tooltip {
+  max-width: calc(100vw - 24px);
+}
+
+.fixed.inset-0.z-\[9998\],
+.fixed.inset-0.z-\[2147483000\] {
+  z-index: 2147483200 !important;
+}
+
+.employee-create-modal {
+  .ant-modal {
+    width: min(680px, calc(100vw - 28px)) !important;
+  }
+
+  .ant-modal-content {
+    overflow: hidden;
+    border-radius: 8px;
+  }
+
+  .ant-modal-header {
+    padding: 18px 22px;
+    border-bottom-color: rgba(15, 70, 87, 0.12);
+  }
+
+  .ant-modal-body {
+    padding: 22px;
+  }
+}
+
+.employee-create-intro {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 13px 14px;
+  border-left: 3px solid #14b8a6;
+  background: #effcf8;
+  color: #102331;
+
+  > nz-icon {
+    margin-top: 2px;
+    color: #0f9488;
+    font-size: 20px;
+  }
+
+  strong,
+  span {
+    display: block;
+  }
+
+  strong {
+    font-weight: 800;
+  }
+
+  span {
+    margin-top: 3px;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+}
+
+.employee-create-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+
+  > label:not(.employee-active-checkbox) {
+    display: grid;
+    gap: 7px;
+    min-width: 0;
+
+    > span {
+      color: #334155;
+      font-size: 13px;
+      font-weight: 750;
+    }
+  }
+
+  nz-select {
+    width: 100%;
+  }
+}
+
+.employee-password-input {
+  position: relative;
+
+  input {
+    padding-right: 42px;
+  }
+
+  button {
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    color: #64748b;
+  }
+}
+
+.employee-active-checkbox {
+  align-self: center;
+  color: #334155;
+  font-weight: 700;
+}
+
+.employee-password-rule {
+  align-self: center;
+  margin: 0;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.employee-create-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(15, 70, 87, 0.12);
+}
+
+@media (max-width: 768px) {
+  .employee-create-form {
+    grid-template-columns: 1fr;
+  }
+
+  .employee-create-actions {
+    position: sticky;
+    bottom: 0;
+    background: #ffffff;
   }
 }
 

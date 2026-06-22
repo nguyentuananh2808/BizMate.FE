@@ -37,10 +37,13 @@
 .technician-page {
   min-width: 0;
   width: 100%;
+  overflow-x: hidden;
 }
 
 .technician-layout {
+  width: min(100%, 1440px);
   min-height: 100vh;
+  margin: 0 auto;
   padding: 22px 24px 110px;
 }
 
@@ -85,12 +88,19 @@
 
 .technician-actions {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) 42px minmax(260px, 1fr) auto auto;
+  grid-template-columns: minmax(220px, 1fr) 44px minmax(220px, 1fr) max-content max-content;
+  align-items: center;
   gap: 10px;
   width: min(900px, 100%);
 
   button {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     border-radius: 12px;
+    white-space: nowrap;
   }
 }
 
@@ -106,6 +116,7 @@
 
 .technician-select {
   height: 34px;
+  min-width: 0;
   padding: 0 12px;
 }
 
@@ -214,16 +225,21 @@
   flex-wrap: wrap;
 }
 
+.holding-card__meta {
+  justify-content: flex-end;
+}
+
 .holding-table {
+  max-width: 100%;
   overflow-x: auto;
 }
 
 .holding-row {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) 90px 190px minmax(260px, 0.8fr);
+  grid-template-columns: minmax(260px, 1.4fr) 96px 190px minmax(280px, 1fr);
   gap: 14px;
   align-items: center;
-  min-width: 900px;
+  min-width: 940px;
   padding: 12px 18px;
   border-bottom: 1px solid rgba(148, 163, 184, 0.12);
 
@@ -256,13 +272,17 @@
 }
 
 .return-tools {
+  justify-content: flex-start;
+
   input {
+    flex: 0 0 86px;
     max-width: 86px;
     height: 32px;
     padding: 0 10px;
   }
 
   button {
+    flex: 0 0 auto;
     border-radius: 999px;
   }
 }
@@ -275,7 +295,7 @@
 .technician-modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 10000;
+  z-index: 2147483200;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -285,6 +305,8 @@
 
 .technician-modal {
   width: min(560px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
   border: 1px solid var(--hold-border);
   border-radius: 20px;
   background: var(--hold-surface);
@@ -371,6 +393,15 @@
 @media (max-width: 768px) {
   .technician-layout {
     padding: 12px 12px 104px;
+  }
+
+  .holding-card__head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .holding-card__meta {
+    justify-content: flex-start;
   }
 
   .technician-hero h1 {

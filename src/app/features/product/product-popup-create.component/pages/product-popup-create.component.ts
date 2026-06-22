@@ -74,7 +74,6 @@ export class ProductPopupCreateComponent implements OnInit {
           (cat) => cat.IsActive == false
         );
         this.filteredCategories = [...this.categories];
-        console.log('Categories loaded:', this.categories);
         this.cdr.detectChanges();
       },
       error: () => {

@@ -126,9 +126,7 @@ export class ProductPopupUpdateComponent implements OnInit {
 
   onSubmit() {
     if (this.isSaving) return;
-    console.log('Submitting data:', this.data.ProductCategoryId);
     this.isSaving = true;
-    console.log('catID 2:', this.data.ProductCategoryId);
 
     this.productService
       .UpdateProduct(

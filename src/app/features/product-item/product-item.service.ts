@@ -73,8 +73,6 @@ export class ProductItemService {
       ]
    };
 
-   console.log('import payload:',body);
-
    return this.http.post<ImportProductItemsResponse>(
       `${ApiUrls.baseUrl}${ApiUrls.productItem.import}`,
       body

@@ -695,11 +695,6 @@ export class OrderCreateComponent {
                 next: (res) => {
                   const dealerPrices =
                     res.DealerLevel.DealerPriceForDealerLevel || [];
-                  console.log(
-                    'res.DealerLevel.DealerPriceForDealerLevel',
-                    res.DealerLevel.DealerPriceForDealerLevel
-                  );
-
                   this.applyDealerLevelPrices(dealerPrices);
                   this.allData = [...this.listOfData];
                   this.updateTotalAmount();

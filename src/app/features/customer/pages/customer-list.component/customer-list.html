@@ -3,7 +3,7 @@
 
   <div class="bg-login" [ngClass]="{ dark: isDark }">
     <div
-      class="max-h-[700px] overflow-y-auto px-4 pt-6 z-10 relative"
+      class="min-h-screen w-full overflow-x-hidden px-4 pt-6 pb-28 z-10 relative"
       [ngClass]="{ 'dark:bg-gray-900': isDark }"
     >
       <!-- Mobile header bar -->
@@ -273,7 +273,7 @@
         >
           <nz-table
             [nzData]="listOfData"
-            [nzScroll]="{ y: '400px' }"
+            [nzScroll]="{ x: '1320px', y: '400px' }"
             [nzTotal]="totalCount"
             [nzPageSize]="pageSize"
             [nzPageIndex]="pageIndex"

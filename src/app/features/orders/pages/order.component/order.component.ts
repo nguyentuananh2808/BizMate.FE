@@ -114,7 +114,9 @@ export class OrderComponent implements OnInit {
         this.statusList = res.Statuses;
         this.statuses = this.statusList.map((s) => s.Id);
       },
-      error: (err) => console.error(err),
+      error: () => {
+        this.toastr.error('Không thể tải danh sách trạng thái đơn hàng.');
+      },
     });
   }
 
@@ -202,12 +204,24 @@ export class OrderComponent implements OnInit {
 
     this.orderService.SearchOrder(request).subscribe({
       next: (res) => {
+        if (res.Success === false) {
+          this.listOfData = [];
+          this.originalData = [];
+          this.listOfCurrentPageData = [];
+          this.totalCount = 0;
+          this.isLoading = false;
+          this.toastr.error(
+            res.Message || res.message || 'Không thể tải danh sách đơn hàng.'
+          );
+          this.cdr.detectChanges();
+          return;
+        }
+
         this.originalData = (res.Orders || []).map((item) => ({
           ...item,
           CreatedDate: item.CreatedDate ? new Date(item.CreatedDate) : null,
           UpdatedDate: item.UpdatedDate ? new Date(item.UpdatedDate) : null,
         }));
-        console.log('data', this.originalData);
         this.totalCount = res.TotalCount || 0;
 
         this.listOfData = [...this.originalData].sort((a, b) =>
@@ -218,7 +232,14 @@ export class OrderComponent implements OnInit {
         this.isLoading = false;
         this.cdr.detectChanges();
       },
-      error: () => (this.isLoading = false),
+      error: (err) => {
+        this.isLoading = false;
+        this.toastr.error(
+          err.error?.Message ||
+            err.error?.message ||
+            'Không thể tải danh sách đơn hàng.'
+        );
+      },
     });
   }
 
@@ -306,10 +327,6 @@ export class OrderComponent implements OnInit {
   }
 
   applyDateFilter() {
-    console.log('Áp dụng filter:', {
-      dateRange: this.dateRange,
-      statuses: this.selectedStatuses,
-    });
     this.hideTooltip();
     this.fetchData(
       this.pageIndex,

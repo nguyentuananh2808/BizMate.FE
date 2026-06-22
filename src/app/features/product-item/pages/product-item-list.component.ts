@@ -52,9 +52,12 @@ export class ProductItemListComponent implements OnInit, OnDestroy {
 
   statusOptions = [
     { label: 'Tất cả trạng thái', value: null },
+    { label: 'Chờ nhập kho', value: 0 },
     { label: 'Trong kho', value: 1 },
-    { label: 'Đã bán', value: 2 },
-    { label: 'Khác', value: 3 },
+    { label: 'Đã giữ chỗ', value: 2 },
+    { label: 'Đã bán', value: 3 },
+    { label: 'Đã trả', value: 4 },
+    { label: 'Lỗi/hỏng', value: 5 },
   ];
 
   constructor(
@@ -181,6 +184,38 @@ export class ProductItemListComponent implements OnInit, OnDestroy {
 
   trackById(index: number, item: ProductItem): string {
     return item.Id || item.SerialNumber;
+  }
+
+  getStatusLabel(status: number | string): string {
+    const value = Number(status);
+
+    switch (value) {
+      case 0:
+        return 'Chờ nhập kho';
+      case 1:
+        return 'Trong kho';
+      case 2:
+        return 'Đã giữ chỗ';
+      case 3:
+        return 'Đã bán';
+      case 4:
+        return 'Đã trả';
+      case 5:
+        return 'Lỗi/hỏng';
+      default:
+        return String(status || 'Không rõ');
+    }
+  }
+
+  getStatusClass(status: number | string): string {
+    const value = Number(status);
+
+    if (value === 1) return 'in-stock';
+    if (value === 2) return 'reserved';
+    if (value === 3) return 'sold';
+    if (value === 5) return 'defective';
+
+    return 'neutral';
   }
 
   private loadProductFromQuery(productId: string): void {

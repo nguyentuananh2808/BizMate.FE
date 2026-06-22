@@ -4,9 +4,7 @@
   (click)="openMobileMenu()"
   aria-label="Mở menu"
 >
-  <!-- <img src="assets/images/logo_vuakong.png" alt="" /> -->
-
-      <i class="text-background-light" nz-icon [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"></i>
+  <i nz-icon nzType="menu" nzTheme="outline"></i>
 </button>
 
 <div
@@ -30,6 +28,7 @@
   <div class="sidebar-top">
     <button
       class="brand-button"
+      *ngIf="isMobile || !isCollapsed"
       (click)="isMobile ? closeMobileMenu() : toggleSidebar()"
       [attr.aria-label]="isCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'"
     >
