@@ -37,6 +37,8 @@ export interface TechnicianHoldingItem {
   ProductId: string;
   ProductName: string;
   ProductCode?: string;
+  BorrowType: TechnicianBorrowType;
+  BorrowTypeName?: string;
   Quantity: number;
   LastBorrowedAt: string;
   IsOverdue: boolean;
@@ -54,7 +56,73 @@ export interface ReturnHoldingRequest {
 
 export interface ReturnHoldingItem {
   ProductId: string;
+  BorrowType: TechnicianBorrowType;
   Quantity: number;
+}
+
+export enum TechnicianBorrowType {
+  Daily = 1,
+  Assigned = 2,
+  Backpack = Assigned,
+  Warranty = 3,
+}
+
+export enum TechnicianBorrowRequestStatus {
+  Pending = 1,
+  Approved = 2,
+  Rejected = 3,
+  Cancelled = 4,
+}
+
+export interface CreateBorrowRequest {
+  TechnicianId: string;
+  BorrowType: TechnicianBorrowType;
+  NeededDate: string;
+  Description?: string | null;
+  Items: CreateBorrowRequestItem[];
+}
+
+export interface CreateBorrowRequestItem {
+  ProductId: string;
+  Quantity: number;
+}
+
+export interface BorrowRequestItem {
+  ProductId: string;
+  ProductName: string;
+  ProductCode?: string;
+  Quantity: number;
+}
+
+export interface TechnicianBorrowRequest {
+  Id: string;
+  Code: string;
+  TechnicianId: string;
+  TechnicianName: string;
+  Phone?: string;
+  BorrowType: TechnicianBorrowType;
+  BorrowTypeName?: string;
+  RequestStatus: TechnicianBorrowRequestStatus;
+  RequestStatusName?: string;
+  NeededDate: string;
+  CreatedDate: string;
+  ApprovedAt?: string;
+  Description?: string;
+  RejectionReason?: string;
+  TotalQuantity: number;
+  Items: BorrowRequestItem[];
+}
+
+export interface GetBorrowRequestsResponse extends ApiResponse {
+  Requests: TechnicianBorrowRequest[];
+}
+
+export interface UseTechnicianHoldingRequest {
+  TechnicianId: string;
+  ProductId: string;
+  BorrowType: TechnicianBorrowType;
+  Quantity: number;
+  Note?: string | null;
 }
 
 export interface SalesByProductReportRow {

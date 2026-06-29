@@ -132,7 +132,7 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
   }
 
   get canEditReceiptDetails(): boolean {
-    return !this.isApprovedReceipt;
+    return false;
   }
 
   private applyReceiptFormState(): void {
@@ -144,11 +144,7 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
         continue;
       }
 
-      if (this.isApprovedReceipt) {
-        control.disable({ emitEvent: false });
-      } else {
-        control.enable({ emitEvent: false });
-      }
+      control.disable({ emitEvent: false });
     }
 
     this.receiptForm.get('description')?.enable({ emitEvent: false });

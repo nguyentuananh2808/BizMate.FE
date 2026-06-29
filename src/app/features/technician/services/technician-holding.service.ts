@@ -4,10 +4,16 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiUrls } from '../../../config/api.config';
 import {
+  CreateBorrowRequest,
+  GetBorrowRequestsResponse,
   GetHoldingsResponse,
   ReturnHoldingRequest,
+  TechnicianBorrowRequest,
+  TechnicianBorrowRequestStatus,
+  TechnicianBorrowType,
   TechnicianHoldingGroup,
   TechnicianHoldingItem,
+  UseTechnicianHoldingRequest,
 } from '../models/technician.model';
 
 @Injectable({ providedIn: 'root' })
@@ -35,6 +41,50 @@ export class TechnicianHoldingService {
   returnItems(body: ReturnHoldingRequest): Observable<unknown> {
     return this.http.post(
       `${ApiUrls.baseUrl}${ApiUrls.technicianHolding.return}`,
+      body
+    );
+  }
+
+  getBorrowRequests(
+    status?: TechnicianBorrowRequestStatus,
+    technicianId?: string
+  ): Observable<GetBorrowRequestsResponse> {
+    let params = new HttpParams();
+
+    if (status) params = params.set('status', status);
+    if (technicianId) params = params.set('technicianId', technicianId);
+
+    return this.http
+      .get<unknown>(`${ApiUrls.baseUrl}${ApiUrls.technicianHolding.requests}`, {
+        params,
+      })
+      .pipe(map((response) => this.normalizeBorrowRequestsResponse(response)));
+  }
+
+  createBorrowRequest(body: CreateBorrowRequest): Observable<unknown> {
+    return this.http.post(
+      `${ApiUrls.baseUrl}${ApiUrls.technicianHolding.requests}`,
+      body
+    );
+  }
+
+  approveBorrowRequest(id: string): Observable<unknown> {
+    return this.http.post(
+      `${ApiUrls.baseUrl}${ApiUrls.technicianHolding.approveRequest(id)}`,
+      {}
+    );
+  }
+
+  rejectBorrowRequest(id: string, reason?: string): Observable<unknown> {
+    return this.http.post(
+      `${ApiUrls.baseUrl}${ApiUrls.technicianHolding.rejectRequest(id)}`,
+      { Reason: reason || null }
+    );
+  }
+
+  useHolding(body: UseTechnicianHoldingRequest): Observable<unknown> {
+    return this.http.post(
+      `${ApiUrls.baseUrl}${ApiUrls.technicianHolding.use}`,
       body
     );
   }
@@ -82,6 +132,8 @@ export class TechnicianHoldingService {
       ProductId: this.readString(source, ['ProductId', 'productId']),
       ProductName: this.readString(source, ['ProductName', 'productName']),
       ProductCode: this.readString(source, ['ProductCode', 'productCode']),
+      BorrowType: this.readNumber(source, ['BorrowType', 'borrowType']) as TechnicianBorrowType,
+      BorrowTypeName: this.readString(source, ['BorrowTypeName', 'borrowTypeName']),
       Quantity: this.readNumber(source, ['Quantity', 'quantity']),
       LastBorrowedAt: this.readString(source, [
         'LastBorrowedAt',
@@ -92,6 +144,76 @@ export class TechnicianHoldingService {
         'ReminderMessage',
         'reminderMessage',
       ]),
+    };
+  }
+
+  private normalizeBorrowRequestsResponse(
+    response: unknown
+  ): GetBorrowRequestsResponse {
+    const source = this.unwrapRecord(response);
+    const requests = this.readArray<Record<string, unknown>>(source, [
+      'Requests',
+      'requests',
+      'Items',
+      'items',
+      'Data',
+      'data',
+    ]).map((item) => this.normalizeBorrowRequest(item));
+
+    return {
+      Success: this.readBoolean(source, ['Success', 'success'], true),
+      Message: this.readString(source, ['Message', 'message']),
+      Errors: this.readArray<unknown>(source, ['Errors', 'errors']),
+      Requests: requests,
+    };
+  }
+
+  private normalizeBorrowRequest(
+    source: Record<string, unknown>
+  ): TechnicianBorrowRequest {
+    return {
+      Id: this.readString(source, ['Id', 'id']),
+      Code: this.readString(source, ['Code', 'code']),
+      TechnicianId: this.readString(source, ['TechnicianId', 'technicianId']),
+      TechnicianName: this.readString(source, [
+        'TechnicianName',
+        'technicianName',
+      ]),
+      Phone: this.readString(source, ['Phone', 'phone']),
+      BorrowType: this.readNumber(source, [
+        'BorrowType',
+        'borrowType',
+      ]) as TechnicianBorrowType,
+      BorrowTypeName: this.readString(source, [
+        'BorrowTypeName',
+        'borrowTypeName',
+      ]),
+      RequestStatus: this.readNumber(source, [
+        'RequestStatus',
+        'requestStatus',
+      ]) as TechnicianBorrowRequestStatus,
+      RequestStatusName: this.readString(source, [
+        'RequestStatusName',
+        'requestStatusName',
+      ]),
+      NeededDate: this.readString(source, ['NeededDate', 'neededDate']),
+      CreatedDate: this.readString(source, ['CreatedDate', 'createdDate']),
+      ApprovedAt: this.readString(source, ['ApprovedAt', 'approvedAt']),
+      Description: this.readString(source, ['Description', 'description']),
+      RejectionReason: this.readString(source, [
+        'RejectionReason',
+        'rejectionReason',
+      ]),
+      TotalQuantity: this.readNumber(source, ['TotalQuantity', 'totalQuantity']),
+      Items: this.readArray<Record<string, unknown>>(source, [
+        'Items',
+        'items',
+      ]).map((item) => ({
+        ProductId: this.readString(item, ['ProductId', 'productId']),
+        ProductName: this.readString(item, ['ProductName', 'productName']),
+        ProductCode: this.readString(item, ['ProductCode', 'productCode']),
+        Quantity: this.readNumber(item, ['Quantity', 'quantity']),
+      })),
     };
   }
 

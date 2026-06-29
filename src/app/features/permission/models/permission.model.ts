@@ -74,6 +74,7 @@ export interface CreateStoreUserRequest {
   FullName: string;
   Email: string;
   Password: string;
+  Phone?: string | null;
   RoleId: string;
   IsActive: boolean;
 }

@@ -1,4 +1,11 @@
-const apiHost = '192.168.1.204';
+const browserHost =
+  typeof window !== 'undefined' && window.location.hostname
+    ? window.location.hostname
+    : 'localhost';
+const normalizedHost = browserHost === '0.0.0.0' ? 'localhost' : browserHost;
+const apiHost = normalizedHost.includes(':')
+  ? `[${normalizedHost}]`
+  : normalizedHost;
 const apiProtocol =
   typeof window !== 'undefined' && window.location.protocol === 'https:'
     ? 'https'
@@ -124,6 +131,10 @@ export const ApiUrls = {
     getAll: '/technician-holdings',
     overdue: '/technician-holdings/overdue',
     return: '/technician-holdings/return',
+    requests: '/technician-holdings/requests',
+    approveRequest: (id: string) => `/technician-holdings/requests/${id}/approve`,
+    rejectRequest: (id: string) => `/technician-holdings/requests/${id}/reject`,
+    use: '/technician-holdings/use',
   },
 
   report: {

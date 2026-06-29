@@ -35,6 +35,7 @@ import { UserPermissionApiService } from '../services/user-permission-api.servic
 interface NewEmployeeForm {
   fullName: string;
   email: string;
+  phone: string;
   password: string;
   confirmPassword: string;
   roleId: string;
@@ -303,6 +304,9 @@ export class PermissionManagementComponent implements OnInit {
         FullName: fullName,
         Email: email,
         Password: password,
+        Phone: this.isTechnicianRoleSelected()
+          ? this.newEmployee.phone.trim() || null
+          : null,
         RoleId: this.newEmployee.roleId,
         IsActive: this.newEmployee.isActive,
       })
@@ -521,6 +525,13 @@ export class PermissionManagementComponent implements OnInit {
     );
   }
 
+  isTechnicianRoleSelected(): boolean {
+    const role = this.roles.find(
+      (item) => this.getRoleId(item) === this.newEmployee.roleId
+    );
+    return role?.name?.toLowerCase() === 'technician';
+  }
+
   getAssignedRoles(): UserRoleItem[] {
     return this.overview?.roles ?? [];
   }
@@ -736,6 +747,7 @@ export class PermissionManagementComponent implements OnInit {
     return {
       fullName: '',
       email: '',
+      phone: '',
       password: '',
       confirmPassword: '',
       roleId: '',

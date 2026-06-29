@@ -346,6 +346,17 @@
               </nz-select>
             </label>
 
+            <label *ngIf="isTechnicianRoleSelected()">
+              <span>Số điện thoại kỹ thuật</span>
+              <input
+                nz-input
+                type="tel"
+                [(ngModel)]="newEmployee.phone"
+                placeholder="0901 234 567"
+                [disabled]="isCreatingUser"
+              />
+            </label>
+
             <label>
               <span>Mật khẩu ban đầu</span>
               <div class="employee-password-input">

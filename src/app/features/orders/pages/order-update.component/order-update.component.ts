@@ -262,7 +262,7 @@ export class OrderUpdateComponent implements OnInit {
   }
 
   get canUseBorrowedProducts(): boolean {
-    return !this.isOrderClosed;
+    return false;
   }
 
   get isOrderClosed(): boolean {
@@ -289,18 +289,27 @@ export class OrderUpdateComponent implements OnInit {
     );
   }
 
+  get orderStage(): number {
+    const status = (this.statusName || '').trim();
+
+    if (status === 'Ho\u00e0n th\u00e0nh') return 3;
+    if (
+      status === 'T\u1ea1o m\u1edbi' ||
+      status === '\u0110ang l\u1eafp \u0111\u1eb7t' ||
+      status === '\u0110\u00e3 l\u1eafp \u0111\u1eb7t'
+    ) {
+      return 2;
+    }
+
+    return 1;
+  }
+
   get isBorrowMoreMode(): boolean {
     return !!this.technicianExportedAt;
   }
 
   get canExportForTechnician(): boolean {
-    const exportableStatuses = ['Tạo mới', 'Đang lắp đặt', 'Đã lắp đặt'];
-
-    return (
-      this.orderLineItems.length > 0 &&
-      this.selectedTechnicianIds.length > 0 &&
-      exportableStatuses.includes(this.statusName)
-    );
+    return false;
   }
 
   get orderLineItems(): OrderInventoryItem[] {
@@ -356,77 +365,23 @@ export class OrderUpdateComponent implements OnInit {
     string,
     { type: string; label: string; icon: string; class: string }[]
   > = {
-    Nháp: [
+    ['Nh\u00e1p']: [
       {
         type: 'create',
-        label: 'Tạo mới',
+        label: 'T\u1ea1o m\u1edbi',
         icon: 'plus-circle',
-        class: 'bg-blue-500 hover:bg-blue-600 text-white',
-      },
-      {
-        type: 'cancel',
-        label: 'Hủy',
-        icon: 'close-circle',
-        class: 'bg-red-500 hover:bg-red-600 text-white',
+        class: 'bg-blue-600 hover:bg-blue-700 text-white',
       },
     ],
-    Hủy: [
-      {
-        type: 'create',
-        label: 'Tạo mới',
-        icon: 'plus-circle',
-        class: 'bg-blue-500 hover:bg-blue-600 text-white',
-      },
-      {
-        type: 'cancel',
-        label: 'Hủy',
-        icon: 'close-circle',
-        class: 'bg-red-500 hover:bg-red-600 text-white',
-      },
-    ],
-    'Tạo mới': [
-      {
-        type: 'packing',
-        label: 'Lắp đặt',
-        icon: 'gift',
-        class: 'bg-green-500 hover:bg-green-600 text-white hover:text-white',
-      },
-      {
-        type: 'cancel',
-        label: 'Hủy',
-        icon: 'close-circle',
-        class: 'bg-red-500 hover:bg-red-600 text-white hover:text-white',
-      },
-    ],
-    'Đang lắp đặt': [
-      {
-        type: 'donePacking',
-        label: 'Đã lắp đặt',
-        icon: 'check-circle',
-        class: 'bg-purple-500 hover:bg-purple-600 text-white hover:text-white',
-      },
-      {
-        type: 'cancel',
-        label: 'Hủy',
-        icon: 'close-circle',
-        class: 'bg-red-500 hover:bg-red-600 text-white hover:text-white',
-      },
-    ],
-    'Đã lắp đặt': [
+    ['T\u1ea1o m\u1edbi']: [
       {
         type: 'finish',
-        label: 'Hoàn thành',
+        label: 'Ho\u00e0n th\u00e0nh',
         icon: 'check-circle',
-        class: 'bg-green-600 hover:bg-green-700 text-white hover:text-white',
-      },
-      {
-        type: 'cancel',
-        label: 'Hủy',
-        icon: 'close-circle',
-        class: 'bg-red-500 hover:bg-red-600 text-white hover:text-white',
+        class: 'bg-green-600 hover:bg-green-700 text-white',
       },
     ],
-    'Hoàn thành': [],
+    ['Ho\u00e0n th\u00e0nh']: [],
   };
 
   get visibleStatusActions(): { type: string; label: string; icon: string; class: string }[] {
@@ -445,17 +400,8 @@ export class OrderUpdateComponent implements OnInit {
       case 'create':
         this.createOrder();
         break;
-      case 'packing':
-        this.packingOrder();
-        break;
-      case 'donePacking':
-        this.completePacking();
-        break;
       case 'finish':
         this.finishOrder();
-        break;
-      case 'cancel':
-        this.cancelOrder();
         break;
     }
   }
@@ -501,71 +447,6 @@ export class OrderUpdateComponent implements OnInit {
             this.toastr.error(this.getHttpErrorMessage(err, 'Cập nhật trạng thái đơn hàng thất bại!'));
           },
         });
-      },
-    });
-  }
-
-  cancelOrder(): void {
-    this.modal.confirm({
-      nzTitle: `Bạn có chắc muốn hủy đơn hàng này?`,
-      nzOkText: 'Hủy đơn',
-      nzCancelText: 'Đóng',
-      nzOnOk: () => {
-        const payload: UpdateStatusOrderRequest = {
-          Id: this.id,
-          RowVersion: this.rowVersion,
-          StatusCode: 'CANCELLED',
-          StatusId: this.statusId,
-        };
-
-        this.orderService.UpdateStatusOrder(payload).subscribe({
-          next: () => {
-            this.toastr.success('Cập nhật trạng thái đơn hàng thành công!');
-            this.cdr.detectChanges();
-            this.getOrderDetail(this.id);
-          },
-          error: (err) => {
-            this.toastr.error(this.getHttpErrorMessage(err, 'Hủy đơn hàng thất bại!'));
-          },
-        });
-      },
-    });
-  }
-
-  completePacking(): void {
-    const payload: UpdateStatusOrderRequest = {
-      Id: this.id,
-      RowVersion: this.rowVersion,
-      StatusCode: 'PACKED',
-      StatusId: this.statusId,
-    };
-    this.orderService.UpdateStatusOrder(payload).subscribe({
-      next: () => {
-        this.toastr.success('Cập nhật trạng thái đơn hàng thành công!');
-        this.cdr.detectChanges();
-        this.getOrderDetail(this.id);
-      },
-      error: (err) => {
-        this.toastr.error(this.getHttpErrorMessage(err, 'Cập nhật trạng thái đơn hàng thất bại!'));
-      },
-    });
-  }
-
-  packingOrder(): void {
-    const payload: UpdateStatusOrderRequest = {
-      Id: this.id,
-      RowVersion: this.rowVersion,
-      StatusCode: 'PACKING',
-      StatusId: this.statusId,
-    };
-    this.orderService.UpdateStatusOrder(payload).subscribe({
-      next: () => {
-        this.toastr.success('Cập nhật trạng thái đơn hàng thành công!');
-        this.cdr.detectChanges();
-        this.getOrderDetail(this.id);
-      },
-      error: (err) => {
-        this.toastr.error(this.getHttpErrorMessage(err, 'Cập nhật trạng thái đơn hàng thất bại!'));
       },
     });
   }

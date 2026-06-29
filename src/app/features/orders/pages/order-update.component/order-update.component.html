@@ -9,7 +9,7 @@
       <!-- Mobile header bar -->
       <div
         *ngIf="isMobile"
-        class="fixed bg-[rgb(247,251,255)] dark:bg-background-dark p-3 rounded-[24px] w-[94%] mb-16"
+        class="bg-[rgb(247,251,255)] dark:bg-background-dark p-3 rounded-lg w-full mb-16"
       >
         <!-- Header -->
         <header-common></header-common>
@@ -22,6 +22,8 @@
           <!-- Nút Quay lại -->
           <button
             type="button"
+            title="Quay lại"
+            aria-label="Quay lại"
             class="rounded-full bg-gray-200 text-gray-700 px-2 py-1 hover:bg-gray-300 transition flex items-center w-8 h-8"
             (click)="goBack()"
             [ngClass]="{
@@ -30,13 +32,12 @@
             }"
           >
             <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
-            &#272;&#243;ng
           </button>
 
           <!-- Ô tìm kiếm căn giữa -->
           <input
             type="text"
-            class="flex-1 border border-gray-300 rounded-[24px] px-3 py-2 mx-2"
+            class="flex-1 border border-gray-300 rounded-lg px-3 py-2 mx-2"
             [(ngModel)]="searchKeyword"
             (ngModelChange)="onSearch()"
             placeholder="Tìm kiếm..."
@@ -49,7 +50,7 @@
             disabled
             (click)="onPrint()"
             type="button"
-            class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
+            class="px-3 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
           >
             <nz-icon nzType="printer" nzTheme="outline"></nz-icon>
           </button>
@@ -58,12 +59,12 @@
         <!-- Mobile Form -->
         <div
           *ngIf="isMobile"
-          class="bg-[rgba(233,233,233,0.87)] dark:bg-gray-900 flex flex-col rounded-[24px]"
+          class="bg-[rgba(233,233,233,0.87)] dark:bg-gray-900 flex flex-col rounded-lg"
         >
           <!-- Scrollable content -->
-          <div class="overflow-y-auto px-3 py-4 space-y-4 max-h-[76vh]">
+          <div class="px-3 py-4 space-y-4">
             <div
-              class="shadow-lg rounded-[24px] overflow-hidden px-4 pb-4 w-full mb-14"
+              class="border border-slate-200/70 shadow-sm rounded-lg overflow-hidden px-4 pb-4 w-full mb-14 dark:border-slate-700"
               [ngClass]="{ 'dark:bg-gray-900': isDark }"
             >
               <form [formGroup]="orderForm" class="space-y-4">
@@ -94,6 +95,18 @@
                       }}</span>
                     </h2>
                   </div>
+                </div>
+
+                <div class="order-status-flow" aria-label="Tiến độ đơn hàng">
+                  <span [class.active]="orderStage >= 1">
+                    <i>1</i><b>Nháp</b>
+                  </span>
+                  <span [class.active]="orderStage >= 2">
+                    <i>2</i><b>Tạo mới</b>
+                  </span>
+                  <span [class.active]="orderStage >= 3">
+                    <i>3</i><b>Hoàn thành</b>
+                  </span>
                 </div>
 
                 <!-- Các input -->
@@ -230,6 +243,7 @@
                   </button>
                 </ng-container>
                 <button
+                  *ngIf="false"
                   type="button"
                   nz-button
                   nzType="primary"
@@ -420,7 +434,7 @@
                     </div>
 
                     <div
-                      *ngIf="getBorrowedQuantity(item) > 0"
+                      *ngIf="false"
                       class="mt-2 rounded-xl border border-teal-500/20 bg-teal-500/10 p-2 text-xs"
                     >
                       <div>
@@ -451,7 +465,7 @@
                 </div>
 
                 <!-- Tổng tiền -->
-                <div *ngIf="extraBorrowedItems.length > 0" class="mt-4">
+                <div *ngIf="false" class="mt-4">
                   <h3
                     class="mb-2 text-base font-semibold text-secondary-light dark:text-secondary-dark"
                   >
@@ -522,7 +536,7 @@
           <!-- Ô tìm kiếm căn giữa -->
           <input
             type="text"
-            class="border border-gray-300 rounded-[24px] px-3 py-2 w-[58%] mx-auto"
+            class="border border-gray-300 rounded-lg px-3 py-2 w-[58%] mx-auto"
             [(ngModel)]="searchKeyword"
             (ngModelChange)="onSearch()"
             placeholder="Tìm kiếm..."
@@ -537,7 +551,7 @@
             <button
               (click)="onPrint()"
               type="button"
-              class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
+              class="px-3 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
             >
               <nz-icon nzType="printer" nzTheme="outline"></nz-icon> In phiếu
             </button>
@@ -545,15 +559,15 @@
             <!-- Nút Quay lại -->
             <button
               type="button"
-              class="rounded-full bg-gray-200 text-gray-700 px-4 py-2 hover:bg-gray-300 transition flex items-center gap-2"
+              class="rounded-md bg-gray-200 text-gray-700 px-4 py-2 hover:bg-gray-300 transition flex items-center gap-2"
               (click)="goBack()"
               [ngClass]="{
                 'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600':
                   isDark
               }"
             >
+              <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
               <span>Quay lại</span>
-              <nz-icon nzType="arrow-right" nzTheme="outline"></nz-icon>
             </button>
           </div>
         </div>
@@ -562,7 +576,7 @@
       <!-- desktop -->
       <div *ngIf="!isMobile">
         <div
-          class="bg-background-lightblue dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-3 w-full"
+          class="bg-background-lightblue dark:bg-background-dark border border-slate-200/70 shadow-sm rounded-lg overflow-hidden p-3 w-full dark:border-slate-700"
           [ngClass]="{ 'dark:bg-gray-900': isDark }"
         >
           <div class="w-full">
@@ -583,6 +597,18 @@
               >
                 {{ statusName }}
               </div>
+            </div>
+
+            <div class="order-status-flow mx-3 mt-3" aria-label="Tiến độ đơn hàng">
+              <span [class.active]="orderStage >= 1">
+                <i>1</i><b>Nháp</b>
+              </span>
+              <span [class.active]="orderStage >= 2">
+                <i>2</i><b>Tạo mới</b>
+              </span>
+              <span [class.active]="orderStage >= 3">
+                <i>3</i><b>Hoàn thành</b>
+              </span>
             </div>
 
             <form
@@ -732,7 +758,7 @@
                       type="button"
                       nz-button
                       nzType="primary"
-                      *ngIf="canEditOrder"
+                      *ngIf="false"
                       class="items-center gap-2 whitespace-nowrap rounded-[24px] h-10 mb-3 mr-2 bg-teal-600 hover:bg-teal-700"
                       [disabled]="!canExportForTechnician || isExportingBorrowed"
                       (click)="openTechnicianExportModal()"
@@ -776,7 +802,7 @@
                 [nzData]="orderLineItems"
                 [nzBordered]="false"
                 [nzSize]="'middle'"
-                [nzScroll]="{ x: '1260px', y: '300px' }"
+                [nzScroll]="{ x: '1120px', y: '300px' }"
                 [nzShowPagination]="false"
               >
                 <thead>
@@ -789,7 +815,6 @@
                     <th [nzWidth]="'80px'">Đơn vị</th>
                     <th [nzWidth]="'100px'">Số lượng</th>
                     <th [nzWidth]="'260px'">Serial numbers</th>
-                    <th [nzWidth]="'140px'">Hàng mượn</th>
                     <th [nzWidth]="'80px'">Đơn giá</th>
                     <th [nzWidth]="'80px'">Thành tiền</th>
                   </tr>
@@ -937,23 +962,6 @@
                       </ng-template>
                     </td>
 
-                    <td>
-                      <div class="flex flex-col gap-1 text-xs">
-                        <span>Mượn: {{ getBorrowedQuantity(item) }}</span>
-                        <span>Đã dùng: {{ getUsedBorrowedQuantity(item) }}</span>
-                        <button
-                          *ngIf="canUseBorrowedProducts && getBorrowedRemaining(item) > 0"
-                          type="button"
-                          nz-button
-                          nzType="primary"
-                          class="h-8 rounded-full px-3 text-xs"
-                          (click)="openUseBorrowedModal(item)"
-                        >
-                          Dùng
-                        </button>
-                      </div>
-                    </td>
-
                     <!-- Đơn giá -->
                     <td>{{ item.SalePrice ?? 0 | price }}</td>
 
@@ -966,7 +974,7 @@
               </nz-table>
 
               <section
-                *ngIf="extraBorrowedItems.length > 0"
+                *ngIf="false"
                 class="mt-4 rounded-2xl border border-amber-500/20 bg-amber-50 p-4 dark:bg-amber-500/10"
               >
                 <div class="mb-3 flex items-center justify-between">
@@ -1039,7 +1047,7 @@
     ></product-popup-search>
 
     <div
-      *ngIf="isExportBorrowVisible"
+      *ngIf="false"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
     >
       <div
@@ -1232,7 +1240,7 @@
     </div>
 
     <product-popup-search
-      *ngIf="isBorrowProductPopupVisible"
+      *ngIf="false"
       [shouldDisableProduct]="true"
       [existingProducts]="borrowExistingProductIds"
       [ProductQuantity]="false"
@@ -1241,7 +1249,7 @@
     ></product-popup-search>
 
     <div
-      *ngIf="isUseBorrowedVisible && selectedUseBorrowedItem"
+      *ngIf="canUseBorrowedProducts && isUseBorrowedVisible && selectedUseBorrowedItem"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
     >
       <div

@@ -9,7 +9,7 @@
       <!-- Mobile header bar -->
       <div
         *ngIf="isMobile"
-        class="fixed bg-[rgb(247,251,255)] dark:bg-background-dark p-3 rounded-[24px] w-[94%] mb-16"
+        class="bg-[rgb(247,251,255)] dark:bg-background-dark p-3 rounded-lg w-full mb-16"
       >
         <!-- Header -->
         <header-common></header-common>
@@ -22,6 +22,8 @@
           <!-- Nút Quay lại -->
           <button
             type="button"
+            title="Quay lại"
+            aria-label="Quay lại"
             class="rounded-full bg-gray-200 text-gray-700 px-2 py-1 hover:bg-gray-300 transition flex items-center w-8 h-8"
             (click)="goBack()"
             [ngClass]="{
@@ -35,7 +37,7 @@
           <!-- Ô tìm kiếm căn giữa -->
           <input
             type="text"
-            class="flex-1 border border-gray-300 rounded-[24px] px-3 py-2 mx-2"
+            class="flex-1 border border-gray-300 rounded-lg px-3 py-2 mx-2"
             [(ngModel)]="searchKeyword"
             (ngModelChange)="onSearch()"
             placeholder="Tìm kiếm..."
@@ -47,7 +49,7 @@
           <button
             (click)="onPrint()"
             type="button"
-            class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
+            class="px-3 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
           >
             <nz-icon nzType="printer" nzTheme="outline"></nz-icon>
           </button>
@@ -56,12 +58,12 @@
         <!-- Mobile Form -->
         <div
           *ngIf="isMobile"
-          class="bg-[rgba(233,233,233,0.87)] dark:bg-gray-900 flex flex-col rounded-[24px]"
+          class="bg-[rgba(233,233,233,0.87)] dark:bg-gray-900 flex flex-col rounded-lg"
         >
           <!-- Scrollable content -->
-          <div class="overflow-y-auto px-3 py-4 space-y-4 max-h-[76vh]">
+          <div class="px-3 py-4 space-y-4">
             <div
-              class="shadow-lg rounded-[24px] overflow-hidden p-4 w-full m-1"
+              class="border border-slate-200/70 shadow-sm rounded-lg overflow-hidden p-4 w-full m-1 dark:border-slate-700"
               [ngClass]="{ 'dark:bg-gray-900': isDark }"
             >
               <form [formGroup]="receiptForm" class="space-y-4">
@@ -109,11 +111,16 @@
                   ></textarea>
                 </div>
 
+                <div class="receipt-lock-banner">
+                  <nz-icon nzType="lock" nzTheme="outline"></nz-icon>
+                  <span>Đã cộng tồn kho khi tạo. Chỉ ghi chú có thể cập nhật.</span>
+                </div>
+
                 <div class="flex w-full gap-2 mt-3">
                   <button
                     nz-button
                     nzType="primary"
-                    *ngIf="canEditReceiptDetails"
+                    *ngIf="false"
                     class="flex-1 flex items-center justify-center gap-2 rounded-[24px] h-12 bg-green-500"
                     (click)="finishOrder()"
                   >
@@ -259,7 +266,7 @@
           <!-- Ô tìm kiếm căn giữa -->
           <input
             type="text"
-            class="border border-gray-300 rounded-[24px] px-3 py-2 w-[58%] mx-auto"
+            class="border border-gray-300 rounded-lg px-3 py-2 w-[58%] mx-auto"
             [(ngModel)]="searchKeyword"
             (ngModelChange)="onSearch()"
             placeholder="Tìm kiếm..."
@@ -274,7 +281,7 @@
             <button
               (click)="onPrint()"
               type="button"
-              class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
+              class="px-3 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
             >
               <nz-icon nzType="printer" nzTheme="outline"></nz-icon> In phiếu
             </button>
@@ -282,15 +289,15 @@
             <!-- Nút Quay lại -->
             <button
               type="button"
-              class="rounded-full bg-gray-200 text-gray-700 px-4 py-2 hover:bg-gray-300 transition flex items-center gap-2"
+              class="rounded-md bg-gray-200 text-gray-700 px-4 py-2 hover:bg-gray-300 transition flex items-center gap-2"
               (click)="goBack()"
               [ngClass]="{
                 'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600':
                   isDark
               }"
             >
+              <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
               <span>Quay lại</span>
-              <nz-icon nzType="arrow-right" nzTheme="outline"></nz-icon>
             </button>
           </div>
         </div>
@@ -299,7 +306,7 @@
       <!-- desktop -->
       <div *ngIf="!isMobile">
         <div
-          class="bg-background-lightblue dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-3 w-full"
+          class="bg-background-lightblue dark:bg-background-dark border border-slate-200/70 shadow-sm rounded-lg overflow-hidden p-3 w-full dark:border-slate-700"
           [ngClass]="{ 'dark:bg-gray-900': isDark }"
         >
           <div class="w-full">
@@ -363,6 +370,11 @@
                 ></textarea>
               </div>
 
+              <div class="receipt-lock-banner">
+                <nz-icon nzType="lock" nzTheme="outline"></nz-icon>
+                <span>Phiếu nhập đã cộng tồn kho khi tạo. Chỉ ghi chú có thể cập nhật.</span>
+              </div>
+
               <!-- Table Section -->
               <div class="grid grid-cols-2">
                 <div>
@@ -380,7 +392,7 @@
                     <button
                       nz-button
                       nzType="primary"
-                      *ngIf="canEditReceiptDetails"
+                      *ngIf="false"
                       class="flex items-center gap-2 whitespace-nowrap rounded-[24px] h-10 px-4 bg-green-500"
                       (click)="finishOrder()"
                     >

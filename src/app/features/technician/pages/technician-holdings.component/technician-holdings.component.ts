@@ -13,9 +13,16 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
 import { HeaderCommonComponent } from '../../../shared/header-common.component/header-common.component';
 import { MenuComponent } from '../../../shared/menu.component/menu.component';
+import { InventoryDetail } from '../../../inventory-receipt/models/warehouse-receipt-detail.model';
+import { ProductPopupSearchComponent } from '../../../product/product-popup-search.component/product-popup-search.component';
+import { ProductQrScanButtonComponent } from '../../../product/product-qr-scan-button.component/product-qr-scan-button.component';
 import {
+  CreateBorrowRequest,
   SaveTechnicianRequest,
   Technician,
+  TechnicianBorrowRequest,
+  TechnicianBorrowRequestStatus,
+  TechnicianBorrowType,
   TechnicianHoldingGroup,
   TechnicianHoldingItem,
 } from '../../models/technician.model';
@@ -40,22 +47,56 @@ type HoldingViewMode = 'all' | 'overdue';
     MenuComponent,
     HeaderCommonComponent,
     BottomMenuComponent,
+    ProductPopupSearchComponent,
+    ProductQrScanButtonComponent,
   ],
   templateUrl: './technician-holdings.component.html',
   styleUrls: ['./technician-holdings.component.scss'],
 })
 export class TechnicianHoldingsComponent implements OnInit {
+  readonly isTechnicianUser =
+    (localStorage.getItem('role') || '').toLowerCase() === 'technician';
   technicians: Technician[] = [];
   holdings: TechnicianHoldingGroup[] = [];
+  borrowRequests: TechnicianBorrowRequest[] = [];
+  allBorrowRequests: TechnicianBorrowRequest[] = [];
   selectedTechnicianId = '';
   keyword = '';
   mode: HoldingViewMode = 'all';
   isLoading = false;
+  isLoadingRequests = false;
   isSavingTechnician = false;
+  isSavingBorrowRequest = false;
   isTechnicianModalOpen = false;
+  isBorrowRequestModalOpen = false;
+  isBorrowProductPopupOpen = false;
   editingTechnician: Technician | null = null;
   isMobile = window.innerWidth < 768;
   returnQuantities: Record<string, number> = {};
+  requestStatusFilter: TechnicianBorrowRequestStatus | null =
+    TechnicianBorrowRequestStatus.Pending;
+  readonly requestStatus = TechnicianBorrowRequestStatus;
+  readonly borrowTypeEnum = TechnicianBorrowType;
+  readonly borrowTypes = [
+    {
+      value: TechnicianBorrowType.Daily,
+      label: 'Mượn trong ngày',
+      hint: 'Không trừ tồn thực tế, chỉ giữ chỗ cho đến khi trả hoặc sử dụng.',
+    },
+    {
+      value: TechnicianBorrowType.Assigned,
+      label: 'Cấp giữ kỹ thuật',
+      hint: 'Trừ tồn ngay khi thủ kho duyệt.',
+    },
+  ];
+  borrowForm = this.createEmptyBorrowForm();
+  borrowItems: Array<{
+    ProductId: string;
+    ProductName: string;
+    ProductCode?: string;
+    Quantity: number;
+    Available?: number;
+  }> = [];
   technicianForm: SaveTechnicianRequest = {
     Name: '',
     Phone: '',
@@ -72,8 +113,15 @@ export class TechnicianHoldingsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    if (this.isTechnicianUser) {
+      this.requestStatusFilter = null;
+      this.loadBorrowRequests();
+      return;
+    }
+
     this.loadTechnicians();
     this.loadHoldings();
+    this.loadBorrowRequests();
   }
 
   @HostListener('window:resize', ['$event'])
@@ -93,6 +141,23 @@ export class TechnicianHoldingsComponent implements OnInit {
       (sum, group) =>
         sum + group.Items.filter((item) => item.IsOverdue).length,
       0
+    );
+  }
+
+  get pendingRequestCount(): number {
+    return this.allBorrowRequests.filter(
+      (item) => item.RequestStatus === TechnicianBorrowRequestStatus.Pending
+    ).length;
+  }
+
+  get selectedBorrowProductIds(): string[] {
+    return this.borrowItems.map((item) => item.ProductId);
+  }
+
+  get selectedBorrowTypeHint(): string {
+    return (
+      this.borrowTypes.find((item) => item.value === this.borrowForm.BorrowType)
+        ?.hint || ''
     );
   }
 
@@ -155,12 +220,219 @@ export class TechnicianHoldingsComponent implements OnInit {
       });
   }
 
+  loadBorrowRequests(): void {
+    this.isLoadingRequests = true;
+    this.refreshView();
+
+    this.holdingService
+      .getBorrowRequests(
+        undefined,
+        this.selectedTechnicianId || undefined
+      )
+      .pipe(
+        finalize(() => {
+          this.isLoadingRequests = false;
+          this.refreshView();
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          this.allBorrowRequests = response.Requests || [];
+          this.filterBorrowRequests();
+        },
+        error: () => {
+          this.allBorrowRequests = [];
+          this.borrowRequests = [];
+          this.toastr.error('Không thể tải danh sách đề xuất mượn hàng.');
+        },
+      });
+  }
+
+  filterBorrowRequests(): void {
+    this.borrowRequests = this.requestStatusFilter === null
+      ? [...this.allBorrowRequests]
+      : this.allBorrowRequests.filter(
+          (item) => item.RequestStatus === this.requestStatusFilter
+        );
+    this.refreshView();
+  }
+
   onTechnicianFilterChange(): void {
     if (this.mode === 'overdue') {
       this.mode = 'all';
     }
 
     this.loadHoldings();
+    this.loadBorrowRequests();
+  }
+
+  openBorrowRequestModal(): void {
+    this.borrowForm = this.createEmptyBorrowForm();
+    this.borrowForm.TechnicianId = this.selectedTechnicianId || '';
+    this.borrowItems = [];
+    this.isBorrowRequestModalOpen = true;
+  }
+
+  closeBorrowRequestModal(): void {
+    if (this.isSavingBorrowRequest) return;
+    this.isBorrowRequestModalOpen = false;
+    this.isBorrowProductPopupOpen = false;
+  }
+
+  openBorrowProductPopup(): void {
+    this.isBorrowProductPopupOpen = true;
+  }
+
+  closeBorrowProductPopup(): void {
+    this.isBorrowProductPopupOpen = false;
+  }
+
+  onSelectedBorrowProducts(products: InventoryDetail[]): void {
+    const existingIds = new Set(this.borrowItems.map((item) => item.ProductId));
+    const nextItems = products
+      .filter((product) => !existingIds.has(product.ProductId))
+      .map((product) => ({
+        ProductId: product.ProductId,
+        ProductName: product.ProductName,
+        ProductCode: product.ProductCode,
+        Quantity: 1,
+        Available: Number(product.Available || 0),
+      }));
+
+    this.borrowItems = [...this.borrowItems, ...nextItems];
+    this.closeBorrowProductPopup();
+  }
+
+  setBorrowQuantity(productId: string, value: number): void {
+    const quantity = Math.max(1, Math.trunc(Number(value) || 1));
+    this.borrowItems = this.borrowItems.map((item) =>
+      item.ProductId === productId ? { ...item, Quantity: quantity } : item
+    );
+  }
+
+  removeBorrowItem(productId: string): void {
+    this.borrowItems = this.borrowItems.filter(
+      (item) => item.ProductId !== productId
+    );
+  }
+
+  submitBorrowRequest(): void {
+    if (!this.isTechnicianUser && !this.borrowForm.TechnicianId) {
+      this.toastr.warning('Vui lòng chọn kỹ thuật viên cần mượn hàng.');
+      return;
+    }
+
+    if (!this.borrowItems.length) {
+      this.toastr.warning('Vui lòng chọn ít nhất một sản phẩm cần mượn.');
+      return;
+    }
+
+    if (
+      this.borrowItems.some(
+        (item) => !Number.isInteger(item.Quantity) || item.Quantity <= 0
+      )
+    ) {
+      this.toastr.warning('Số lượng mượn phải là số nguyên lớn hơn 0.');
+      return;
+    }
+
+    const insufficientItem = this.borrowItems.find(
+      (item) => item.Quantity > Number(item.Available || 0)
+    );
+    if (insufficientItem) {
+      this.toastr.warning(
+        `${insufficientItem.ProductName} chỉ còn ${insufficientItem.Available || 0} sản phẩm khả dụng.`
+      );
+      return;
+    }
+
+    const payload: CreateBorrowRequest = {
+      TechnicianId: this.borrowForm.TechnicianId,
+      BorrowType: this.borrowForm.BorrowType,
+      NeededDate: this.borrowForm.NeededDate,
+      Description: this.borrowForm.Description?.trim() || null,
+      Items: this.borrowItems.map((item) => ({
+        ProductId: item.ProductId,
+        Quantity: item.Quantity,
+      })),
+    };
+
+    this.isSavingBorrowRequest = true;
+    this.refreshView();
+    this.holdingService
+      .createBorrowRequest(payload)
+      .pipe(
+        finalize(() => {
+          this.isSavingBorrowRequest = false;
+          this.refreshView();
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.toastr.success('Đã gửi đề xuất mượn hàng.');
+          if (this.isTechnicianUser) {
+            this.borrowForm = this.createEmptyBorrowForm();
+            this.borrowItems = [];
+          } else {
+            this.closeBorrowRequestModal();
+          }
+          this.loadBorrowRequests();
+        },
+        error: (err) => {
+          this.toastr.error(
+            err.error?.Message ||
+              err.error?.message ||
+              'Gửi đề xuất mượn hàng thất bại.'
+          );
+        },
+      });
+  }
+
+  approveBorrowRequest(request: TechnicianBorrowRequest): void {
+    this.modal.confirm({
+      nzTitle: `Duyệt đề xuất ${request.Code}?`,
+      nzOkText: 'Duyệt và xuất',
+      nzCancelText: 'Đóng',
+      nzOnOk: () => {
+        this.holdingService.approveBorrowRequest(request.Id).subscribe({
+          next: () => {
+            this.toastr.success('Đã duyệt đề xuất mượn hàng.');
+            this.loadBorrowRequests();
+            this.loadHoldings();
+          },
+          error: (err) => {
+            this.toastr.error(
+              err.error?.Message ||
+                err.error?.message ||
+                'Duyệt đề xuất thất bại.'
+            );
+          },
+        });
+      },
+    });
+  }
+
+  rejectBorrowRequest(request: TechnicianBorrowRequest): void {
+    this.modal.confirm({
+      nzTitle: `Từ chối đề xuất ${request.Code}?`,
+      nzOkText: 'Từ chối',
+      nzCancelText: 'Đóng',
+      nzOnOk: () => {
+        this.holdingService.rejectBorrowRequest(request.Id).subscribe({
+          next: () => {
+            this.toastr.success('Đã từ chối đề xuất.');
+            this.loadBorrowRequests();
+          },
+          error: (err) => {
+            this.toastr.error(
+              err.error?.Message ||
+                err.error?.message ||
+                'Từ chối đề xuất thất bại.'
+            );
+          },
+        });
+      },
+    });
   }
 
   openCreateTechnician(): void {
@@ -254,7 +526,7 @@ export class TechnicianHoldingsComponent implements OnInit {
     group: TechnicianHoldingGroup,
     item: TechnicianHoldingItem
   ): string {
-    return `${group.TechnicianId}:${item.ProductId}`;
+    return `${group.TechnicianId}:${item.ProductId}:${item.BorrowType}`;
   }
 
   getReturnQuantity(
@@ -296,6 +568,7 @@ export class TechnicianHoldingsComponent implements OnInit {
             Items: [
               {
                 ProductId: item.ProductId,
+                BorrowType: item.BorrowType,
                 Quantity: quantity,
               },
             ],
@@ -313,6 +586,53 @@ export class TechnicianHoldingsComponent implements OnInit {
           });
       },
     });
+  }
+
+  useItem(group: TechnicianHoldingGroup, item: TechnicianHoldingItem): void {
+    const quantity = this.getReturnQuantity(group, item);
+
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > item.Quantity) {
+      this.toastr.warning(`Số lượng sử dụng phải từ 1 đến ${item.Quantity}.`);
+      return;
+    }
+
+    this.modal.confirm({
+      nzTitle: `Ghi nhận đã sử dụng ${quantity} sản phẩm "${item.ProductName}"?`,
+      nzOkText: 'Đã sử dụng',
+      nzCancelText: 'Đóng',
+      nzOnOk: () => {
+        this.holdingService
+          .useHolding({
+            TechnicianId: group.TechnicianId,
+            ProductId: item.ProductId,
+            BorrowType: item.BorrowType,
+            Quantity: quantity,
+            Note: 'Technician marked item as used',
+          })
+          .subscribe({
+            next: () => {
+              this.toastr.success('Đã ghi nhận kỹ thuật sử dụng hàng.');
+              this.loadHoldings();
+            },
+            error: (err) => {
+              this.toastr.error(
+                err.error?.Message ||
+                  err.error?.message ||
+                  'Ghi nhận sử dụng thất bại.'
+              );
+            },
+          });
+      },
+    });
+  }
+
+  getBorrowTypeName(type?: TechnicianBorrowType, fallback?: string): string {
+    if (fallback) return fallback;
+
+    return (
+      this.borrowTypes.find((item) => item.value === type)?.label ||
+      'Không xác định'
+    );
   }
 
   copyReminder(group: TechnicianHoldingGroup, item: TechnicianHoldingItem): void {
@@ -340,7 +660,11 @@ export class TechnicianHoldingsComponent implements OnInit {
   }
 
   trackItem(index: number, item: TechnicianHoldingItem): string {
-    return item.ProductId || `${index}`;
+    return `${item.ProductId}:${item.BorrowType}` || `${index}`;
+  }
+
+  trackRequest(index: number, item: TechnicianBorrowRequest): string {
+    return item.Id || `${index}`;
   }
 
   private seedReturnQuantities(): void {
@@ -353,6 +677,20 @@ export class TechnicianHoldingsComponent implements OnInit {
     }
 
     this.returnQuantities = next;
+  }
+
+  private createEmptyBorrowForm(): {
+    TechnicianId: string;
+    BorrowType: TechnicianBorrowType;
+    NeededDate: string;
+    Description: string;
+  } {
+    return {
+      TechnicianId: '',
+      BorrowType: TechnicianBorrowType.Daily,
+      NeededDate: new Date().toISOString().slice(0, 10),
+      Description: '',
+    };
   }
 
   private refreshView(): void {

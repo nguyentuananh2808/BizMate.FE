@@ -195,7 +195,7 @@ export class MenuComponent implements OnInit, OnDestroy {
         {
           key: 'technician-holdings',
           icon: 'inbox',
-          label: 'Kỹ thuật giữ hàng',
+          label: 'Mượn hàng kỹ thuật',
           route: '/technician-holdings',
         },
       ],
