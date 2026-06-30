@@ -18,7 +18,6 @@ import { ProductPopupSearchComponent } from '../../../product/product-popup-sear
 import { ProductQrScanButtonComponent } from '../../../product/product-qr-scan-button.component/product-qr-scan-button.component';
 import {
   CreateBorrowRequest,
-  SaveTechnicianRequest,
   Technician,
   TechnicianBorrowRequest,
   TechnicianBorrowRequestStatus,
@@ -60,17 +59,15 @@ export class TechnicianHoldingsComponent implements OnInit {
   holdings: TechnicianHoldingGroup[] = [];
   borrowRequests: TechnicianBorrowRequest[] = [];
   allBorrowRequests: TechnicianBorrowRequest[] = [];
+  selectedRequestDetail: TechnicianBorrowRequest | null = null;
+  isRequestDetailOpen = false;
   selectedTechnicianId = '';
   keyword = '';
   mode: HoldingViewMode = 'all';
   isLoading = false;
   isLoadingRequests = false;
-  isSavingTechnician = false;
   isSavingBorrowRequest = false;
-  isTechnicianModalOpen = false;
-  isBorrowRequestModalOpen = false;
   isBorrowProductPopupOpen = false;
-  editingTechnician: Technician | null = null;
   isMobile = window.innerWidth < 768;
   returnQuantities: Record<string, number> = {};
   requestStatusFilter: TechnicianBorrowRequestStatus | null =
@@ -97,13 +94,6 @@ export class TechnicianHoldingsComponent implements OnInit {
     Quantity: number;
     Available?: number;
   }> = [];
-  technicianForm: SaveTechnicianRequest = {
-    Name: '',
-    Phone: '',
-    ZaloPhone: '',
-    IsActive: true,
-  };
-
   constructor(
     private technicianService: TechnicianService,
     private holdingService: TechnicianHoldingService,
@@ -266,19 +256,6 @@ export class TechnicianHoldingsComponent implements OnInit {
     this.loadBorrowRequests();
   }
 
-  openBorrowRequestModal(): void {
-    this.borrowForm = this.createEmptyBorrowForm();
-    this.borrowForm.TechnicianId = this.selectedTechnicianId || '';
-    this.borrowItems = [];
-    this.isBorrowRequestModalOpen = true;
-  }
-
-  closeBorrowRequestModal(): void {
-    if (this.isSavingBorrowRequest) return;
-    this.isBorrowRequestModalOpen = false;
-    this.isBorrowProductPopupOpen = false;
-  }
-
   openBorrowProductPopup(): void {
     this.isBorrowProductPopupOpen = true;
   }
@@ -288,9 +265,21 @@ export class TechnicianHoldingsComponent implements OnInit {
   }
 
   onSelectedBorrowProducts(products: InventoryDetail[]): void {
+    const serialTrackedProducts = products.filter(
+      (product) => product.IsSerialTracked
+    );
+    if (serialTrackedProducts.length) {
+      this.toastr.warning(
+        'Đề xuất mượn hiện chỉ hỗ trợ sản phẩm quản lý theo số lượng.'
+      );
+    }
+
     const existingIds = new Set(this.borrowItems.map((item) => item.ProductId));
     const nextItems = products
-      .filter((product) => !existingIds.has(product.ProductId))
+      .filter(
+        (product) =>
+          !product.IsSerialTracked && !existingIds.has(product.ProductId)
+      )
       .map((product) => ({
         ProductId: product.ProductId,
         ProductName: product.ProductName,
@@ -317,11 +306,6 @@ export class TechnicianHoldingsComponent implements OnInit {
   }
 
   submitBorrowRequest(): void {
-    if (!this.isTechnicianUser && !this.borrowForm.TechnicianId) {
-      this.toastr.warning('Vui lòng chọn kỹ thuật viên cần mượn hàng.');
-      return;
-    }
-
     if (!this.borrowItems.length) {
       this.toastr.warning('Vui lòng chọn ít nhất một sản phẩm cần mượn.');
       return;
@@ -347,7 +331,6 @@ export class TechnicianHoldingsComponent implements OnInit {
     }
 
     const payload: CreateBorrowRequest = {
-      TechnicianId: this.borrowForm.TechnicianId,
       BorrowType: this.borrowForm.BorrowType,
       NeededDate: this.borrowForm.NeededDate,
       Description: this.borrowForm.Description?.trim() || null,
@@ -373,8 +356,6 @@ export class TechnicianHoldingsComponent implements OnInit {
           if (this.isTechnicianUser) {
             this.borrowForm = this.createEmptyBorrowForm();
             this.borrowItems = [];
-          } else {
-            this.closeBorrowRequestModal();
           }
           this.loadBorrowRequests();
         },
@@ -435,91 +416,14 @@ export class TechnicianHoldingsComponent implements OnInit {
     });
   }
 
-  openCreateTechnician(): void {
-    this.editingTechnician = null;
-    this.technicianForm = {
-      Name: '',
-      Phone: '',
-      ZaloPhone: '',
-      IsActive: true,
-    };
-    this.isTechnicianModalOpen = true;
+  openRequestDetail(request: TechnicianBorrowRequest): void {
+    this.selectedRequestDetail = request;
+    this.isRequestDetailOpen = true;
   }
 
-  openEditTechnician(technician: Technician): void {
-    this.editingTechnician = technician;
-    this.technicianForm = {
-      Name: technician.Name,
-      Phone: technician.Phone || '',
-      ZaloPhone: technician.ZaloPhone || '',
-      IsActive: technician.IsActive,
-    };
-    this.isTechnicianModalOpen = true;
-  }
-
-  openEditHoldingTechnician(group: TechnicianHoldingGroup): void {
-    const technician =
-      this.technicians.find((item) => item.Id === group.TechnicianId) || null;
-
-    if (!technician) {
-      this.toastr.warning('Không tìm thấy thông tin kỹ thuật viên để sửa.');
-      return;
-    }
-
-    this.openEditTechnician(technician);
-  }
-
-  closeTechnicianModal(): void {
-    if (this.isSavingTechnician) return;
-    this.isTechnicianModalOpen = false;
-  }
-
-  saveTechnician(): void {
-    const name = this.technicianForm.Name.trim();
-
-    if (!name) {
-      this.toastr.warning('Vui lòng nhập tên kỹ thuật viên.');
-      return;
-    }
-
-    const payload: SaveTechnicianRequest = {
-      Name: name,
-      Phone: this.technicianForm.Phone?.trim() || null,
-      ZaloPhone: this.technicianForm.ZaloPhone?.trim() || null,
-      IsActive: this.technicianForm.IsActive,
-    };
-
-    this.isSavingTechnician = true;
-    this.refreshView();
-    const request = this.editingTechnician
-      ? this.technicianService.updateTechnician(this.editingTechnician.Id, payload)
-      : this.technicianService.createTechnician(payload);
-
-    request
-      .pipe(
-        finalize(() => {
-          this.isSavingTechnician = false;
-          this.refreshView();
-        })
-      )
-      .subscribe({
-        next: () => {
-          this.isTechnicianModalOpen = false;
-          this.toastr.success(
-            this.editingTechnician
-              ? 'Cập nhật kỹ thuật viên thành công.'
-              : 'Tạo kỹ thuật viên thành công.'
-          );
-          this.loadTechnicians();
-        },
-        error: (err) => {
-          this.toastr.error(
-            err.error?.Message ||
-              err.error?.message ||
-              'Lưu kỹ thuật viên thất bại.'
-          );
-        },
-      });
+  closeRequestDetail(): void {
+    this.isRequestDetailOpen = false;
+    this.selectedRequestDetail = null;
   }
 
   getReturnKey(
@@ -680,13 +584,11 @@ export class TechnicianHoldingsComponent implements OnInit {
   }
 
   private createEmptyBorrowForm(): {
-    TechnicianId: string;
     BorrowType: TechnicianBorrowType;
     NeededDate: string;
     Description: string;
   } {
     return {
-      TechnicianId: '',
       BorrowType: TechnicianBorrowType.Daily,
       NeededDate: new Date().toISOString().slice(0, 10),
       Description: '',

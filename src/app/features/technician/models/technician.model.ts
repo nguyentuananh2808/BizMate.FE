@@ -17,13 +17,6 @@ export interface GetTechniciansResponse extends ApiResponse {
   Technicians: Technician[];
 }
 
-export interface SaveTechnicianRequest {
-  Name: string;
-  Phone?: string | null;
-  ZaloPhone?: string | null;
-  IsActive: boolean;
-}
-
 export interface TechnicianHoldingGroup {
   TechnicianId: string;
   TechnicianName: string;
@@ -63,8 +56,6 @@ export interface ReturnHoldingItem {
 export enum TechnicianBorrowType {
   Daily = 1,
   Assigned = 2,
-  Backpack = Assigned,
-  Warranty = 3,
 }
 
 export enum TechnicianBorrowRequestStatus {
@@ -75,7 +66,6 @@ export enum TechnicianBorrowRequestStatus {
 }
 
 export interface CreateBorrowRequest {
-  TechnicianId: string;
   BorrowType: TechnicianBorrowType;
   NeededDate: string;
   Description?: string | null;

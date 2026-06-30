@@ -5,7 +5,6 @@ import { map } from 'rxjs/operators';
 import { ApiUrls } from '../../../config/api.config';
 import {
   GetTechniciansResponse,
-  SaveTechnicianRequest,
   Technician,
 } from '../models/technician.model';
 
@@ -28,23 +27,6 @@ export class TechnicianService {
         params,
       })
       .pipe(map((response) => this.normalizeTechniciansResponse(response)));
-  }
-
-  createTechnician(body: SaveTechnicianRequest): Observable<unknown> {
-    return this.http.post(
-      `${ApiUrls.baseUrl}${ApiUrls.technician.create}`,
-      body
-    );
-  }
-
-  updateTechnician(
-    technicianId: string,
-    body: SaveTechnicianRequest
-  ): Observable<unknown> {
-    return this.http.put(
-      `${ApiUrls.baseUrl}${ApiUrls.technician.update(technicianId)}`,
-      body
-    );
   }
 
   private normalizeTechniciansResponse(response: unknown): GetTechniciansResponse {

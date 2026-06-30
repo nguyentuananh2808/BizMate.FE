@@ -123,8 +123,6 @@ export const ApiUrls = {
 
   technician: {
     getAll: '/technician',
-    create: '/technician',
-    update: (id: string) => `/technician/${id}`,
   },
 
   technicianHolding: {

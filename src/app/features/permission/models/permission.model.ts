@@ -76,6 +76,7 @@ export interface CreateStoreUserRequest {
   Password: string;
   Phone?: string | null;
   RoleId: string;
+  PermissionIds: string[];
   IsActive: boolean;
 }
 

@@ -357,6 +357,23 @@
               />
             </label>
 
+            <label class="employee-permissions-field">
+              <span>Quyền bổ sung</span>
+              <nz-select
+                nzMode="multiple"
+                [(ngModel)]="newEmployee.permissionIds"
+                nzPlaceHolder="Chọn quyền ngoài quyền mặc định của vai trò"
+                [nzDisabled]="isCreatingUser"
+              >
+                <nz-option
+                  *ngFor="let permission of getAllPermissions(); trackBy: trackPermission"
+                  [nzValue]="permission.id"
+                  [nzLabel]="permission.displayName || permission.name"
+                ></nz-option>
+              </nz-select>
+              <small>Không bắt buộc. Nhân viên luôn nhận các quyền mặc định từ vai trò đã chọn.</small>
+            </label>
+
             <label>
               <span>Mật khẩu ban đầu</span>
               <div class="employee-password-input">

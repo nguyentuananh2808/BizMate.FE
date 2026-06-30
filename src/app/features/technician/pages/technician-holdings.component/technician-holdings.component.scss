@@ -481,30 +481,6 @@
   text-align: center;
 }
 
-.borrow-items-panel {
-  margin-top: 16px;
-}
-
-.borrow-items-panel__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.technician-modal--wide {
-  width: min(960px, 100%);
-}
-
-.borrow-form-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.borrow-form-grid__full {
-  grid-column: 1 / -1;
-}
-
 :host-context(.dark) {
   .technician-select,
   .return-tools input,
@@ -513,78 +489,6 @@
     border-color: var(--hold-border);
     background: #102433;
     color: #f8fafc;
-  }
-}
-
-.technician-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 2147483200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.62);
-}
-
-.technician-modal {
-  width: min(560px, 100%);
-  max-height: calc(100vh - 40px);
-  overflow-y: auto;
-  border: 1px solid var(--hold-border);
-  border-radius: 8px;
-  background: var(--hold-surface);
-  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.38);
-  padding: 18px;
-
-  header,
-  footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-  }
-
-  span {
-    color: var(--hold-accent);
-    font-size: 12px;
-    font-weight: 800;
-    text-transform: uppercase;
-  }
-
-  h2 {
-    margin: 4px 0 0;
-    color: var(--hold-title);
-  }
-
-  footer {
-    justify-content: flex-end;
-    margin-top: 16px;
-  }
-}
-
-.technician-form {
-  display: grid;
-  gap: 12px;
-  margin-top: 16px;
-
-  label {
-    color: var(--hold-text);
-    font-weight: 750;
-  }
-
-  input {
-    margin-top: 6px;
-  }
-}
-
-.checkbox-line {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-
-  input {
-    margin: 0;
   }
 }
 
@@ -649,13 +553,8 @@
     width: 100%;
   }
 
-  .borrow-composer__options,
-  .borrow-form-grid {
+  .borrow-composer__options {
     grid-template-columns: 1fr;
-  }
-
-  .borrow-form-grid__full {
-    grid-column: auto;
   }
 
   .borrow-item-row {
@@ -674,15 +573,4 @@
     grid-column: auto;
   }
 
-  .technician-modal-backdrop {
-    align-items: flex-end;
-    padding: 0;
-  }
-
-  .technician-modal {
-    width: 100%;
-    max-height: 92vh;
-    padding: 16px;
-    border-radius: 8px 8px 0 0;
-  }
 }

@@ -48,10 +48,6 @@
               <nz-icon nzType="reload" nzTheme="outline"></nz-icon>
               Tải lại
             </button>
-            <button nz-button nzType="primary" (click)="openBorrowRequestModal()">
-              <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
-              Tạo đề xuất
-            </button>
           </div>
         </div>
       </section>
@@ -193,8 +189,7 @@
         </div>
         <div class="borrow-legend" aria-label="Quy tắc trừ kho theo loại mượn">
           <span><i class="daily"></i>Trong ngày: giữ tồn khả dụng</span>
-          <span><i class="backpack"></i>Balo: trừ kho khi duyệt</span>
-          <span><i class="warranty"></i>Bảo hành: trừ kho khi duyệt</span>
+          <span><i class="backpack"></i>Cấp giữ kỹ thuật: trừ kho khi duyệt</span>
         </div>
       </section>
 
@@ -253,6 +248,16 @@
                 >
                   {{ request.RequestStatusName || "Chờ xử lý" }}
                 </nz-tag>
+                <button
+                  *ngIf="!isTechnicianUser"
+                  nz-button
+                  nzType="default"
+                  nzSize="small"
+                  (click)="openRequestDetail(request)"
+                >
+                  <nz-icon nzType="eye" nzTheme="outline"></nz-icon>
+                  Xem chi tiết
+                </button>
                 <button
                   *ngIf="!isTechnicianUser && request.RequestStatus === requestStatus.Pending"
                   nz-button
@@ -389,125 +394,6 @@
   </main>
 </div>
 
-<div
-  *ngIf="isBorrowRequestModalOpen && !isTechnicianUser"
-  class="technician-modal-backdrop"
->
-  <section class="technician-modal technician-modal--wide">
-    <header>
-      <div>
-        <span>Mượn hàng kỹ thuật</span>
-        <h2>Tạo đề xuất mượn</h2>
-      </div>
-      <button
-        nz-button
-        nzType="text"
-        title="Đóng"
-        aria-label="Đóng"
-        (click)="closeBorrowRequestModal()"
-      >
-        <nz-icon nzType="close" nzTheme="outline"></nz-icon>
-      </button>
-    </header>
-
-    <div class="technician-form borrow-form-grid">
-      <label>
-        Kỹ thuật viên
-        <select class="technician-select" [(ngModel)]="borrowForm.TechnicianId">
-          <option value="">Chọn kỹ thuật viên</option>
-          <option *ngFor="let technician of technicians" [value]="technician.Id">
-            {{ technician.Name }}{{ technician.Phone ? " - " + technician.Phone : "" }}
-          </option>
-        </select>
-      </label>
-
-      <label>
-        Loại mượn
-        <select class="technician-select" [(ngModel)]="borrowForm.BorrowType">
-          <option *ngFor="let type of borrowTypes" [ngValue]="type.value">
-            {{ type.label }}
-          </option>
-        </select>
-        <small class="borrow-type-help">{{ selectedBorrowTypeHint }}</small>
-      </label>
-
-      <label>
-        Ngày cần
-        <input type="date" nz-input [(ngModel)]="borrowForm.NeededDate" />
-      </label>
-
-      <label class="borrow-form-grid__full">
-        Ghi chú
-        <input nz-input [(ngModel)]="borrowForm.Description" />
-      </label>
-    </div>
-
-      <div class="borrow-items-panel">
-        <div class="borrow-items-panel__head">
-          <strong>Sản phẩm đề xuất</strong>
-          <div class="borrow-composer__tools">
-            <button nz-button nzType="primary" nzSize="small" (click)="openBorrowProductPopup()">
-              <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
-              Thêm sản phẩm
-            </button>
-            <product-qr-scan-button
-              [existingProducts]="selectedBorrowProductIds"
-              [productQuantity]="false"
-              [compact]="true"
-              (selectProducts)="onSelectedBorrowProducts($event)"
-            ></product-qr-scan-button>
-          </div>
-        </div>
-
-      <div *ngIf="borrowItems.length; else emptyBorrowItems" class="borrow-items-list">
-        <div *ngFor="let item of borrowItems" class="borrow-item-row">
-          <div>
-            <strong>{{ item.ProductName }}</strong>
-            <p>{{ item.ProductCode || "Chưa có mã" }} · Khả dụng {{ item.Available ?? 0 }}</p>
-          </div>
-          <input
-            type="number"
-            min="1"
-            [max]="item.Available ?? 0"
-            [ngModel]="item.Quantity"
-            (ngModelChange)="setBorrowQuantity(item.ProductId, $event)"
-          />
-          <button nz-button nzType="default" nzSize="small" (click)="removeBorrowItem(item.ProductId)">
-            Xóa
-          </button>
-        </div>
-      </div>
-
-      <ng-template #emptyBorrowItems>
-        <div class="borrow-request-empty">Chưa chọn sản phẩm mượn.</div>
-      </ng-template>
-    </div>
-
-    <footer>
-      <button nz-button nzType="default" (click)="closeBorrowRequestModal()">
-        Hủy
-      </button>
-      <button
-        nz-button
-        nzType="primary"
-        [disabled]="isSavingBorrowRequest"
-        (click)="submitBorrowRequest()"
-      >
-        {{ isSavingBorrowRequest ? "Đang gửi..." : "Gửi đề xuất" }}
-      </button>
-    </footer>
-  </section>
-
-  <product-popup-search
-    *ngIf="isBorrowProductPopupOpen"
-    [shouldDisableProduct]="false"
-    [ProductQuantity]="false"
-    [existingProducts]="selectedBorrowProductIds"
-    (closePopup)="closeBorrowProductPopup()"
-    (selectProducts)="onSelectedBorrowProducts($event)"
-  ></product-popup-search>
-</div>
-
 <product-popup-search
   *ngIf="isTechnicianUser && isBorrowProductPopupOpen"
   [shouldDisableProduct]="false"
@@ -517,52 +403,64 @@
   (selectProducts)="onSelectedBorrowProducts($event)"
 ></product-popup-search>
 
-<div
-  *ngIf="isTechnicianModalOpen"
-  class="technician-modal-backdrop"
+<nz-modal
+  [(nzVisible)]="isRequestDetailOpen"
+  [nzTitle]="'Chi tiết đề xuất ' + (selectedRequestDetail?.Code || '')"
+  [nzWidth]="760"
+  [nzFooter]="requestDetailFooter"
+  [nzMaskClosable]="false"
+  (nzOnCancel)="closeRequestDetail()"
 >
-  <section class="technician-modal">
-    <header>
-      <div>
-        <span>Kỹ thuật viên</span>
-        <h2>{{ editingTechnician ? "Cập nhật" : "Thêm mới" }}</h2>
+  <ng-container *nzModalContent>
+    <div *ngIf="selectedRequestDetail as request" class="borrow-detail">
+      <div class="borrow-detail__summary">
+        <div>
+          <span>Kỹ thuật viên</span>
+          <strong>{{ request.TechnicianName }}</strong>
+          <small>{{ request.Phone || "Chưa có số điện thoại" }}</small>
+        </div>
+        <div>
+          <span>Loại mượn</span>
+          <strong>{{ getBorrowTypeName(request.BorrowType, request.BorrowTypeName) }}</strong>
+          <small>Ngày cần {{ request.NeededDate | date : "dd/MM/yyyy" }}</small>
+        </div>
+        <div>
+          <span>Trạng thái</span>
+          <nz-tag
+            [nzColor]="request.RequestStatus === requestStatus.Pending ? 'gold' : request.RequestStatus === requestStatus.Approved ? 'green' : 'red'"
+          >
+            {{ request.RequestStatusName || "Chờ xử lý" }}
+          </nz-tag>
+          <small>Tổng số lượng: {{ request.TotalQuantity }}</small>
+        </div>
       </div>
-      <button nz-button nzType="default" (click)="closeTechnicianModal()">
-        Đóng
-      </button>
-    </header>
 
-    <div class="technician-form">
-      <label>
-        Tên kỹ thuật
-        <input nz-input [(ngModel)]="technicianForm.Name" />
-      </label>
-      <label>
-        Số điện thoại
-        <input nz-input [(ngModel)]="technicianForm.Phone" />
-      </label>
-      <label>
-        Số Zalo
-        <input nz-input [(ngModel)]="technicianForm.ZaloPhone" />
-      </label>
-      <label class="checkbox-line">
-        <input type="checkbox" [(ngModel)]="technicianForm.IsActive" />
-        Đang hoạt động
-      </label>
+      <div *ngIf="request.Description" class="borrow-detail__note">
+        <span>Ghi chú</span>
+        <p>{{ request.Description }}</p>
+      </div>
+
+      <div class="borrow-detail__table">
+        <div class="borrow-detail__row borrow-detail__row--head">
+          <span>Mã sản phẩm</span>
+          <span>Tên sản phẩm</span>
+          <span>Số lượng</span>
+        </div>
+        <div *ngFor="let item of request.Items" class="borrow-detail__row">
+          <strong>{{ item.ProductCode || "Chưa có mã" }}</strong>
+          <span>{{ item.ProductName }}</span>
+          <strong>{{ item.Quantity }}</strong>
+        </div>
+      </div>
+
+      <div *ngIf="request.RejectionReason" class="borrow-detail__rejection">
+        <strong>Lý do từ chối</strong>
+        <p>{{ request.RejectionReason }}</p>
+      </div>
     </div>
+  </ng-container>
+</nz-modal>
 
-    <footer>
-      <button nz-button nzType="default" (click)="closeTechnicianModal()">
-        Hủy
-      </button>
-      <button
-        nz-button
-        nzType="primary"
-        [disabled]="isSavingTechnician"
-        (click)="saveTechnician()"
-      >
-        {{ isSavingTechnician ? "Đang lưu..." : "Lưu kỹ thuật" }}
-      </button>
-    </footer>
-  </section>
-</div>
+<ng-template #requestDetailFooter>
+  <button nz-button nzType="default" (click)="closeRequestDetail()">Đóng</button>
+</ng-template>

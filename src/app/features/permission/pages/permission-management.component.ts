@@ -39,6 +39,7 @@ interface NewEmployeeForm {
   password: string;
   confirmPassword: string;
   roleId: string;
+  permissionIds: string[];
   isActive: boolean;
 }
 
@@ -308,6 +309,7 @@ export class PermissionManagementComponent implements OnInit {
           ? this.newEmployee.phone.trim() || null
           : null,
         RoleId: this.newEmployee.roleId,
+        PermissionIds: this.newEmployee.permissionIds,
         IsActive: this.newEmployee.isActive,
       })
       .pipe(
@@ -532,6 +534,10 @@ export class PermissionManagementComponent implements OnInit {
     return role?.name?.toLowerCase() === 'technician';
   }
 
+  getAllPermissions(): PermissionItem[] {
+    return this.permissionGroups.flatMap((group) => group.permissions || []);
+  }
+
   getAssignedRoles(): UserRoleItem[] {
     return this.overview?.roles ?? [];
   }
@@ -751,6 +757,7 @@ export class PermissionManagementComponent implements OnInit {
       password: '',
       confirmPassword: '',
       roleId: '',
+      permissionIds: [],
       isActive: true,
     };
   }

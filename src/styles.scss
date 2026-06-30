@@ -1087,6 +1087,16 @@ notification {
   }
 }
 
+.employee-permissions-field {
+  grid-column: 1 / -1;
+
+  small {
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+}
+
 .employee-active-checkbox {
   align-self: center;
   color: #334155;
@@ -1178,6 +1188,121 @@ notification {
   product-popup-update,
   product-popup-search {
     display: none !important;
+  }
+}
+
+.borrow-detail {
+  display: grid;
+  gap: 16px;
+  color: #1f2937;
+}
+
+.borrow-detail__summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+
+  > div {
+    display: grid;
+    align-content: start;
+    gap: 5px;
+    min-height: 96px;
+    padding: 12px;
+    border: 1px solid rgba(15, 118, 110, 0.18);
+    border-radius: 8px;
+    background: #f8fbfd;
+  }
+
+  span,
+  small {
+    color: #64748b;
+    font-size: 12px;
+  }
+
+  strong {
+    color: #0f172a;
+  }
+}
+
+.borrow-detail__note,
+.borrow-detail__rejection {
+  padding: 12px 14px;
+  border-left: 3px solid #0f9488;
+  background: #f0fdfa;
+
+  span,
+  strong {
+    color: #0f766e;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  p {
+    margin: 5px 0 0;
+  }
+}
+
+.borrow-detail__rejection {
+  border-left-color: #dc2626;
+  background: #fef2f2;
+
+  strong {
+    color: #b91c1c;
+  }
+}
+
+.borrow-detail__table {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  border-radius: 8px;
+}
+
+.borrow-detail__row {
+  display: grid;
+  grid-template-columns: 150px minmax(260px, 1fr) 90px;
+  gap: 12px;
+  align-items: center;
+  min-width: 560px;
+  min-height: 48px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.borrow-detail__row--head {
+  min-height: 42px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.dark .borrow-detail {
+  color: #e5edf3;
+
+  .borrow-detail__summary > div,
+  .borrow-detail__row--head {
+    background: #102433;
+  }
+
+  .borrow-detail__summary strong {
+    color: #f8fafc;
+  }
+}
+
+@media (max-width: 640px) {
+  .borrow-detail__summary {
+    grid-template-columns: 1fr;
+
+    > div {
+      min-height: auto;
+    }
   }
 }
 

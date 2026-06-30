@@ -1,0 +1,33 @@
+<div class="access-layout">
+  <app-menu></app-menu>
+
+  <main class="access-main">
+    <header-common></header-common>
+
+    <section class="access-state" role="alert" aria-labelledby="access-title">
+      <div class="access-icon" aria-hidden="true">
+        <i nz-icon nzType="stop"></i>
+      </div>
+
+      <p class="access-eyebrow">QUYỀN TRUY CẬP</p>
+      <h1 id="access-title">Không có quyền truy cập</h1>
+      <p class="access-description">
+        Tài khoản của bạn chưa được cấp quyền để mở nội dung này. Vui lòng liên
+        hệ chủ công ty hoặc quản trị viên nếu bạn cần sử dụng chức năng.
+      </p>
+
+      <div class="access-actions">
+        <button type="button" class="secondary-action" (click)="goBack()">
+          <i nz-icon nzType="arrow-left"></i>
+          Quay lại
+        </button>
+        <a class="primary-action" routerLink="/dashboard">
+          <i nz-icon nzType="home"></i>
+          Về Dashboard
+        </a>
+      </div>
+    </section>
+  </main>
+</div>
+
+<bottom-menu></bottom-menu>

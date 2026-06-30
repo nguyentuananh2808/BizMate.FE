@@ -1,0 +1,164 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.access-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #edf5f7;
+  color: #102331;
+}
+
+.access-main {
+  width: 100%;
+  min-width: 0;
+  padding: 24px clamp(16px, 3vw, 44px) 96px;
+}
+
+.access-state {
+  display: flex;
+  min-height: min(620px, calc(100vh - 150px));
+  margin-top: 20px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.access-icon {
+  display: grid;
+  width: 68px;
+  height: 68px;
+  margin-bottom: 22px;
+  place-items: center;
+  border: 1px solid rgba(220, 38, 38, 0.22);
+  border-radius: 50%;
+  background: #fef2f2;
+  color: #dc2626;
+
+  i {
+    font-size: 31px;
+  }
+}
+
+.access-eyebrow {
+  margin: 0 0 8px;
+  color: #0f766e;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+h1 {
+  margin: 0;
+  color: #102331;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.access-description {
+  max-width: 580px;
+  margin: 16px auto 0;
+  color: #607482;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.access-actions {
+  display: flex;
+  margin-top: 30px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.primary-action,
+.secondary-action {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border-radius: 7px;
+  padding: 0 18px;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.primary-action {
+  border: 1px solid #0f766e;
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.secondary-action {
+  border: 1px solid #cbd8de;
+  background: #ffffff;
+  color: #29414e;
+}
+
+.primary-action:hover {
+  border-color: #0b625c;
+  background: #0b625c;
+}
+
+.secondary-action:hover {
+  border-color: #0f766e;
+  color: #0f766e;
+}
+
+:host-context(.dark) {
+  .access-layout {
+    background: #07131d;
+    color: #e8f2f7;
+  }
+
+  .access-state {
+    border-color: rgba(99, 210, 189, 0.18);
+    background: #0c1b27;
+  }
+
+  h1 {
+    color: #f3f8fa;
+  }
+
+  .access-description {
+    color: #a8bbc5;
+  }
+
+  .secondary-action {
+    border-color: #36505d;
+    background: #122633;
+    color: #e8f2f7;
+  }
+}
+
+@media (max-width: 767px) {
+  .access-main {
+    padding: 16px 14px 104px;
+  }
+
+  .access-state {
+    min-height: calc(100vh - 175px);
+    margin-top: 14px;
+    padding: 36px 18px;
+  }
+
+  .access-actions {
+    width: 100%;
+    flex-direction: column-reverse;
+  }
+
+  .primary-action,
+  .secondary-action {
+    width: min(100%, 320px);
+  }
+}
