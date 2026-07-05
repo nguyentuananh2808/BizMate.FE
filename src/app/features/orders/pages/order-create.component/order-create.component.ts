@@ -1,34 +1,27 @@
-import { Product } from './../../../product/product.component/models/product-response.model';
 import { CommonModule, Location } from '@angular/common';
 import { ChangeDetectorRef, Component, HostListener } from '@angular/core';
 import {
   FormArray,
   FormBuilder,
   FormGroup,
-  Validators,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
-import { HeaderCommonComponent } from '../../../shared/header-common.component/header-common.component';
+import { Router, RouterModule } from '@angular/router';
+import { Html5Qrcode } from 'html5-qrcode';
+import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
-import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTabsModule } from 'ng-zorro-antd/tabs';
-import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
-import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzIconModule } from 'ng-zorro-antd/icon';
-import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
-import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
-import { Router, RouterModule } from '@angular/router';
-import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
-import { ProductPopupSearchComponent } from '../../../product/product-popup-search.component/product-popup-search.component';
-import { ProductQrScanButtonComponent } from '../../../product/product-qr-scan-button.component/product-qr-scan-button.component';
-import { MenuComponent } from '../../../shared/menu.component/menu.component';
-import { ToastrService } from 'ngx-toastr';
 import { NgxPrintModule } from 'ngx-print';
-import { InventoryDetail } from '../../../inventory-receipt/models/warehouse-receipt-detail.model';
-import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
-import { NzSelectModule } from 'ng-zorro-antd/select';
+import { ToastrService } from 'ngx-toastr';
 import {
   debounceTime,
   distinctUntilChanged,
@@ -39,21 +32,28 @@ import {
   switchMap,
   take,
 } from 'rxjs';
-import { CustomerService } from '../../../customer/services/customer-service';
+import { PricePipe } from '../../../../shared/pipes/price-pice';
+import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
 import {
   Customer,
   CustomerResponse,
 } from '../../../customer/models/customer-response.model';
-import { PricePipe } from '../../../../shared/pipes/price-pice';
+import { CustomerService } from '../../../customer/services/customer-service';
+import { DealerPriceDetail } from '../../../dealer-level/models/dealer-level-detail.models';
+import { DealerLevelService } from '../../../dealer-level/services/dealer-level-service';
+import { InventoryDetail } from '../../../inventory-receipt/models/warehouse-receipt-detail.model';
+import { ProductPopupSearchComponent } from '../../../product/product-popup-search.component/product-popup-search.component';
+import { ProductQrScanButtonComponent } from '../../../product/product-qr-scan-button.component/product-qr-scan-button.component';
+import { ProductService } from '../../../product/product.component/services/product-service';
+import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
+import { HeaderCommonComponent } from '../../../shared/header-common.component/header-common.component';
+import { MenuComponent } from '../../../shared/menu.component/menu.component';
+import { BorrowableEmployee, Technician } from '../../../technician/models/technician.model';
+import { TechnicianHoldingService } from '../../../technician/services/technician-holding.service';
+import { TechnicianService } from '../../../technician/services/technician.service';
 import { CreateOrderRequest } from '../../models/create-order-request.model';
 import { OrderService } from '../../services/order.service';
-import { DealerLevelService } from '../../../dealer-level/services/dealer-level-service';
-import { DealerPriceDetail } from '../../../dealer-level/models/dealer-level-detail.models';
-import { ProductService } from '../../../product/product.component/services/product-service';
-import { Html5Qrcode } from 'html5-qrcode';
-import { Technician } from '../../../technician/models/technician.model';
-import { TechnicianService } from '../../../technician/services/technician.service';
-
+import { Product } from './../../../product/product.component/models/product-response.model';
 @Component({
   standalone: true,
   selector: 'order-create',
@@ -87,6 +87,9 @@ import { TechnicianService } from '../../../technician/services/technician.servi
   styleUrls: ['./order-create.component.scss'],
 })
 export class OrderCreateComponent {
+  technicalEmployees: BorrowableEmployee[] = [];
+selectedTechnicianIds: string[] = [];
+isLoadingTechnicalEmployees = false;
   selectedTabIndex = 0;
   searchCustomerKeyword = '';
   customers: Customer[] = [];
@@ -122,7 +125,7 @@ export class OrderCreateComponent {
   scannerTitle = 'Quét Serial';
   lastScan = '';
   technicians: Technician[] = [];
-  selectedTechnicianIds: string[] = [];
+  //selectedTechnicianIds: string[] = [];
   installationDate: string | null = null;
   isLoadingTechnicians = false;
   private readonly customerNameValidators = [
@@ -165,7 +168,8 @@ export class OrderCreateComponent {
     private productService: ProductService,
     private orderService: OrderService,
     private dealerLevelService: DealerLevelService,
-    private technicianService: TechnicianService
+    private technicianService: TechnicianService,
+      private technicianHoldingService: TechnicianHoldingService
   ) {
     this.orderForm = this.fb.group({
       customerName: ['', this.customerNameValidators],
@@ -195,7 +199,7 @@ export class OrderCreateComponent {
       });
 
     this.addProduct();
-    this.loadTechnicians();
+    this.loadTechnicalEmployees();
   }
 
   @HostListener('window:resize', ['$event'])
@@ -206,6 +210,38 @@ export class OrderCreateComponent {
   get details(): FormArray {
     return this.orderForm.get('details') as FormArray;
   }
+
+loadTechnicalEmployees(): void {
+  this.isLoadingTechnicalEmployees = true;
+
+  this.technicianHoldingService
+    .getBorrowEmployees('', false)
+    .pipe(
+      finalize(() => {
+        this.isLoadingTechnicalEmployees = false;
+        this.cdr.detectChanges();
+      })
+    )
+    .subscribe({
+      next: (res) => {
+        this.technicalEmployees = (res.Employees || []).filter((employee) => {
+          const role = (employee.Role || '').toLowerCase().trim();
+
+          return (
+            role === 'technician' ||
+            role === 'kỹ thuật' ||
+            role === 'ky thuat' ||
+            role === 'kỹ thuật viên' ||
+            role === 'ky thuat vien'
+          );
+        });
+      },
+      error: () => {
+        this.technicalEmployees = [];
+        this.toastr.error('Không thể tải danh sách kỹ thuật viên.');
+      },
+    });
+}
 
   loadTechnicians(keyword: string = ''): void {
     this.isLoadingTechnicians = true;

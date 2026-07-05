@@ -17,6 +17,7 @@ import { InventoryDetail } from '../../../inventory-receipt/models/warehouse-rec
 import { ProductPopupSearchComponent } from '../../../product/product-popup-search.component/product-popup-search.component';
 import { ProductQrScanButtonComponent } from '../../../product/product-qr-scan-button.component/product-qr-scan-button.component';
 import {
+  BorrowableEmployee,
   CreateBorrowRequest,
   Technician,
   TechnicianBorrowRequest,
@@ -56,6 +57,7 @@ export class TechnicianHoldingsComponent implements OnInit {
   readonly isTechnicianUser =
     (localStorage.getItem('role') || '').toLowerCase() === 'technician';
   technicians: Technician[] = [];
+  borrowEmployees: BorrowableEmployee[] = [];
   holdings: TechnicianHoldingGroup[] = [];
   borrowRequests: TechnicianBorrowRequest[] = [];
   allBorrowRequests: TechnicianBorrowRequest[] = [];
@@ -66,6 +68,7 @@ export class TechnicianHoldingsComponent implements OnInit {
   mode: HoldingViewMode = 'all';
   isLoading = false;
   isLoadingRequests = false;
+  isLoadingBorrowEmployees = false;
   isSavingBorrowRequest = false;
   isBorrowProductPopupOpen = false;
   isMobile = window.innerWidth < 768;
@@ -110,6 +113,7 @@ export class TechnicianHoldingsComponent implements OnInit {
     }
 
     this.loadTechnicians();
+    this.loadBorrowEmployees();
     this.loadHoldings();
     this.loadBorrowRequests();
   }
@@ -152,7 +156,7 @@ export class TechnicianHoldingsComponent implements OnInit {
   }
 
   get selectedTechnicianName(): string {
-    if (!this.selectedTechnicianId) return 'Tất cả kỹ thuật viên';
+    if (!this.selectedTechnicianId) return 'Tất cả nhân viên';
 
     return (
       this.technicians.find((item) => item.Id === this.selectedTechnicianId)
@@ -169,7 +173,30 @@ export class TechnicianHoldingsComponent implements OnInit {
           this.technicians = response.Technicians || [];
         },
         error: () => {
-          this.toastr.error('Không thể tải danh sách kỹ thuật viên.');
+          this.toastr.error('Không thể tải danh sách nhân viên giữ hàng.');
+        },
+      });
+  }
+
+  loadBorrowEmployees(): void {
+    if (this.isTechnicianUser) return;
+
+    this.isLoadingBorrowEmployees = true;
+    this.holdingService
+      .getBorrowEmployees('', false)
+      .pipe(
+        finalize(() => {
+          this.isLoadingBorrowEmployees = false;
+          this.refreshView();
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          this.borrowEmployees = response.Employees || [];
+        },
+        error: () => {
+          this.borrowEmployees = [];
+          this.toastr.error('Không thể tải danh sách nhân viên.');
         },
       });
   }
@@ -205,7 +232,7 @@ export class TechnicianHoldingsComponent implements OnInit {
         },
         error: () => {
           this.holdings = [];
-          this.toastr.error('Không thể tải danh sách hàng kỹ thuật đang giữ.');
+          this.toastr.error('Không thể tải danh sách hàng nhân viên đang giữ.');
         },
       });
   }
@@ -306,6 +333,11 @@ export class TechnicianHoldingsComponent implements OnInit {
   }
 
   submitBorrowRequest(): void {
+    if (!this.isTechnicianUser && !this.borrowForm.EmployeeUserId) {
+      this.toastr.warning('Vui lòng chọn nhân viên nhận hàng.');
+      return;
+    }
+
     if (!this.borrowItems.length) {
       this.toastr.warning('Vui lòng chọn ít nhất một sản phẩm cần mượn.');
       return;
@@ -331,6 +363,9 @@ export class TechnicianHoldingsComponent implements OnInit {
     }
 
     const payload: CreateBorrowRequest = {
+      EmployeeUserId: this.isTechnicianUser
+        ? null
+        : this.borrowForm.EmployeeUserId || null,
       BorrowType: this.borrowForm.BorrowType,
       NeededDate: this.borrowForm.NeededDate,
       Description: this.borrowForm.Description?.trim() || null,
@@ -352,10 +387,15 @@ export class TechnicianHoldingsComponent implements OnInit {
       )
       .subscribe({
         next: () => {
-          this.toastr.success('Đã gửi đề xuất mượn hàng.');
-          if (this.isTechnicianUser) {
-            this.borrowForm = this.createEmptyBorrowForm();
-            this.borrowItems = [];
+          this.toastr.success(
+            this.isTechnicianUser
+              ? 'Đã gửi đề xuất mượn hàng.'
+              : 'Đã tạo phiếu mượn hàng cho nhân viên.'
+          );
+          this.borrowForm = this.createEmptyBorrowForm();
+          this.borrowItems = [];
+          if (!this.isTechnicianUser) {
+            this.loadTechnicians();
           }
           this.loadBorrowRequests();
         },
@@ -552,7 +592,7 @@ export class TechnicianHoldingsComponent implements OnInit {
 
   openZalo(phone?: string): void {
     if (!phone) {
-      this.toastr.warning('Kỹ thuật viên chưa có số Zalo.');
+      this.toastr.warning('Nhân viên chưa có số Zalo.');
       return;
     }
 
@@ -584,11 +624,13 @@ export class TechnicianHoldingsComponent implements OnInit {
   }
 
   private createEmptyBorrowForm(): {
+    EmployeeUserId: string;
     BorrowType: TechnicianBorrowType;
     NeededDate: string;
     Description: string;
   } {
     return {
+      EmployeeUserId: '',
       BorrowType: TechnicianBorrowType.Daily,
       NeededDate: new Date().toISOString().slice(0, 10),
       Description: '',

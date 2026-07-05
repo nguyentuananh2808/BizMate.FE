@@ -177,12 +177,12 @@
                       [(ngModel)]="selectedTechnicianIds"
                       [ngModelOptions]="{ standalone: true }"
                       [nzDisabled]="isDescriptionOnlyOrder"
+                      [nzLoading]="isLoadingTechnicalEmployees"
                     >
-                      <nz-option
-                        *ngFor="let technician of technicians"
-                        [nzValue]="technician.Id"
-                        [nzLabel]="technician.Name + (technician.Phone ? ' - ' + technician.Phone : '')"
-                      ></nz-option>
+                       <nz-option *ngFor="let employee of technicalEmployees"
+                        [nzValue]="employee.TechnicianId || employee.UserId"
+                        [nzLabel]="employee.FullName">
+                      </nz-option>
                     </nz-select>
                   </div>
 
@@ -687,11 +687,12 @@
                       [(ngModel)]="selectedTechnicianIds"
                       [ngModelOptions]="{ standalone: true }"
                       [nzDisabled]="isDescriptionOnlyOrder"
+                      [nzLoading]="isLoadingTechnicalEmployees"
                     >
                       <nz-option
-                        *ngFor="let technician of technicians"
-                        [nzValue]="technician.Id"
-                        [nzLabel]="technician.Name + (technician.Phone ? ' - ' + technician.Phone : '')"
+                        *ngFor="let employee of technicalEmployees"
+                        [nzValue]="employee.TechnicianId || employee.UserId"
+                        [nzLabel]="employee.FullName"
                       ></nz-option>
                     </nz-select>
                 </div>

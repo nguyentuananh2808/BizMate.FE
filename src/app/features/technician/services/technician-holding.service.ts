@@ -4,7 +4,9 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiUrls } from '../../../config/api.config';
 import {
+  BorrowableEmployee,
   CreateBorrowRequest,
+  GetBorrowableEmployeesResponse,
   GetBorrowRequestsResponse,
   GetHoldingsResponse,
   ReturnHoldingRequest,
@@ -43,6 +45,24 @@ export class TechnicianHoldingService {
       `${ApiUrls.baseUrl}${ApiUrls.technicianHolding.return}`,
       body
     );
+  }
+
+  getBorrowEmployees(
+    keyword: string = '',
+    includeInactive: boolean = false
+  ): Observable<GetBorrowableEmployeesResponse> {
+    let params = new HttpParams().set('includeInactive', includeInactive);
+
+    if (keyword.trim()) {
+      params = params.set('keyword', keyword.trim());
+    }
+
+    return this.http
+      .get<unknown>(
+        `${ApiUrls.baseUrl}${ApiUrls.technicianHolding.borrowEmployees}`,
+        { params }
+      )
+      .pipe(map((response) => this.normalizeBorrowEmployeesResponse(response)));
   }
 
   getBorrowRequests(
@@ -165,6 +185,48 @@ export class TechnicianHoldingService {
       Message: this.readString(source, ['Message', 'message']),
       Errors: this.readArray<unknown>(source, ['Errors', 'errors']),
       Requests: requests,
+    };
+  }
+
+  private normalizeBorrowEmployeesResponse(
+    response: unknown
+  ): GetBorrowableEmployeesResponse {
+    const source = this.unwrapRecord(response);
+    const employees = this.readArray<Record<string, unknown>>(source, [
+      'Employees',
+      'employees',
+      'Users',
+      'users',
+      'Items',
+      'items',
+      'Data',
+      'data',
+    ]).map((item) => this.normalizeBorrowEmployee(item));
+
+    return {
+      Success: this.readBoolean(source, ['Success', 'success'], true),
+      Message: this.readString(source, ['Message', 'message']),
+      Errors: this.readArray<unknown>(source, ['Errors', 'errors']),
+      Employees: employees,
+    };
+  }
+
+  private normalizeBorrowEmployee(
+    source: Record<string, unknown>
+  ): BorrowableEmployee {
+    return {
+      UserId: this.readString(source, ['UserId', 'userId', 'Id', 'id']),
+      TechnicianId: this.readString(source, ['TechnicianId', 'technicianId']),
+      Code: this.readString(source, ['Code', 'code']),
+      FullName: this.readString(source, [
+        'FullName',
+        'fullName',
+        'Name',
+        'name',
+      ]),
+      Email: this.readString(source, ['Email', 'email']),
+      Role: this.readString(source, ['Role', 'role']),
+      IsActive: this.readBoolean(source, ['IsActive', 'isActive'], true),
     };
   }
 

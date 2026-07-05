@@ -1,9 +1,3 @@
-import { NzListModule } from 'ng-zorro-antd/list';
-import {
-  ExportOrderForTechnicianRequest,
-  OrderService,
-} from './../../services/order.service';
-import { Product } from '../../../product/product.component/models/product-response.model';
 import { CommonModule, Location } from '@angular/common';
 import {
   ChangeDetectorRef,
@@ -15,51 +9,61 @@ import {
   FormArray,
   FormBuilder,
   FormGroup,
-  Validators,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
-import { HeaderCommonComponent } from '../../../shared/header-common.component/header-common.component';
-import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
-import { NzTableModule } from 'ng-zorro-antd/table';
-import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
-import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzIconModule } from 'ng-zorro-antd/icon';
-import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
-import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
-import { ProductPopupSearchComponent } from '../../../product/product-popup-search.component/product-popup-search.component';
-import { ProductQrScanButtonComponent } from '../../../product/product-qr-scan-button.component/product-qr-scan-button.component';
-import { MenuComponent } from '../../../shared/menu.component/menu.component';
-import { ToastrService } from 'ngx-toastr';
-import { NgxPrintModule } from 'ngx-print';
-import { InventoryDetail } from '../../../inventory-receipt/models/warehouse-receipt-detail.model';
-import { UpdateOrderRequest } from '../../models/update-order-request.model';
-import { PricePipe } from '../../../../shared/pipes/price-pice';
-import {
-  Customer,
-  CustomerResponse,
-} from '../../../customer/models/customer-response.model';
-import { Subject, take } from 'rxjs';
-import { NzTabsModule } from 'ng-zorro-antd/tabs';
+import { Html5Qrcode } from 'html5-qrcode';
 import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
+import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { StatusColorPipe } from '../../../../shared/pipes/status-color.pipe';
-import { UpdateStatusOrderRequest } from '../../models/update-status-order-request.model';
+import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzTabsModule } from 'ng-zorro-antd/tabs';
+import { NgxPrintModule } from 'ngx-print';
+import { ToastrService } from 'ngx-toastr';
+import { Subject, take } from 'rxjs';
 import {
   debounceTime,
   distinctUntilChanged,
   filter,
+  finalize,
   switchMap,
 } from 'rxjs/operators';
+import { PricePipe } from '../../../../shared/pipes/price-pice';
+import { StatusColorPipe } from '../../../../shared/pipes/status-color.pipe';
+import { UnitTextPipe } from '../../../../shared/pipes/unit-text-pipe';
+import {
+  Customer,
+  CustomerResponse,
+} from '../../../customer/models/customer-response.model';
 import { CustomerService } from '../../../customer/services/customer-service';
-import { DealerLevelService } from '../../../dealer-level/services/dealer-level-service';
 import { DealerPriceDetail } from '../../../dealer-level/models/dealer-level-detail.models';
-import { Html5Qrcode } from 'html5-qrcode';
-import { Technician } from '../../../technician/models/technician.model';
+import { DealerLevelService } from '../../../dealer-level/services/dealer-level-service';
+import { InventoryDetail } from '../../../inventory-receipt/models/warehouse-receipt-detail.model';
+import { ProductPopupSearchComponent } from '../../../product/product-popup-search.component/product-popup-search.component';
+import { ProductQrScanButtonComponent } from '../../../product/product-qr-scan-button.component/product-qr-scan-button.component';
+import { Product } from '../../../product/product.component/models/product-response.model';
+import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
+import { HeaderCommonComponent } from '../../../shared/header-common.component/header-common.component';
+import { MenuComponent } from '../../../shared/menu.component/menu.component';
+import {
+  BorrowableEmployee,
+  Technician,
+} from '../../../technician/models/technician.model';
+import { TechnicianHoldingService } from '../../../technician/services/technician-holding.service';
 import { TechnicianService } from '../../../technician/services/technician.service';
+import { UpdateOrderRequest } from '../../models/update-order-request.model';
+import { UpdateStatusOrderRequest } from '../../models/update-status-order-request.model';
+import {
+  ExportOrderForTechnicianRequest,
+  OrderService,
+} from './../../services/order.service';
 
 interface ExportBorrowUiItem {
   ProductId: string;
@@ -181,6 +185,9 @@ export class OrderUpdateComponent implements OnInit {
     description: '',
   };
 
+  technicalEmployees: BorrowableEmployee[] = [];
+  isLoadingTechnicalEmployees = false;
+
   constructor(
     private location: Location,
     private fb: FormBuilder,
@@ -191,7 +198,8 @@ export class OrderUpdateComponent implements OnInit {
     private orderService: OrderService,
     private customerService: CustomerService,
     private dealerLevelService: DealerLevelService,
-    private technicianService: TechnicianService
+    private technicianService: TechnicianService,
+    private technicianHoldingService: TechnicianHoldingService,
   ) {
     this.orderForm = this.fb.group({
       customerName: [''],
@@ -207,11 +215,11 @@ export class OrderUpdateComponent implements OnInit {
         debounceTime(400),
         distinctUntilChanged(),
         filter(
-          (keyword: any) => typeof keyword === 'string' && keyword.length >= 2
+          (keyword: any) => typeof keyword === 'string' && keyword.length >= 2,
         ),
         switchMap((keyword: string) =>
-          this.customerService.SearchCustomer(keyword, 10, 1, false)
-        )
+          this.customerService.SearchCustomer(keyword, 10, 1, false),
+        ),
       )
       .subscribe((res: CustomerResponse) => {
         this.customers = res.Customers || [];
@@ -227,7 +235,8 @@ export class OrderUpdateComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadTechnicians();
+    //this.loadTechnicians();
+     this.loadTechnicalEmployees();
     this.id = this.router.snapshot.paramMap.get('id')!;
     if (this.id) {
       this.getOrderDetail(this.id);
@@ -347,7 +356,7 @@ export class OrderUpdateComponent implements OnInit {
 
   getTechnicianLabel(technicianId: string): string {
     const selected = this.technicians.find(
-      (technician) => technician.Id === technicianId
+      (technician) => technician.Id === technicianId,
     );
 
     if (!selected) return technicianId;
@@ -384,7 +393,12 @@ export class OrderUpdateComponent implements OnInit {
     ['Ho\u00e0n th\u00e0nh']: [],
   };
 
-  get visibleStatusActions(): { type: string; label: string; icon: string; class: string }[] {
+  get visibleStatusActions(): {
+    type: string;
+    label: string;
+    icon: string;
+    class: string;
+  }[] {
     const actions = this.statusActions[this.statusName] || [];
 
     if (!this.technicianExportedAt) {
@@ -420,9 +434,46 @@ export class OrderUpdateComponent implements OnInit {
         this.getOrderDetail(this.id);
       },
       error: (err) => {
-        this.toastr.error(this.getHttpErrorMessage(err, 'Cập nhật trạng thái đơn hàng thất bại!'));
+        this.toastr.error(
+          this.getHttpErrorMessage(
+            err,
+            'Cập nhật trạng thái đơn hàng thất bại!',
+          ),
+        );
       },
     });
+  }
+
+  loadTechnicalEmployees(): void {
+    this.isLoadingTechnicalEmployees = true;
+
+    this.technicianHoldingService
+      .getBorrowEmployees('', false)
+      .pipe(
+        finalize(() => {
+          this.isLoadingTechnicalEmployees = false;
+          this.cdr.detectChanges();
+        }),
+      )
+      .subscribe({
+        next: (res) => {
+          this.technicalEmployees = (res.Employees || []).filter((employee) => {
+            const role = (employee.Role || '').toLowerCase().trim();
+
+            return (
+              role === 'technician' ||
+              role === 'kỹ thuật' ||
+              role === 'ky thuat' ||
+              role === 'kỹ thuật viên' ||
+              role === 'ky thuat vien'
+            );
+          });
+        },
+        error: () => {
+          this.technicalEmployees = [];
+          this.toastr.error('Không thể tải danh sách kỹ thuật viên.');
+        },
+      });
   }
 
   finishOrder(): void {
@@ -444,7 +495,12 @@ export class OrderUpdateComponent implements OnInit {
             this.getOrderDetail(this.id);
           },
           error: (err) => {
-            this.toastr.error(this.getHttpErrorMessage(err, 'Cập nhật trạng thái đơn hàng thất bại!'));
+            this.toastr.error(
+              this.getHttpErrorMessage(
+                err,
+                'Cập nhật trạng thái đơn hàng thất bại!',
+              ),
+            );
           },
         });
       },
@@ -520,7 +576,9 @@ export class OrderUpdateComponent implements OnInit {
     if (!customer) return;
 
     if (this.isDescriptionOnlyOrder) {
-      this.toastr.info('\u0110\u01a1n h\u00e0ng \u0111\u00e3 kh\u00f3a, ch\u1ec9 c\u00f3 th\u1ec3 c\u1eadp nh\u1eadt ghi ch\u00fa.');
+      this.toastr.info(
+        '\u0110\u01a1n h\u00e0ng \u0111\u00e3 kh\u00f3a, ch\u1ec9 c\u00f3 th\u1ec3 c\u1eadp nh\u1eadt ghi ch\u00fa.',
+      );
       return;
     }
 
@@ -607,7 +665,7 @@ export class OrderUpdateComponent implements OnInit {
 
   updateExistingProductIds(): void {
     this.existingProductIds = this.orderLineItems.map((item) =>
-      this.getProductId(item)
+      this.getProductId(item),
     );
   }
   getOrderDetail(id: string): void {
@@ -624,9 +682,10 @@ export class OrderUpdateComponent implements OnInit {
             : [];
         this.technicianName = res.Order.Order.TechnicianName || '';
         this.installationDate = this.toDateInputValue(
-          res.Order.Order.InstallationDate
+          res.Order.Order.InstallationDate,
         );
-        this.technicianExportedAt = res.Order.Order.TechnicianExportedAt || null;
+        this.technicianExportedAt =
+          res.Order.Order.TechnicianExportedAt || null;
         this.customerId = res.Order.Order.CustomerId;
         this.customerType = res.Order.Order.CustomerType;
         this.selectedTabIndex = this.customerType === 2 ? 1 : 0;
@@ -660,20 +719,20 @@ export class OrderUpdateComponent implements OnInit {
 
         this.statusId = res.Order.Order.StatusId;
         this.statusName = res.Order.Order.StatusName;
-        (this.totalAmount = res.Order.Order.TotalAmount),
+        ((this.totalAmount = res.Order.Order.TotalAmount),
           this.orderForm.patchValue({
             customerName: res.Order.Order.CustomerName || '',
             phoneNumber: res.Order.Order.CustomerPhone || '',
             deliveryAddress: res.Order.Order.DeliveryAddress || '',
             description: res.Order.Order.Description || '',
-          });
+          }));
         this.applyOrderFormState();
 
         // ======= ĐỒNG BỘ DETAILS FORMARRAY =======
         const detailsFormArray = this.orderForm.get('details') as FormArray;
         detailsFormArray.clear();
         this.allData = [...res.Order.Order.Details].sort((a, b) =>
-          a.ProductName.localeCompare(b.ProductName)
+          a.ProductName.localeCompare(b.ProductName),
         );
         (res.Order.Order.Details || []).forEach((item: any) => {
           const availableAfterReserve =
@@ -708,10 +767,10 @@ export class OrderUpdateComponent implements OnInit {
           .sort((a, b) => {
             // 1️⃣ Tách phần tên và phần thông số
             const [nameA, ...restA] = a.ProductName.split(' - ').map(
-              (s: string) => s.trim()
+              (s: string) => s.trim(),
             );
             const [nameB, ...restB] = b.ProductName.split(' - ').map(
-              (s: string) => s.trim()
+              (s: string) => s.trim(),
             );
 
             // 2️⃣ So sánh theo tên cụm sản phẩm trước
@@ -741,7 +800,9 @@ export class OrderUpdateComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        this.toastr.error(this.getHttpErrorMessage(err, 'Không thể tải chi tiết đơn hàng.'));
+        this.toastr.error(
+          this.getHttpErrorMessage(err, 'Không thể tải chi tiết đơn hàng.'),
+        );
       },
     });
   }
@@ -760,7 +821,7 @@ export class OrderUpdateComponent implements OnInit {
       this.orderLineItems.some((item) =>
         this.isSerialTracked(item)
           ? this.getSerialNumbers(item).length === 0
-          : item.Quantity <= 0
+          : item.Quantity <= 0,
       )
     );
   }
@@ -785,31 +846,35 @@ export class OrderUpdateComponent implements OnInit {
 
   getBorrowedQuantity(item: InventoryDetail): number {
     return Number(
-      (item as any).BorrowedQuantity ?? (item as any).borrowedQuantity ?? 0
+      (item as any).BorrowedQuantity ?? (item as any).borrowedQuantity ?? 0,
     );
   }
 
   getUsedBorrowedQuantity(item: InventoryDetail): number {
     return Number(
-      (item as any).UsedBorrowedQuantity ?? (item as any).usedBorrowedQuantity ?? 0
+      (item as any).UsedBorrowedQuantity ??
+        (item as any).usedBorrowedQuantity ??
+        0,
     );
   }
 
   getBorrowedRemaining(item: InventoryDetail): number {
     return Math.max(
       this.getBorrowedQuantity(item) - this.getUsedBorrowedQuantity(item),
-      0
+      0,
     );
   }
 
   isExtraBorrowItem(item: InventoryDetail): boolean {
-    return Number(item.Quantity ?? 0) === 0 && this.getBorrowedQuantity(item) > 0;
+    return (
+      Number(item.Quantity ?? 0) === 0 && this.getBorrowedQuantity(item) > 0
+    );
   }
 
   private isExtraBorrowResponse(item: any): boolean {
     const quantity = Number(item?.Quantity ?? item?.quantity ?? 0);
     const borrowedQuantity = Number(
-      item?.BorrowedQuantity ?? item?.borrowedQuantity ?? 0
+      item?.BorrowedQuantity ?? item?.borrowedQuantity ?? 0,
     );
 
     return quantity === 0 && borrowedQuantity > 0;
@@ -823,7 +888,9 @@ export class OrderUpdateComponent implements OnInit {
 
   openTechnicianExportModal(): void {
     if (!this.selectedTechnicianIds.length) {
-      this.toastr.warning('Vui lòng chọn ít nhất một kỹ thuật viên trước khi xuất hàng.');
+      this.toastr.warning(
+        'Vui lòng chọn ít nhất một kỹ thuật viên trước khi xuất hàng.',
+      );
       return;
     }
 
@@ -833,18 +900,20 @@ export class OrderUpdateComponent implements OnInit {
     }
 
     if (!this.canExportForTechnician) {
-      this.toastr.warning('Đơn hàng đã hoàn thành hoặc đã hủy nên không thể xuất/mượn thêm.');
+      this.toastr.warning(
+        'Đơn hàng đã hoàn thành hoặc đã hủy nên không thể xuất/mượn thêm.',
+      );
       return;
     }
 
     if (!this.isBorrowMoreMode) {
       const serialTrackedItem = this.orderLineItems.find((item) =>
-        this.isSerialTracked(item)
+        this.isSerialTracked(item),
       );
 
       if (serialTrackedItem) {
         this.toastr.warning(
-          `Flow mượn hàng hiện chưa hỗ trợ sản phẩm quản lý serial: ${serialTrackedItem.ProductName}.`
+          `Flow mượn hàng hiện chưa hỗ trợ sản phẩm quản lý serial: ${serialTrackedItem.ProductName}.`,
         );
         return;
       }
@@ -862,10 +931,12 @@ export class OrderUpdateComponent implements OnInit {
           IsExtraBorrow: false,
         }));
 
-    this.exportBorrowGroups = [{
-      TechnicianId: this.selectedTechnicianIds[0],
-      Items: initialItems,
-    }];
+    this.exportBorrowGroups = [
+      {
+        TechnicianId: this.selectedTechnicianIds[0],
+        Items: initialItems,
+      },
+    ];
     this.isExportBorrowVisible = true;
   }
 
@@ -892,24 +963,28 @@ export class OrderUpdateComponent implements OnInit {
     const targetGroup = this.exportBorrowGroups[0];
 
     if (!targetGroup) {
-      this.toastr.warning('Vui lòng chọn kỹ thuật viên cần mượn thêm sản phẩm.');
-      this.closeBorrowProductPopup();
-      return;
-    }
-
-    const serialTrackedItem = productList.find((item) =>
-      this.isSerialTracked(item)
-    );
-
-    if (serialTrackedItem) {
       this.toastr.warning(
-        `Flow mượn hàng hiện chưa hỗ trợ sản phẩm quản lý serial: ${serialTrackedItem.ProductName}.`
+        'Vui lòng chọn kỹ thuật viên cần mượn thêm sản phẩm.',
       );
       this.closeBorrowProductPopup();
       return;
     }
 
-    const existingIds = new Set(targetGroup.Items.map((item) => item.ProductId));
+    const serialTrackedItem = productList.find((item) =>
+      this.isSerialTracked(item),
+    );
+
+    if (serialTrackedItem) {
+      this.toastr.warning(
+        `Flow mượn hàng hiện chưa hỗ trợ sản phẩm quản lý serial: ${serialTrackedItem.ProductName}.`,
+      );
+      this.closeBorrowProductPopup();
+      return;
+    }
+
+    const existingIds = new Set(
+      targetGroup.Items.map((item) => item.ProductId),
+    );
     const extraItems = productList
       .filter((item) => !existingIds.has(this.getProductId(item)))
       .map((item) => {
@@ -943,7 +1018,7 @@ export class OrderUpdateComponent implements OnInit {
     if (!group) return;
 
     group.Items = group.Items.filter(
-      (current) => current.ProductId !== item.ProductId
+      (current) => current.ProductId !== item.ProductId,
     );
   }
 
@@ -961,14 +1036,14 @@ export class OrderUpdateComponent implements OnInit {
     }
 
     const allExportItems = this.exportBorrowGroups.flatMap(
-      (group) => group.Items
+      (group) => group.Items,
     );
 
     if (!allExportItems.length) {
       this.toastr.warning(
         this.isBorrowMoreMode
           ? 'Vui lòng thêm ít nhất một sản phẩm cần mượn.'
-          : 'Danh sách xuất/mượn chưa có sản phẩm.'
+          : 'Danh sách xuất/mượn chưa có sản phẩm.',
       );
       return;
     }
@@ -977,7 +1052,9 @@ export class OrderUpdateComponent implements OnInit {
       this.isBorrowMoreMode &&
       allExportItems.some((item) => Number(item.OrderedQuantity) > 0)
     ) {
-      this.toastr.warning('Đơn hàng đã xuất cho kỹ thuật; lần này chỉ nhập SL mượn thêm.');
+      this.toastr.warning(
+        'Đơn hàng đã xuất cho kỹ thuật; lần này chỉ nhập SL mượn thêm.',
+      );
       return;
     }
 
@@ -990,17 +1067,18 @@ export class OrderUpdateComponent implements OnInit {
     }
 
     const invalidItem = allExportItems.find(
-        (item) =>
-          item.OrderedQuantity < 0 ||
-          item.BorrowedQuantity < 0 ||
-          !Number.isInteger(Number(item.OrderedQuantity)) ||
-          !Number.isInteger(Number(item.BorrowedQuantity)) ||
-          (Number(item.OrderedQuantity) === 0 && Number(item.BorrowedQuantity) === 0)
+      (item) =>
+        item.OrderedQuantity < 0 ||
+        item.BorrowedQuantity < 0 ||
+        !Number.isInteger(Number(item.OrderedQuantity)) ||
+        !Number.isInteger(Number(item.BorrowedQuantity)) ||
+        (Number(item.OrderedQuantity) === 0 &&
+          Number(item.BorrowedQuantity) === 0),
     );
 
     if (invalidItem) {
       this.toastr.warning(
-        'Số lượng chưa hợp lệ: mỗi dòng phải là số nguyên >= 0; dòng trong đơn cần SL bán hoặc SL mượn > 0; dòng mượn ngoài đơn phải có SL mượn > 0.'
+        'Số lượng chưa hợp lệ: mỗi dòng phải là số nguyên >= 0; dòng trong đơn cần SL bán hoặc SL mượn > 0; dòng mượn ngoài đơn phải có SL mượn > 0.',
       );
       return;
     }
@@ -1009,20 +1087,24 @@ export class OrderUpdateComponent implements OnInit {
       const invalidAllocation = this.orderLineItems.find((orderItem) => {
         const productId = this.getProductId(orderItem);
         const expectedQuantity = this.getOrderQuantity(orderItem);
-        const allocatedQuantity = this.exportBorrowGroups.reduce((sum, group) => {
-          const item = group.Items.find(
-            (current) => current.ProductId === productId && !current.IsExtraBorrow
-          );
+        const allocatedQuantity = this.exportBorrowGroups.reduce(
+          (sum, group) => {
+            const item = group.Items.find(
+              (current) =>
+                current.ProductId === productId && !current.IsExtraBorrow,
+            );
 
-          return sum + (Number(item?.OrderedQuantity) || 0);
-        }, 0);
+            return sum + (Number(item?.OrderedQuantity) || 0);
+          },
+          0,
+        );
 
         return allocatedQuantity !== expectedQuantity;
       });
 
       if (invalidAllocation) {
         this.toastr.warning(
-          `Tổng SL bán phân bổ cho ${invalidAllocation.ProductName} phải bằng ${this.getOrderQuantity(invalidAllocation)}.`
+          `Tổng SL bán phân bổ cho ${invalidAllocation.ProductName} phải bằng ${this.getOrderQuantity(invalidAllocation)}.`,
         );
         return;
       }
@@ -1032,15 +1114,13 @@ export class OrderUpdateComponent implements OnInit {
       TechnicianExports: this.exportBorrowGroups
         .map((group) => ({
           TechnicianId: group.TechnicianId,
-          Items: group.Items
-            .map((item) => ({
-              ProductId: item.ProductId,
-              OrderedQuantity: Number(item.OrderedQuantity) || 0,
-              BorrowedQuantity: Number(item.BorrowedQuantity) || 0,
-            }))
-            .filter(
-              (item) => item.OrderedQuantity > 0 || item.BorrowedQuantity > 0
-            ),
+          Items: group.Items.map((item) => ({
+            ProductId: item.ProductId,
+            OrderedQuantity: Number(item.OrderedQuantity) || 0,
+            BorrowedQuantity: Number(item.BorrowedQuantity) || 0,
+          })).filter(
+            (item) => item.OrderedQuantity > 0 || item.BorrowedQuantity > 0,
+          ),
         }))
         .filter((group) => group.Items.length > 0),
     };
@@ -1057,28 +1137,20 @@ export class OrderUpdateComponent implements OnInit {
       next: (response) => {
         this.isExportingBorrowed = false;
         if (!this.isCommandSuccess(response)) {
-          this.toastr.error(
-            this.getCommandMessage(response, errorMessage)
-          );
+          this.toastr.error(this.getCommandMessage(response, errorMessage));
           return;
         }
 
-        this.toastr.success(
-          this.getCommandMessage(response, successMessage)
-        );
+        this.toastr.success(this.getCommandMessage(response, successMessage));
         this.isExportBorrowVisible = false;
         this.getOrderDetail(this.id);
       },
       error: (err) => {
         this.isExportingBorrowed = false;
         const message =
-          err.error?.Message ||
-          err.error?.message ||
-          errorMessage;
+          err.error?.Message || err.error?.message || errorMessage;
 
-        this.toastr.error(
-          message
-        );
+        this.toastr.error(message);
 
         if (message.includes('vừa thay đổi')) {
           this.isExportBorrowVisible = false;
@@ -1090,12 +1162,14 @@ export class OrderUpdateComponent implements OnInit {
 
   private isProductInOriginalOrder(productId: string): boolean {
     return this.orderLineItems.some(
-      (item) => this.getProductId(item) === productId
+      (item) => this.getProductId(item) === productId,
     );
   }
   openUseBorrowedModal(item: InventoryDetail): void {
     if (!this.canUseBorrowedProducts) {
-      this.toastr.info('\u0110\u01a1n h\u00e0ng \u0111\u00e3 ho\u00e0n th\u00e0nh ho\u1eb7c \u0111\u00e3 h\u1ee7y, kh\u00f4ng th\u1ec3 ghi nh\u1eadn d\u00f9ng h\u00e0ng m\u01b0\u1ee3n.');
+      this.toastr.info(
+        '\u0110\u01a1n h\u00e0ng \u0111\u00e3 ho\u00e0n th\u00e0nh ho\u1eb7c \u0111\u00e3 h\u1ee7y, kh\u00f4ng th\u1ec3 ghi nh\u1eadn d\u00f9ng h\u00e0ng m\u01b0\u1ee3n.',
+      );
       return;
     }
 
@@ -1108,7 +1182,9 @@ export class OrderUpdateComponent implements OnInit {
 
     this.selectedUseBorrowedItem = item;
     this.useBorrowedTechnicianId =
-      this.selectedTechnicianIds.length === 1 ? this.selectedTechnicianIds[0] : '';
+      this.selectedTechnicianIds.length === 1
+        ? this.selectedTechnicianIds[0]
+        : '';
     this.useBorrowedQuantity = 1;
     this.isUseBorrowedVisible = true;
   }
@@ -1124,7 +1200,9 @@ export class OrderUpdateComponent implements OnInit {
 
   submitUseBorrowedFromModal(): void {
     if (!this.canUseBorrowedProducts) {
-      this.toastr.info('\u0110\u01a1n h\u00e0ng \u0111\u00e3 ho\u00e0n th\u00e0nh ho\u1eb7c \u0111\u00e3 h\u1ee7y, kh\u00f4ng th\u1ec3 ghi nh\u1eadn d\u00f9ng h\u00e0ng m\u01b0\u1ee3n.');
+      this.toastr.info(
+        '\u0110\u01a1n h\u00e0ng \u0111\u00e3 ho\u00e0n th\u00e0nh ho\u1eb7c \u0111\u00e3 h\u1ee7y, kh\u00f4ng th\u1ec3 ghi nh\u1eadn d\u00f9ng h\u00e0ng m\u01b0\u1ee3n.',
+      );
       this.closeUseBorrowedModal();
       return;
     }
@@ -1141,7 +1219,10 @@ export class OrderUpdateComponent implements OnInit {
       return;
     }
 
-    if (this.selectedTechnicianIds.length > 1 && !this.useBorrowedTechnicianId) {
+    if (
+      this.selectedTechnicianIds.length > 1 &&
+      !this.useBorrowedTechnicianId
+    ) {
       this.toastr.warning('Vui lòng chọn kỹ thuật viên đã dùng hàng mượn.');
       return;
     }
@@ -1149,14 +1230,12 @@ export class OrderUpdateComponent implements OnInit {
     this.submitUseBorrowed(this.selectedUseBorrowedItem, quantity);
   }
 
-  private submitUseBorrowed(
-    item: InventoryDetail,
-    quantity: number
-  ): void {
+  private submitUseBorrowed(item: InventoryDetail, quantity: number): void {
     this.isSavingUseBorrowed = true;
     this.orderService
       .UseBorrowed(this.id, {
-        TechnicianId: this.useBorrowedTechnicianId || this.selectedTechnicianIds[0],
+        TechnicianId:
+          this.useBorrowedTechnicianId || this.selectedTechnicianIds[0],
         ProductId: this.getProductId(item),
         Quantity: quantity,
       })
@@ -1166,13 +1245,16 @@ export class OrderUpdateComponent implements OnInit {
           this.isSavingUseBorrowed = false;
           if (!this.isCommandSuccess(response)) {
             this.toastr.error(
-              this.getCommandMessage(response, 'Ghi nhận dùng hàng mượn thất bại.')
+              this.getCommandMessage(
+                response,
+                'Ghi nhận dùng hàng mượn thất bại.',
+              ),
             );
             return;
           }
 
           this.toastr.success(
-            this.getCommandMessage(response, 'Đã ghi nhận dùng hàng mượn.')
+            this.getCommandMessage(response, 'Đã ghi nhận dùng hàng mượn.'),
           );
           this.isUseBorrowedVisible = false;
           this.selectedUseBorrowedItem = null;
@@ -1185,7 +1267,7 @@ export class OrderUpdateComponent implements OnInit {
           this.toastr.error(
             err.error?.Message ||
               err.error?.message ||
-              'Ghi nhận dùng hàng mượn thất bại.'
+              'Ghi nhận dùng hàng mượn thất bại.',
           );
         },
       });
@@ -1206,7 +1288,7 @@ export class OrderUpdateComponent implements OnInit {
 
     if (typeof value === 'string') {
       return ['true', '1', 'success', 'succeeded'].includes(
-        value.toLowerCase()
+        value.toLowerCase(),
       );
     }
 
@@ -1225,7 +1307,10 @@ export class OrderUpdateComponent implements OnInit {
     return value.trim();
   }
 
-  private hasSerialInOrder(serialNumber: string, targetItem: InventoryDetail): boolean {
+  private hasSerialInOrder(
+    serialNumber: string,
+    targetItem: InventoryDetail,
+  ): boolean {
     const normalized = serialNumber.toLowerCase();
 
     return this.orderLineItems.some((item) => {
@@ -1234,13 +1319,13 @@ export class OrderUpdateComponent implements OnInit {
       }
 
       return this.getSerialNumbers(item).some(
-        (sn) => sn.toLowerCase() === normalized
+        (sn) => sn.toLowerCase() === normalized,
       );
     });
   }
 
   private syncSerialQuantity(
-    item: InventoryDetail & { SalePrice?: number; TotalPrice?: number }
+    item: InventoryDetail & { SalePrice?: number; TotalPrice?: number },
   ): void {
     if (!this.isSerialTracked(item)) {
       return;
@@ -1255,7 +1340,7 @@ export class OrderUpdateComponent implements OnInit {
 
   addSerialToItem(
     item: InventoryDetail & { SalePrice?: number; TotalPrice?: number },
-    value: string
+    value: string,
   ): void {
     if (!this.isSerialTracked(item)) {
       this.toastr.warning('Sản phẩm này bán theo số lượng, không cần SN.');
@@ -1269,7 +1354,7 @@ export class OrderUpdateComponent implements OnInit {
 
     const currentSerials = this.getSerialNumbers(item);
     const duplicatedInProduct = currentSerials.some(
-      (sn) => sn.toLowerCase() === serialNumber.toLowerCase()
+      (sn) => sn.toLowerCase() === serialNumber.toLowerCase(),
     );
 
     if (duplicatedInProduct || this.hasSerialInOrder(serialNumber, item)) {
@@ -1277,9 +1362,12 @@ export class OrderUpdateComponent implements OnInit {
       return;
     }
 
-    if (item.Available !== undefined && currentSerials.length >= item.Available) {
+    if (
+      item.Available !== undefined &&
+      currentSerials.length >= item.Available
+    ) {
       this.toastr.warning(
-        `Không thể vượt quá số lượng khả dụng (${item.Available}).`
+        `Không thể vượt quá số lượng khả dụng (${item.Available}).`,
       );
       return;
     }
@@ -1293,16 +1381,16 @@ export class OrderUpdateComponent implements OnInit {
 
   removeSerialFromItem(
     item: InventoryDetail & { SalePrice?: number; TotalPrice?: number },
-    serialNumber: string
+    serialNumber: string,
   ): void {
     item.SerialNumbers = this.getSerialNumbers(item).filter(
-      (sn) => sn !== serialNumber
+      (sn) => sn !== serialNumber,
     );
     this.syncSerialQuantity(item);
   }
 
   openSerialTextModal(
-    item: InventoryDetail & { SalePrice?: number; TotalPrice?: number }
+    item: InventoryDetail & { SalePrice?: number; TotalPrice?: number },
   ): void {
     if (!this.canEditProducts) {
       this.toastr.info('Đơn đã xuất hàng cho kỹ thuật, không thể sửa serial.');
@@ -1326,7 +1414,7 @@ export class OrderUpdateComponent implements OnInit {
       nzCancelText: 'Đóng',
       nzOnOk: () => {
         const textarea = document.getElementById(
-          'orderUpdateSnInput'
+          'orderUpdateSnInput',
         ) as HTMLTextAreaElement | null;
 
         if (!textarea) {
@@ -1344,7 +1432,7 @@ export class OrderUpdateComponent implements OnInit {
           uniqueSerials.length > item.Available
         ) {
           this.toastr.warning(
-            `Không thể vượt quá số lượng khả dụng (${item.Available}).`
+            `Không thể vượt quá số lượng khả dụng (${item.Available}).`,
           );
           return;
         }
@@ -1356,7 +1444,7 @@ export class OrderUpdateComponent implements OnInit {
   }
 
   async openCameraScanner(
-    item: InventoryDetail & { SalePrice?: number; TotalPrice?: number }
+    item: InventoryDetail & { SalePrice?: number; TotalPrice?: number },
   ): Promise<void> {
     if (!this.canEditProducts) {
       this.toastr.info('Đơn đã xuất hàng cho kỹ thuật, không thể quét serial.');
@@ -1398,7 +1486,7 @@ export class OrderUpdateComponent implements OnInit {
           qrbox: { width: 250, height: 250 },
         },
         (decodedText) => this.handleScannedSerial(decodedText),
-        () => {}
+        () => {},
       );
     } catch (error) {
       console.error('Cannot start order serial scanner:', error);
@@ -1438,7 +1526,9 @@ export class OrderUpdateComponent implements OnInit {
 
   startEdit(item: InventoryDetail): void {
     if (!this.canEditProducts) {
-      this.toastr.info('Đơn đã xuất hàng cho kỹ thuật, không thể sửa sản phẩm.');
+      this.toastr.info(
+        'Đơn đã xuất hàng cho kỹ thuật, không thể sửa sản phẩm.',
+      );
       return;
     }
 
@@ -1467,10 +1557,10 @@ export class OrderUpdateComponent implements OnInit {
     this.allData = [...this.listOfData].sort((a, b) => {
       // 1️⃣ Tách phần tên và phần thông số
       const [nameA, ...restA] = a.ProductName.split(' - ').map((s: string) =>
-        s.trim()
+        s.trim(),
       );
       const [nameB, ...restB] = b.ProductName.split(' - ').map((s: string) =>
-        s.trim()
+        s.trim(),
       );
 
       // 2️⃣ So sánh cụm tên
@@ -1511,12 +1601,12 @@ export class OrderUpdateComponent implements OnInit {
   updateTotalAmount() {
     this.totalAmount = this.orderLineItems.reduce(
       (sum, item) => sum + (item.TotalPrice ?? 0),
-      0
+      0,
     );
   }
 
   saveEdit(
-    item: InventoryDetail & { SalePrice?: number; TotalPrice?: number }
+    item: InventoryDetail & { SalePrice?: number; TotalPrice?: number },
   ): void {
     if (this.isSerialTracked(item)) {
       this.syncSerialQuantity(item);
@@ -1555,7 +1645,9 @@ export class OrderUpdateComponent implements OnInit {
 
   deleteItem(itemToDelete: any): void {
     if (!this.canEditProducts) {
-      this.toastr.info('Đơn đã xuất hàng cho kỹ thuật, không thể xóa sản phẩm.');
+      this.toastr.info(
+        'Đơn đã xuất hàng cho kỹ thuật, không thể xóa sản phẩm.',
+      );
       return;
     }
 
@@ -1565,10 +1657,10 @@ export class OrderUpdateComponent implements OnInit {
       nzCancelText: 'Hủy',
       nzOnOk: () => {
         this.listOfData = this.listOfData.filter(
-          (item) => item.Id !== itemToDelete.Id
+          (item) => item.Id !== itemToDelete.Id,
         );
         this.allData = this.allData.filter(
-          (item) => item.Id !== itemToDelete.Id
+          (item) => item.Id !== itemToDelete.Id,
         );
         this.updateExistingProductIds();
         this.updateTotalAmount();
@@ -1585,8 +1677,8 @@ export class OrderUpdateComponent implements OnInit {
     } else {
       this.listOfData = this.allData.filter((item) =>
         Object.values(item).some((value) =>
-          String(value).toLowerCase().includes(this.searchKeyword)
-        )
+          String(value).toLowerCase().includes(this.searchKeyword),
+        ),
       );
       this.updateExistingProductIds();
     }
@@ -1595,7 +1687,9 @@ export class OrderUpdateComponent implements OnInit {
 
   onSelectedProducts(productList: InventoryDetail[]) {
     if (!this.canEditProducts) {
-      this.toastr.info('Đơn đã xuất hàng cho kỹ thuật, không thể thêm sản phẩm.');
+      this.toastr.info(
+        'Đơn đã xuất hàng cho kỹ thuật, không thể thêm sản phẩm.',
+      );
       return;
     }
 
@@ -1612,10 +1706,10 @@ export class OrderUpdateComponent implements OnInit {
     this.listOfData = this.listOfData.filter(
       (item, index, self) =>
         index ===
-        self.findIndex((t) => this.getProductId(t) === this.getProductId(item))
+        self.findIndex((t) => this.getProductId(t) === this.getProductId(item)),
     );
     this.listOfData = [...this.listOfData].sort((a, b) =>
-      a.ProductName.localeCompare(b.ProductName)
+      a.ProductName.localeCompare(b.ProductName),
     );
 
     // Set giá mặc định (trước khi check DealerLevel)
@@ -1671,7 +1765,9 @@ export class OrderUpdateComponent implements OnInit {
 
   addProducts(): void {
     if (!this.canEditProducts) {
-      this.toastr.info('Đơn đã xuất hàng cho kỹ thuật, không thể thêm sản phẩm.');
+      this.toastr.info(
+        'Đơn đã xuất hàng cho kỹ thuật, không thể thêm sản phẩm.',
+      );
       return;
     }
 
@@ -1683,7 +1779,7 @@ export class OrderUpdateComponent implements OnInit {
       this.fb.group({
         productId: ['', Validators.required],
         quantity: [1, [Validators.required, Validators.min(1)]],
-      })
+      }),
     );
     this.editingQuantity = 1;
   }
@@ -1707,7 +1803,7 @@ export class OrderUpdateComponent implements OnInit {
       text: 'Chọn hàng chẵn',
       onSelect: () => {
         this.listOfCurrentPageData.forEach((data, index) =>
-          this.updateCheckedSet(data.Id, index % 2 !== 0)
+          this.updateCheckedSet(data.Id, index % 2 !== 0),
         );
         this.refreshCheckedStatus();
       },
@@ -1716,7 +1812,7 @@ export class OrderUpdateComponent implements OnInit {
       text: 'Chọn hàng lẻ',
       onSelect: () => {
         this.listOfCurrentPageData.forEach((data, index) =>
-          this.updateCheckedSet(data.Id, index % 2 === 0)
+          this.updateCheckedSet(data.Id, index % 2 === 0),
         );
         this.refreshCheckedStatus();
       },
@@ -1732,7 +1828,7 @@ export class OrderUpdateComponent implements OnInit {
   }
   onAllChecked(val: boolean) {
     this.listOfCurrentPageData.forEach((item) =>
-      this.updateCheckedSet(item.Id, val)
+      this.updateCheckedSet(item.Id, val),
     );
     this.refreshCheckedStatus();
   }
@@ -1742,7 +1838,7 @@ export class OrderUpdateComponent implements OnInit {
   }
   refreshCheckedStatus() {
     this.checked = this.listOfCurrentPageData.every((i) =>
-      this.setOfCheckedId.has(i.Id)
+      this.setOfCheckedId.has(i.Id),
     );
     this.indeterminate =
       this.listOfCurrentPageData.some((i) => this.setOfCheckedId.has(i.Id)) &&
@@ -1765,12 +1861,14 @@ export class OrderUpdateComponent implements OnInit {
     const missingSerialItem = isDescriptionOnlyUpdate
       ? undefined
       : this.orderLineItems.find(
-          (item) => this.isSerialTracked(item) && this.getSerialNumbers(item).length === 0
+          (item) =>
+            this.isSerialTracked(item) &&
+            this.getSerialNumbers(item).length === 0,
         );
 
     if (missingSerialItem) {
       this.toastr.warning(
-        `Vui lòng quét hoặc nhập SN cho ${missingSerialItem.ProductName}.`
+        `Vui lòng quét hoặc nhập SN cho ${missingSerialItem.ProductName}.`,
       );
       return;
     }
@@ -1814,7 +1912,7 @@ export class OrderUpdateComponent implements OnInit {
       next: (response) => {
         if (!this.isCommandSuccess(response)) {
           this.toastr.error(
-            this.getCommandMessage(response, 'Cập nhật đơn hàng thất bại')
+            this.getCommandMessage(response, 'Cập nhật đơn hàng thất bại'),
           );
           this.isSubmitting = false;
           return;

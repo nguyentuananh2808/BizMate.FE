@@ -13,6 +13,20 @@ export interface Technician {
   IsActive: boolean;
 }
 
+export interface BorrowableEmployee {
+  UserId: string;
+  TechnicianId?: string;
+  Code: string;
+  FullName: string;
+  Email: string;
+  Role: string;
+  IsActive: boolean;
+}
+
+export interface GetBorrowableEmployeesResponse extends ApiResponse {
+  Employees: BorrowableEmployee[];
+}
+
 export interface GetTechniciansResponse extends ApiResponse {
   Technicians: Technician[];
 }
@@ -66,6 +80,8 @@ export enum TechnicianBorrowRequestStatus {
 }
 
 export interface CreateBorrowRequest {
+  TechnicianId?: string | null;
+  EmployeeUserId?: string | null;
   BorrowType: TechnicianBorrowType;
   NeededDate: string;
   Description?: string | null;

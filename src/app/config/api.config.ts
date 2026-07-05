@@ -129,6 +129,7 @@ export const ApiUrls = {
     getAll: '/technician-holdings',
     overdue: '/technician-holdings/overdue',
     return: '/technician-holdings/return',
+    borrowEmployees: '/technician-holdings/borrow-employees',
     requests: '/technician-holdings/requests',
     approveRequest: (id: string) => `/technician-holdings/requests/${id}/approve`,
     rejectRequest: (id: string) => `/technician-holdings/requests/${id}/reject`,

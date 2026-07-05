@@ -1306,4 +1306,125 @@ notification {
   }
 }
 
+.borrow-detail-modal .ant-modal-content {
+  overflow: hidden;
+  border: 1px solid rgba(15, 70, 87, 0.14);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(15, 35, 49, 0.22);
+}
 
+.borrow-detail-modal .ant-modal-header {
+  border-bottom: 1px solid rgba(15, 70, 87, 0.12);
+  background: #ffffff;
+}
+
+.borrow-detail-modal .ant-modal-title {
+  color: #1f2937;
+  font-weight: 700;
+}
+
+.borrow-detail-modal .ant-modal-body {
+  background: #ffffff;
+}
+
+.borrow-detail-modal .ant-modal-footer {
+  border-top: 1px solid rgba(15, 70, 87, 0.12);
+  background: #ffffff;
+}
+
+.borrow-detail-modal .ant-modal-close-x {
+  color: #1f2937;
+}
+
+.dark .borrow-detail-modal .ant-modal-content {
+  border-color: rgba(99, 210, 189, 0.26);
+  background: #0b1520 !important;
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.dark .borrow-detail-modal .ant-modal-header {
+  border-bottom-color: rgba(99, 210, 189, 0.2);
+  background: #0b1520 !important;
+}
+
+.dark .borrow-detail-modal .ant-modal-title {
+  color: #f8fafc !important;
+}
+
+.dark .borrow-detail-modal .ant-modal-body {
+  background: #0b1520 !important;
+}
+
+.dark .borrow-detail-modal .ant-modal-footer {
+  border-top-color: rgba(99, 210, 189, 0.2);
+  background: #0b1520 !important;
+}
+
+.dark .borrow-detail-modal .ant-modal-close-x {
+  color: #e5edf3 !important;
+}
+
+.dark .borrow-detail {
+  color: #e5edf3;
+}
+
+.dark .borrow-detail__summary > div {
+  border-color: rgba(99, 210, 189, 0.24);
+  background: #102433;
+}
+
+.dark .borrow-detail__summary span,
+.dark .borrow-detail__summary small {
+  color: #94a3b8;
+}
+
+.dark .borrow-detail__summary strong {
+  color: #f8fafc;
+}
+
+.dark .borrow-detail__note {
+  border-left-color: #2dd4bf;
+  background: rgba(15, 118, 110, 0.16);
+}
+
+.dark .borrow-detail__note span {
+  color: #99f6e4;
+}
+
+.dark .borrow-detail__note p {
+  color: #e5edf3;
+}
+
+.dark .borrow-detail__table {
+  border-color: rgba(99, 210, 189, 0.24);
+}
+
+.dark .borrow-detail__row {
+  border-bottom-color: rgba(148, 163, 184, 0.16);
+  color: #e5edf3;
+}
+
+.dark .borrow-detail__row strong {
+  color: #f8fafc;
+}
+
+.dark .borrow-detail__row--head {
+  background: #102433;
+  color: #94a3b8;
+}
+
+.dark .borrow-detail__rejection {
+  border-left-color: #f87171;
+  background: rgba(127, 29, 29, 0.28);
+}
+
+.dark .borrow-detail__rejection strong {
+  color: #fca5a5;
+}
+
+.dark .borrow-detail__rejection p {
+  color: #fecaca;
+}

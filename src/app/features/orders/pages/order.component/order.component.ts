@@ -28,7 +28,8 @@ import { OrderDto } from '../../models/order-dto.model';
 import { StatusService } from '../../../status/services/status.service';
 import { StatusDto } from '../../../status/models/status-dto.model';
 import { StatusColorPipe } from '../../../../shared/pipes/status-color.pipe';
-
+import { TechnicianHoldingService } from '../../../technician/services/technician-holding.service';
+import { BorrowableEmployee } from '../../../technician/models/technician.model';
 @Component({
   selector: 'order',
   imports: [
@@ -80,7 +81,9 @@ export class OrderComponent implements OnInit {
   statusList: StatusDto[] = [];
   selectedStatuses: string[] = [];
   placement: 'bottomLeft' | 'bottomRight' = 'bottomLeft';
-
+  technicalEmployees: BorrowableEmployee[] = [];
+  selectedTechnicianIds: string[] = [];
+  isLoadingTechnicalEmployees = false;
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
     this.isMobile = event.target.innerWidth < 768;
@@ -89,24 +92,26 @@ export class OrderComponent implements OnInit {
   constructor(
     private orderService: OrderService,
     private statusService: StatusService,
+    private technicianHoldingService: TechnicianHoldingService,
     private cdr: ChangeDetectorRef,
     private modal: NzModalService,
     private toastr: ToastrService,
     private datePipe: DatePipe,
     private location: Location,
-    private router: Router
+    private router: Router,
   ) {}
 
   onRefetch(): void {
     this.fetchData();
   }
 
-  ngOnInit(): void {
-    this.checkIsMobile();
-    window.addEventListener('resize', () => this.checkIsMobile());
-    this.loadStatuses();
-    this.fetchData();
-  }
+ ngOnInit(): void {
+  this.checkIsMobile();
+  window.addEventListener('resize', () => this.checkIsMobile());
+  this.loadStatuses();
+  this.loadTechnicalEmployees();
+  this.fetchData();
+}
 
   loadStatuses() {
     this.statusService.SearchStatus('Order').subscribe({
@@ -119,6 +124,37 @@ export class OrderComponent implements OnInit {
       },
     });
   }
+
+loadTechnicalEmployees(): void {
+  this.isLoadingTechnicalEmployees = true;
+
+  this.technicianHoldingService
+    .getBorrowEmployees('', false)
+    .subscribe({
+      next: (res) => {
+        this.technicalEmployees = (res.Employees || []).filter((employee) => {
+          const role = (employee.Role || '').toLowerCase();
+
+          return (
+            role === 'technician' ||
+            role === 'kỹ thuật' ||
+            role === 'ky thuat' ||
+            role === 'kỹ thuật viên' ||
+            role === 'ky thuat vien'
+          );
+        });
+
+        this.isLoadingTechnicalEmployees = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.technicalEmployees = [];
+        this.isLoadingTechnicalEmployees = false;
+        this.toastr.error('Không thể tải danh sách kỹ thuật viên.');
+        this.cdr.detectChanges();
+      },
+    });
+}
 
   checkIsMobile() {
     this.isMobile = window.innerWidth <= 768;
@@ -164,7 +200,7 @@ export class OrderComponent implements OnInit {
     pageSize: number = this.pageSize,
     dateFrom?: Date,
     dateTo?: Date,
-    statuses?: string[]
+    statuses?: string[],
   ): void {
     this.isLoading = true;
     // Lấy ngày đầu tháng trước (00:00:00.000)
@@ -177,7 +213,7 @@ export class OrderComponent implements OnInit {
           0,
           0,
           0,
-          0
+          0,
         );
 
     // Lấy ngày cuối tháng hiện tại (23:59:59.999)
@@ -190,7 +226,7 @@ export class OrderComponent implements OnInit {
           23,
           59,
           59,
-          999
+          999,
         );
 
     const request: SearchOrderRequest = {
@@ -202,6 +238,8 @@ export class OrderComponent implements OnInit {
       statusIds: statuses,
     };
 
+
+    
     this.orderService.SearchOrder(request).subscribe({
       next: (res) => {
         if (res.Success === false) {
@@ -211,7 +249,7 @@ export class OrderComponent implements OnInit {
           this.totalCount = 0;
           this.isLoading = false;
           this.toastr.error(
-            res.Message || res.message || 'Không thể tải danh sách đơn hàng.'
+            res.Message || res.message || 'Không thể tải danh sách đơn hàng.',
           );
           this.cdr.detectChanges();
           return;
@@ -225,7 +263,7 @@ export class OrderComponent implements OnInit {
         this.totalCount = res.TotalCount || 0;
 
         this.listOfData = [...this.originalData].sort((a, b) =>
-          b.Code.localeCompare(a.Code)
+          b.Code.localeCompare(a.Code),
         );
 
         this.listOfCurrentPageData = this.listOfData;
@@ -237,7 +275,7 @@ export class OrderComponent implements OnInit {
         this.toastr.error(
           err.error?.Message ||
             err.error?.message ||
-            'Không thể tải danh sách đơn hàng.'
+            'Không thể tải danh sách đơn hàng.',
         );
       },
     });
@@ -260,7 +298,7 @@ export class OrderComponent implements OnInit {
       text: 'Chọn hàng chẵn',
       onSelect: () => {
         this.listOfCurrentPageData.forEach((data, index) =>
-          this.updateCheckedSet(data.Id, index % 2 !== 0)
+          this.updateCheckedSet(data.Id, index % 2 !== 0),
         );
         this.refreshCheckedStatus();
       },
@@ -269,7 +307,7 @@ export class OrderComponent implements OnInit {
       text: 'Chọn hàng lẻ',
       onSelect: () => {
         this.listOfCurrentPageData.forEach((data, index) =>
-          this.updateCheckedSet(data.Id, index % 2 === 0)
+          this.updateCheckedSet(data.Id, index % 2 === 0),
         );
         this.refreshCheckedStatus();
       },
@@ -285,7 +323,7 @@ export class OrderComponent implements OnInit {
   }
   onAllChecked(val: boolean) {
     this.listOfCurrentPageData.forEach((item) =>
-      this.updateCheckedSet(item.Id, val)
+      this.updateCheckedSet(item.Id, val),
     );
     this.refreshCheckedStatus();
   }
@@ -295,7 +333,7 @@ export class OrderComponent implements OnInit {
   }
   refreshCheckedStatus() {
     this.checked = this.listOfCurrentPageData.every((i) =>
-      this.setOfCheckedId.has(i.Id)
+      this.setOfCheckedId.has(i.Id),
     );
     this.indeterminate =
       this.listOfCurrentPageData.some((i) => this.setOfCheckedId.has(i.Id)) &&
@@ -315,7 +353,7 @@ export class OrderComponent implements OnInit {
       const panelTop = rect ? rect.bottom + 10 : 280;
       this.filterPopoverTop = Math.max(
         12,
-        Math.min(panelTop, window.innerHeight - 360)
+        Math.min(panelTop, window.innerHeight - 360),
       );
     }
 
@@ -333,7 +371,7 @@ export class OrderComponent implements OnInit {
       this.pageSize,
       this.dateRange?.[0],
       this.dateRange?.[1],
-      this.selectedStatuses
+      this.selectedStatuses,
     );
   }
 

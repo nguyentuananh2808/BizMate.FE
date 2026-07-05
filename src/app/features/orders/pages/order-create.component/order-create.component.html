@@ -2,70 +2,43 @@
   <app-menu class="bg-background-dark"></app-menu>
 
   <div class="bg-login" [ngClass]="{ dark: isDark }">
-    <div
-      class="px-4 pt-6 z-10 relative"
-      [ngClass]="{ 'dark:bg-gray-900': isDark }"
-    >
+    <div class="px-4 pt-6 z-10 relative" [ngClass]="{ 'dark:bg-gray-900': isDark }">
       <!-- Mobile header bar -->
-      <div
-        *ngIf="isMobile"
-        class="fixed bg-[rgb(247,251,255)] dark:bg-background-dark p-3 rounded-[24px] w-[94%] mb-16"
-      >
+      <div *ngIf="isMobile"
+        class="fixed bg-[rgb(247,251,255)] dark:bg-background-dark p-3 rounded-[24px] w-[94%] mb-16">
         <!-- Header -->
         <header-common></header-common>
 
         <!-- Mobile header bar -->
-        <div
-          *ngIf="isMobile"
-          class="mb-4 flex items-center justify-between gap-3"
-        >
+        <div *ngIf="isMobile" class="mb-4 flex items-center justify-between gap-3">
           <!-- Nút Quay lại -->
-          <button
-            type="button"
+          <button type="button"
             class="rounded-full bg-gray-200 text-gray-700 px-2 py-1 hover:bg-gray-300 transition flex items-center w-8 h-8"
-            (click)="goBack()"
-            [ngClass]="{
+            (click)="goBack()" [ngClass]="{
               'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600':
                 isDark
-            }"
-          >
+            }">
             <nz-icon nzType="arrow-left" nzTheme="outline"></nz-icon>
           </button>
 
           <!-- Ô tìm kiếm căn giữa -->
-          <input
-            type="text"
-            class="flex-1 border border-gray-300 rounded-[24px] px-3 py-2 mx-2"
-            [(ngModel)]="searchKeyword"
-            (ngModelChange)="onSearch()"
-            placeholder="Tìm kiếm..."
-            [ngClass]="{
+          <input type="text" class="flex-1 border border-gray-300 rounded-[24px] px-3 py-2 mx-2"
+            [(ngModel)]="searchKeyword" (ngModelChange)="onSearch()" placeholder="Tìm kiếm..." [ngClass]="{
               'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600': isDark
-            }"
-          />
+            }" />
           <!-- Print Button -->
-          <button
-            disabled
-            (click)="onPrint()"
-            type="button"
-            [disabled]="true"
-            class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
-          >
+          <button disabled (click)="onPrint()" type="button" [disabled]="true"
+            class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1">
             <nz-icon nzType="printer" nzTheme="outline"></nz-icon>
           </button>
         </div>
 
         <!-- Mobile Form -->
-        <div
-          *ngIf="isMobile"
-          class="bg-[rgba(233,233,233,0.87)] dark:bg-gray-900 flex flex-col rounded-[24px]"
-        >
+        <div *ngIf="isMobile" class="bg-[rgba(233,233,233,0.87)] dark:bg-gray-900 flex flex-col rounded-[24px]">
           <!-- Scrollable content -->
           <div class="overflow-y-auto px-3 py-4 space-y-4 max-h-[76vh]">
-            <div
-              class="shadow-lg rounded-[24px] overflow-hidden p-4 w-full m-1 mb-14"
-              [ngClass]="{ 'dark:bg-gray-900': isDark }"
-            >
+            <div class="shadow-lg rounded-[24px] overflow-hidden p-4 w-full m-1 mb-14"
+              [ngClass]="{ 'dark:bg-gray-900': isDark }">
               <form [formGroup]="orderForm" class="space-y-4">
                 <h2 class="text-secondary-light dark:text-secondary-dark">
                   Ngày tạo đơn : {{ dateToday | date : "dd/MM/yyyy" }}
@@ -75,12 +48,8 @@
                 <div>
                   <!-- Hàng label -->
                   <div class="flex items-center justify-between">
-                    <nz-tabset
-                      [(nzSelectedIndex)]="selectedTabIndex"
-                      (nzSelectedIndexChange)="onTabChange($event)"
-                      class="ml-3 -mt-2 text-secondary-light dark:text-secondary-dark"
-                      nzSize="small"
-                    >
+                    <nz-tabset [(nzSelectedIndex)]="selectedTabIndex" (nzSelectedIndexChange)="onTabChange($event)"
+                      class="ml-3 -mt-2 text-secondary-light dark:text-secondary-dark" nzSize="small">
                       <nz-tab nzTitle="Khách lẻ"></nz-tab>
                       <nz-tab nzTitle="Đại lý"></nz-tab>
                     </nz-tabset>
@@ -88,42 +57,23 @@
 
                   <!-- Input theo tab -->
                   <ng-container [ngSwitch]="selectedTabIndex">
-                    <input
-                      *ngSwitchCase="0"
-                      formControlName="customerName"
-                      class="input-style mt-2"
-                      [ngClass]="{ 'input-error': isInvalid('customerName') }"
-                      placeholder="Nhập tên khách hàng..."
-                    />
-                    <p
-                      *ngIf="selectedTabIndex === 0 && isInvalid('customerName')"
-                      class="form-error"
-                    >
+                    <input *ngSwitchCase="0" formControlName="customerName" class="input-style mt-2"
+                      [ngClass]="{ 'input-error': isInvalid('customerName') }" placeholder="Nhập tên khách hàng..." />
+                    <p *ngIf="selectedTabIndex === 0 && isInvalid('customerName')" class="form-error">
                       {{ getValidationMessage("customerName") }}
                     </p>
 
                     <div *ngSwitchCase="1">
-                      <input
-                        formControlName="customerSearch"
-                        [nzAutocomplete]="auto"
-                        [(ngModel)]="searchCustomerKeyword"
-                        (ngModelChange)="onSearchCustomer($event)"
-                        placeholder="Tìm kiếm khách hàng..."
-                        class="input-style mt-2"
-                        [ngClass]="{ 'input-error': isInvalid('customerSearch') }"
-                      />
+                      <input formControlName="customerSearch" [nzAutocomplete]="auto"
+                        [(ngModel)]="searchCustomerKeyword" (ngModelChange)="onSearchCustomer($event)"
+                        placeholder="Tìm kiếm khách hàng..." class="input-style mt-2"
+                        [ngClass]="{ 'input-error': isInvalid('customerSearch') }" />
                       <p *ngIf="isInvalid('customerSearch')" class="form-error">
                         {{ getValidationMessage("customerSearch") }}
                       </p>
 
-                      <nz-autocomplete
-                        #auto
-                        (selectionChange)="onCustomerSelected($event.nzValue)"
-                      >
-                        <nz-auto-option
-                          *ngFor="let customer of customers"
-                          [nzValue]="customer"
-                        >
+                      <nz-autocomplete #auto (selectionChange)="onCustomerSelected($event.nzValue)">
+                        <nz-auto-option *ngFor="let customer of customers" [nzValue]="customer">
                           {{ customer.Name }}
                         </nz-auto-option>
                       </nz-autocomplete>
@@ -132,52 +82,34 @@
                 </div>
 
                 <div>
-                  <label
-                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                  >
+                  <label class="block mb-1 text-secondary-light dark:text-secondary-dark">
                     Số điện thoại
                   </label>
-                  <input
-                    formControlName="phoneNumber"
-                    class="input-style w-full"
-                    [ngClass]="{ 'input-error': isInvalid('phoneNumber') }"
-                    placeholder="Nhập số điện thoại..."
-                  />
+                  <input formControlName="phoneNumber" class="input-style w-full"
+                    [ngClass]="{ 'input-error': isInvalid('phoneNumber') }" placeholder="Nhập số điện thoại..." />
                   <p *ngIf="isInvalid('phoneNumber')" class="form-error">
                     {{ getValidationMessage("phoneNumber") }}
                   </p>
                 </div>
 
                 <div>
-                  <label
-                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                  >
+                  <label class="block mb-1 text-secondary-light dark:text-secondary-dark">
                     Địa chỉ người nhận
                   </label>
-                  <input
-                    formControlName="deliveryAddress"
-                    class="input-style w-full"
+                  <input formControlName="deliveryAddress" class="input-style w-full"
                     [ngClass]="{ 'input-error': isInvalid('deliveryAddress') }"
-                    placeholder="Nhập địa chỉ khách hàng..."
-                  />
+                    placeholder="Nhập địa chỉ khách hàng..." />
                   <p *ngIf="isInvalid('deliveryAddress')" class="form-error">
                     {{ getValidationMessage("deliveryAddress") }}
                   </p>
                 </div>
 
                 <div>
-                  <label
-                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                  >
+                  <label class="block mb-1 text-secondary-light dark:text-secondary-dark">
                     Ghi chú
                   </label>
-                  <textarea
-                    formControlName="description"
-                    rows="3"
-                    class="input-style w-full resize-none"
-                    [ngClass]="{ 'input-error': isInvalid('description') }"
-                    placeholder="Nhập ghi chú..."
-                  ></textarea>
+                  <textarea formControlName="description" rows="3" class="input-style w-full resize-none"
+                    [ngClass]="{ 'input-error': isInvalid('description') }" placeholder="Nhập ghi chú..."></textarea>
                   <p *ngIf="isInvalid('description')" class="form-error">
                     {{ getValidationMessage("description") }}
                   </p>
@@ -185,65 +117,41 @@
 
                 <div class="grid grid-cols-1 gap-3">
                   <div>
-                    <label
-                      class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                    >
+                    <label class="block mb-1 text-secondary-light dark:text-secondary-dark">
                       Kỹ thuật viên
                     </label>
-                    <nz-select
-                      nzMode="multiple"
-                      nzPlaceHolder="Chọn kỹ thuật viên"
-                      class="w-full"
-                      [(ngModel)]="selectedTechnicianIds"
-                      [ngModelOptions]="{ standalone: true }"
-                    >
-                      <nz-option
-                        *ngFor="let technician of technicians"
-                        [nzValue]="technician.Id"
-                        [nzLabel]="technician.Name + (technician.Phone ? ' - ' + technician.Phone : '')"
-                      ></nz-option>
+                    <nz-select nzMode="multiple" nzPlaceHolder="Chọn kỹ thuật viên" class="w-full"
+                      [(ngModel)]="selectedTechnicianIds" [ngModelOptions]="{ standalone: true }"
+                      [nzLoading]="isLoadingTechnicalEmployees">
+                      <nz-option *ngFor="let employee of technicalEmployees"
+                        [nzValue]="employee.TechnicianId || employee.UserId"
+                        [nzLabel]="employee.FullName">
+                      </nz-option>
                     </nz-select>
                   </div>
 
                   <div>
-                    <label
-                      class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                    >
+                    <label class="block mb-1 text-secondary-light dark:text-secondary-dark">
                       Ngày lắp
                     </label>
-                    <input
-                      type="date"
-                      class="input-style w-full"
-                      [(ngModel)]="installationDate"
-                      [ngModelOptions]="{ standalone: true }"
-                    />
+                    <input type="date" class="input-style w-full" [(ngModel)]="installationDate"
+                      [ngModelOptions]="{ standalone: true }" />
                   </div>
                 </div>
 
                 <div class="flex justify-end">
                   <!-- Lưu nháp -->
-                  <button
-                    type="button"
-                    nz-button
-                    nzType="default"
+                  <button type="button" nz-button nzType="default"
                     class="rounded-[24px] h-10 px-6 bg-green-400 hover:bg-green-500 text-white mr-2"
-                    [disabled]="isSubmitting || isSubmitDisabled"
-                    (click)="submitForm(true)"
-                  >
+                    [disabled]="isSubmitting || isSubmitDisabled" (click)="submitForm(true)">
                     <nz-icon nzType="save" nzTheme="outline"></nz-icon>
                     <span *ngIf="isSubmitting">Đang lưu...</span>
                     <span *ngIf="!isSubmitting">Lưu nháp</span>
                   </button>
 
                   <!-- Tạo đơn hàng -->
-                  <button
-                    type="button"
-                    nz-button
-                    nzType="primary"
-                    class="rounded-[24px] h-10 px-6"
-                    [disabled]="isSubmitting || isSubmitDisabled"
-                    (click)="submitForm(false)"
-                  >
+                  <button type="button" nz-button nzType="primary" class="rounded-[24px] h-10 px-6"
+                    [disabled]="isSubmitting || isSubmitDisabled" (click)="submitForm(false)">
                     <nz-icon nzType="save" nzTheme="outline"></nz-icon>
                     <span *ngIf="isSubmitting">Đang tạo...</span>
                     <span *ngIf="!isSubmitting">Tạo đơn</span>
@@ -254,110 +162,74 @@
               <!-- Danh sách sản phẩm -->
               <div class="mt-4">
                 <div class="flex justify-between items-center mb-2">
-                  <h3
-                    class="text-base font-semibold text-secondary-light dark:text-secondary-dark"
-                  >
+                  <h3 class="text-base font-semibold text-secondary-light dark:text-secondary-dark">
                     Sản phẩm đã chọn
                   </h3>
-                  <button
-                    type="button"
-                    nz-button
-                    nzType="default"
-                    class="rounded-[24px] h-8 px-4 text-sm"
-                    (click)="addProducts()"
-                  >
+                  <button type="button" nz-button nzType="default" class="rounded-[24px] h-8 px-4 text-sm"
+                    (click)="addProducts()">
                     <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
                     Thêm
                   </button>
-                  <product-qr-scan-button
-                    [compact]="true"
-                    [existingProducts]="existingProductIds"
-                    [productQuantity]="false"
-                    (selectProducts)="onSelectedProducts($event)"
-                  ></product-qr-scan-button>
+                  <product-qr-scan-button [compact]="true" [existingProducts]="existingProductIds"
+                    [productQuantity]="false" (selectProducts)="onSelectedProducts($event)"></product-qr-scan-button>
                 </div>
 
-                <div
-                  *ngIf="listOfData.length === 0"
-                  class="text-sm text-gray-500"
-                >
+                <div *ngIf="listOfData.length === 0" class="text-sm text-gray-500">
                   Chưa có sản phẩm nào.
                 </div>
 
-                <div
-                  *ngFor="let item of listOfData"
-                  class="mobile-list-card mb-2 p-3 rounded-lg bg-white shadow dark:bg-gray-800 text-sm"
-                >
-                  <div
-                    class="font-medium text-secondary-light dark:text-secondary-dark text-[18px]"
-                  >
+                <div *ngFor="let item of listOfData"
+                  class="mobile-list-card mb-2 p-3 rounded-lg bg-white shadow dark:bg-gray-800 text-sm">
+                  <div class="font-medium text-secondary-light dark:text-secondary-dark text-[18px]">
                     {{ item.ProductName }}
                   </div>
                   <div class="text-secondary-light dark:text-secondary-dark">
                     <div class="flex flex-wrap items-center gap-2">
                       <span>Mã: {{ item.ProductCode }}</span>
-                      <span
-                        class="rounded-full px-2 py-0.5 text-xs font-semibold"
-                        [ngClass]="
+                      <span class="rounded-full px-2 py-0.5 text-xs font-semibold" [ngClass]="
                           isSerialTracked(item)
                             ? 'bg-emerald-100 text-emerald-700'
                             : 'bg-slate-100 text-slate-500'
-                        "
-                      >
+                        ">
                         {{ isSerialTracked(item) ? "Theo SN" : "Theo SL" }}
                       </span>
                     </div>
 
                     <!-- Số lượng -->
                     <div class="flex items-center gap-2">
-                      <label
-                        class="text-secondary-light dark:text-secondary-dark mb-0"
-                        [ngClass]="{
+                      <label class="text-secondary-light dark:text-secondary-dark mb-0" [ngClass]="{
                           'text-danger-light dark:text-danger-dark font-bold':
                             item.Quantity <= 0,
                           'text-success-light dark:text-success-dark font-medium':
                             item.Quantity > 0
-                        }"
-                        (click)="startEdit(item)"
-                      >
+                        }" (click)="startEdit(item)">
                         SL:
                       </label>
 
-                      <ng-container
-                        *ngIf="
+                      <ng-container *ngIf="
                           !isSerialTracked(item) && editingId === item.Id;
                           else displayQuantity
-                        "
-                      >
+                        ">
                         <div class="flex flex-col space-y-1">
                           <!-- Input số lượng -->
                           <div class="flex items-center space-x-2">
-                            <input
-                              type="number"
-                              min="1"
-                              [(ngModel)]="editingQuantity"
-                              [ngModelOptions]="{ standalone: true }"
-                              [max]="item.Available ?? null"
+                            <input type="number" min="1" [(ngModel)]="editingQuantity"
+                              [ngModelOptions]="{ standalone: true }" [max]="item.Available ?? null"
                               [ngClass]="{ 'input-error': inputError }"
                               class="w-20 px-2 py-1 border text-success-light dark:text-success-dark border-gray-300 rounded"
-                              (blur)="saveEdit(item)"
-                              (keydown.enter)="saveEdit(item)"
-                            />
+                              (blur)="saveEdit(item)" (keydown.enter)="saveEdit(item)" />
                             <span class="text-xs text-gray-500">
                               ≤ {{ item.Available ?? 0 }}
                             </span>
                           </div>
 
                           <!-- Nếu lỗi vượt quá số khả dụng -->
-                          <div
-                            *ngIf="
+                          <div *ngIf="
                               editingQuantity !== null &&
                               editingQuantity > (item.Available ?? 0)
-                            "
-                            class="text-red-500 text-xs"
-                          >
+                            " class="text-red-500 text-xs">
                             Không được vượt quá số khả dụng ({{
-                              item.Available ?? 0
+                            item.Available ?? 0
                             }})
                           </div>
                         </div>
@@ -375,47 +247,30 @@
 
                     <div>Đơn vị: {{ item.Unit | unitText }}</div>
 
-                    <div
-                      *ngIf="isSerialTracked(item)"
-                      class="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/80 p-3 text-slate-700"
-                    >
+                    <div *ngIf="isSerialTracked(item)"
+                      class="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/80 p-3 text-slate-700">
                       <div class="mb-2 flex items-center justify-between gap-2">
                         <span class="text-xs font-semibold uppercase text-emerald-700">
                           SN xuất: {{ getSerialNumbers(item).length }}
                         </span>
                         <div class="flex gap-1">
-                          <button
-                            type="button"
-                            nz-button
-                            nzType="default"
-                            class="h-8 rounded-full px-3 text-xs"
-                            (click)="openSerialTextModal(item)"
-                          >
+                          <button type="button" nz-button nzType="default" class="h-8 rounded-full px-3 text-xs"
+                            (click)="openSerialTextModal(item)">
                             Nhập tay
                           </button>
-                          <button
-                            type="button"
-                            nz-button
-                            nzType="primary"
-                            class="h-8 rounded-full px-3 text-xs"
-                            (click)="openCameraScanner(item)"
-                          >
+                          <button type="button" nz-button nzType="primary" class="h-8 rounded-full px-3 text-xs"
+                            (click)="openCameraScanner(item)">
                             <nz-icon nzType="scan" nzTheme="outline"></nz-icon>
                             Quét
                           </button>
                         </div>
                       </div>
                       <div class="flex flex-wrap gap-1.5">
-                        <span
-                          *ngFor="let sn of getSerialNumbers(item)"
-                          class="inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 text-xs text-slate-700 shadow-sm"
-                        >
+                        <span *ngFor="let sn of getSerialNumbers(item)"
+                          class="inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 text-xs text-slate-700 shadow-sm">
                           {{ sn }}
-                          <button
-                            type="button"
-                            class="text-slate-400 hover:text-red-500"
-                            (click)="removeSerialFromItem(item, sn)"
-                          >
+                          <button type="button" class="text-slate-400 hover:text-red-500"
+                            (click)="removeSerialFromItem(item, sn)">
                             ×
                           </button>
                         </span>
@@ -430,20 +285,14 @@
                       Thành tiền: {{ item.TotalPrice ?? 0 | price }}
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    class="mt-2 text-red-500 text-xs"
-                    (click)="deleteItem(item)"
-                  >
+                  <button type="button" class="mt-2 text-red-500 text-xs" (click)="deleteItem(item)">
                     Xóa
                   </button>
                 </div>
 
                 <!-- Tổng tiền -->
-                <div
-                  *ngIf="listOfData.length > 0"
-                  class="mt-3 text-right font-bold text-lg text-secondary-light dark:text-secondary-dark"
-                >
+                <div *ngIf="listOfData.length > 0"
+                  class="mt-3 text-right font-bold text-lg text-secondary-light dark:text-secondary-dark">
                   Tổng đơn hàng: {{ totalAmount | price }}
                 </div>
               </div>
@@ -458,46 +307,31 @@
         <header-common></header-common>
         <div class="mb-4 flex items-center justify-between gap-4">
           <!-- page name -->
-          <h1
-            class="text-secondary-light dark:text-secondary-dark text-xl font-bold"
-          >
+          <h1 class="text-secondary-light dark:text-secondary-dark text-xl font-bold">
             Tạo đơn hàng
           </h1>
 
           <!-- Ô tìm kiếm căn giữa -->
-          <input
-            type="text"
-            class="border border-gray-300 rounded-[24px] px-3 py-2 w-[58%] mx-auto"
-            [(ngModel)]="searchKeyword"
-            (ngModelChange)="onSearch()"
-            placeholder="Tìm kiếm..."
-            [ngClass]="{
+          <input type="text" class="border border-gray-300 rounded-[24px] px-3 py-2 w-[58%] mx-auto"
+            [(ngModel)]="searchKeyword" (ngModelChange)="onSearch()" placeholder="Tìm kiếm..." [ngClass]="{
               'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600': isDark
-            }"
-          />
+            }" />
 
           <!-- Nhóm nút -->
           <div class="flex gap-3">
             <!-- Print Button -->
-            <button
-              (click)="onPrint()"
-              type="button"
-              [disabled]="true"
-              class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1"
-            >
+            <button (click)="onPrint()" type="button" [disabled]="true"
+              class="px-3 py-2 rounded-[24px] bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap flex items-center gap-1">
               <nz-icon nzType="printer" nzTheme="outline"></nz-icon> In phiếu
             </button>
 
             <!-- Nút Quay lại -->
-            <button
-              type="button"
+            <button type="button"
               class="rounded-full bg-gray-200 text-gray-700 px-4 py-2 hover:bg-gray-300 transition flex items-center gap-2"
-              (click)="goBack()"
-              [ngClass]="{
+              (click)="goBack()" [ngClass]="{
                 'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600':
                   isDark
-              }"
-            >
+              }">
               <span>Quay lại</span>
               <nz-icon nzType="arrow-right" nzTheme="outline"></nz-icon>
             </button>
@@ -507,10 +341,8 @@
 
       <!-- desktop -->
       <div *ngIf="!isMobile">
-        <div
-          class="bg-background-lightblue dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-3 w-full"
-          [ngClass]="{ 'dark:bg-gray-900': isDark }"
-        >
+        <div class="bg-background-lightblue dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-3 w-full"
+          [ngClass]="{ 'dark:bg-gray-900': isDark }">
           <div class="w-full">
             <div class="flex items-center justify-between px-3 pt-3">
               <h2 class="text-secondary-light dark:text-secondary-dark">
@@ -518,22 +350,14 @@
               </h2>
             </div>
 
-            <form
-              [formGroup]="orderForm"
-              class="space-y-6 pl-3 pt-3"
-              *ngIf="customer"
-            >
+            <form [formGroup]="orderForm" class="space-y-6 pl-3 pt-3" *ngIf="customer">
               <div class="grid grid-cols-2 gap-4">
                 <!-- Cột 1: Khách hàng -->
                 <div>
                   <!-- Hàng label -->
                   <div class="flex items-center justify-between">
-                    <nz-tabset
-                      [(nzSelectedIndex)]="selectedTabIndex"
-                      (nzSelectedIndexChange)="onTabChange($event)"
-                      class="ml-3 -mt-2 text-secondary-light dark:text-secondary-dark"
-                      nzSize="small"
-                    >
+                    <nz-tabset [(nzSelectedIndex)]="selectedTabIndex" (nzSelectedIndexChange)="onTabChange($event)"
+                      class="ml-3 -mt-2 text-secondary-light dark:text-secondary-dark" nzSize="small">
                       <nz-tab nzTitle="Khách lẻ"></nz-tab>
                       <nz-tab nzTitle="Đại lý"></nz-tab>
                     </nz-tabset>
@@ -541,42 +365,23 @@
 
                   <!-- Input theo tab -->
                   <ng-container [ngSwitch]="selectedTabIndex">
-                    <input
-                      *ngSwitchCase="0"
-                      formControlName="customerName"
-                      class="input-style mt-2"
-                      [ngClass]="{ 'input-error': isInvalid('customerName') }"
-                      placeholder="Nhập tên khách hàng..."
-                    />
-                    <p
-                      *ngIf="selectedTabIndex === 0 && isInvalid('customerName')"
-                      class="form-error"
-                    >
+                    <input *ngSwitchCase="0" formControlName="customerName" class="input-style mt-2"
+                      [ngClass]="{ 'input-error': isInvalid('customerName') }" placeholder="Nhập tên khách hàng..." />
+                    <p *ngIf="selectedTabIndex === 0 && isInvalid('customerName')" class="form-error">
                       {{ getValidationMessage("customerName") }}
                     </p>
 
                     <div *ngSwitchCase="1">
-                      <input
-                        formControlName="customerSearch"
-                        [nzAutocomplete]="auto"
-                        [(ngModel)]="searchCustomerKeyword"
-                        (ngModelChange)="onSearchCustomer($event)"
-                        placeholder="Tìm kiếm khách hàng..."
-                        class="input-style mt-2"
-                        [ngClass]="{ 'input-error': isInvalid('customerSearch') }"
-                      />
+                      <input formControlName="customerSearch" [nzAutocomplete]="auto"
+                        [(ngModel)]="searchCustomerKeyword" (ngModelChange)="onSearchCustomer($event)"
+                        placeholder="Tìm kiếm khách hàng..." class="input-style mt-2"
+                        [ngClass]="{ 'input-error': isInvalid('customerSearch') }" />
                       <p *ngIf="isInvalid('customerSearch')" class="form-error">
                         {{ getValidationMessage("customerSearch") }}
                       </p>
 
-                      <nz-autocomplete
-                        #auto
-                        (selectionChange)="onCustomerSelected($event.nzValue)"
-                      >
-                        <nz-auto-option
-                          *ngFor="let customer of customers"
-                          [nzValue]="customer"
-                        >
+                      <nz-autocomplete #auto (selectionChange)="onCustomerSelected($event.nzValue)">
+                        <nz-auto-option *ngFor="let customer of customers" [nzValue]="customer">
                           {{ customer.Name }}
                         </nz-auto-option>
                       </nz-autocomplete>
@@ -586,17 +391,11 @@
 
                 <!-- Cột 2: Số điện thoại -->
                 <div>
-                  <label
-                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                  >
+                  <label class="block mb-1 text-secondary-light dark:text-secondary-dark">
                     Số điện thoại
                   </label>
-                  <input
-                    formControlName="phoneNumber"
-                    class="input-style mt-[28px]"
-                    [ngClass]="{ 'input-error': isInvalid('phoneNumber') }"
-                    placeholder="Nhập số điện thoại..."
-                  />
+                  <input formControlName="phoneNumber" class="input-style mt-[28px]"
+                    [ngClass]="{ 'input-error': isInvalid('phoneNumber') }" placeholder="Nhập số điện thoại..." />
                   <p *ngIf="isInvalid('phoneNumber')" class="form-error">
                     {{ getValidationMessage("phoneNumber") }}
                   </p>
@@ -605,34 +404,19 @@
 
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label
-                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                    >Địa chỉ người nhận</label
-                  >
-                  <input
-                    formControlName="deliveryAddress"
-                    class="input-style"
+                  <label class="block mb-1 text-secondary-light dark:text-secondary-dark">Địa chỉ người nhận</label>
+                  <input formControlName="deliveryAddress" class="input-style"
                     [ngClass]="{ 'input-error': isInvalid('deliveryAddress') }"
-                    placeholder="Nhập địa chỉ khách hàng..."
-                  />
+                    placeholder="Nhập địa chỉ khách hàng..." />
                   <p *ngIf="isInvalid('deliveryAddress')" class="form-error">
                     {{ getValidationMessage("deliveryAddress") }}
                   </p>
                 </div>
 
                 <div>
-                  <label
-                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                    >Ghi chú</label
-                  >
-                  <textarea
-                    formControlName="description"
-                    rows="2"
-                    cols="8"
-                    class="input-style resize-none"
-                    [ngClass]="{ 'input-error': isInvalid('description') }"
-                    placeholder="Nhập ghi chú..."
-                  ></textarea>
+                  <label class="block mb-1 text-secondary-light dark:text-secondary-dark">Ghi chú</label>
+                  <textarea formControlName="description" rows="2" cols="8" class="input-style resize-none"
+                    [ngClass]="{ 'input-error': isInvalid('description') }" placeholder="Nhập ghi chú..."></textarea>
                   <p *ngIf="isInvalid('description')" class="form-error">
                     {{ getValidationMessage("description") }}
                   </p>
@@ -641,91 +425,56 @@
 
               <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label
-                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                  >
+                  <label class="block mb-1 text-secondary-light dark:text-secondary-dark">
                     Kỹ thuật viên
                   </label>
-                  <nz-select
-                      nzMode="multiple"
-                      nzPlaceHolder="Chọn kỹ thuật viên"
-                      class="w-full"
-                      [(ngModel)]="selectedTechnicianIds"
-                      [ngModelOptions]="{ standalone: true }"
-                    >
-                      <nz-option
-                        *ngFor="let technician of technicians"
-                        [nzValue]="technician.Id"
-                        [nzLabel]="technician.Name + (technician.Phone ? ' - ' + technician.Phone : '')"
-                      ></nz-option>
-                    </nz-select>
+                  <nz-select nzMode="multiple" nzPlaceHolder="Chọn kỹ thuật viên" class="w-full"
+                    [(ngModel)]="selectedTechnicianIds" [ngModelOptions]="{ standalone: true }"
+                    [nzLoading]="isLoadingTechnicalEmployees">
+                    <nz-option *ngFor="let employee of technicalEmployees"
+                      [nzValue]="employee.TechnicianId || employee.UserId"
+                      [nzLabel]="employee.FullName"></nz-option>
+                  </nz-select>
                 </div>
 
                 <div>
-                  <label
-                    class="block mb-1 text-secondary-light dark:text-secondary-dark"
-                  >
+                  <label class="block mb-1 text-secondary-light dark:text-secondary-dark">
                     Ngày lắp
                   </label>
-                  <input
-                    type="date"
-                    class="input-style"
-                    [(ngModel)]="installationDate"
-                    [ngModelOptions]="{ standalone: true }"
-                  />
+                  <input type="date" class="input-style" [(ngModel)]="installationDate"
+                    [ngModelOptions]="{ standalone: true }" />
                 </div>
               </div>
 
               <!-- Table Section -->
               <div class="grid grid-cols-2">
                 <div>
-                  <h3
-                    class="text-lg font-semibold text-secondary-light dark:text-secondary-dark"
-                  >
+                  <h3 class="text-lg font-semibold text-secondary-light dark:text-secondary-dark">
                     Danh sách sản phẩm
                   </h3>
                 </div>
                 <div class="flex justify-end">
-                  <button
-                    type="button"
-                    nz-button
-                    nzType="default"
-                    class="items-center gap-2 whitespace-nowrap rounded-[24px] h-10 mb-3"
-                    (click)="addProducts()"
-                  >
+                  <button type="button" nz-button nzType="default"
+                    class="items-center gap-2 whitespace-nowrap rounded-[24px] h-10 mb-3" (click)="addProducts()">
                     <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
                     Thêm sản phẩm
                   </button>
-                  <product-qr-scan-button
-                    [existingProducts]="existingProductIds"
-                    [productQuantity]="false"
-                    (selectProducts)="onSelectedProducts($event)"
-                  ></product-qr-scan-button>
+                  <product-qr-scan-button [existingProducts]="existingProductIds" [productQuantity]="false"
+                    (selectProducts)="onSelectedProducts($event)"></product-qr-scan-button>
 
                   <div class="flex justify-end ml-2">
                     <!-- Lưu nháp -->
-                    <button
-                      type="button"
-                      nz-button
-                      nzType="default"
+                    <button type="button" nz-button nzType="default"
                       class="rounded-[24px] h-10 px-6 bg-green-400 hover:bg-green-500 text-white"
-                      [disabled]="isSubmitting || isSubmitDisabled"
-                      (click)="submitForm(true)"
-                    >
+                      [disabled]="isSubmitting || isSubmitDisabled" (click)="submitForm(true)">
                       <nz-icon nzType="save" nzTheme="outline"></nz-icon>
                       <span *ngIf="isSubmitting">Đang lưu...</span>
                       <span *ngIf="!isSubmitting">Lưu nháp</span>
                     </button>
 
                     <!-- Tạo đơn hàng -->
-                    <button
-                      type="button"
-                      nz-button
-                      nzType="primary"
-                      class="rounded-[24px] h-10 px-6 ml-2"
-                      [disabled]="isSubmitting || isSubmitDisabled"
-                      (click)="submitForm(false)"
-                    >
+                    <button type="button" nz-button nzType="primary" class="rounded-[24px] h-10 px-6 ml-2"
+                      [disabled]="isSubmitting || isSubmitDisabled" (click)="submitForm(false)">
                       <nz-icon nzType="save" nzTheme="outline"></nz-icon>
                       <span *ngIf="isSubmitting">Đang tạo...</span>
                       <span *ngIf="!isSubmitting">Tạo đơn hàng</span>
@@ -734,13 +483,8 @@
                 </div>
               </div>
 
-              <nz-table
-                [nzData]="listOfData"
-                [nzBordered]="false"
-                [nzSize]="'middle'"
-                [nzScroll]="{ x: '1260px', y: '300px' }"
-                [nzShowPagination]="false"
-              >
+              <nz-table [nzData]="listOfData" [nzBordered]="false" [nzSize]="'middle'"
+                [nzScroll]="{ x: '1260px', y: '300px' }" [nzShowPagination]="false">
                 <thead>
                   <tr class="text-gray-500 dark:bg-gray-700 dark:text-gray-400">
                     <th [nzWidth]="'20px'" class="text-center">STT</th>
@@ -760,86 +504,57 @@
                   <tr *ngFor="let item of listOfData; let i = index">
                     <td class="text-center">{{ i + 1 }}</td>
                     <td class="space-x-2 flex">
-                      <button
-                        type="button"
-                        nz-button
-                        nzType="link"
-                        class="text-red-600"
-                        (click)="deleteItem(item)"
-                      >
+                      <button type="button" nz-button nzType="link" class="text-red-600" (click)="deleteItem(item)">
                         <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
                       </button>
-                      <button
-                        type="button"
-                        *ngIf="isSerialTracked(item)"
-                        nz-button
-                        nzType="link"
-                        class="text-blue-600"
-                        (click)="openCameraScanner(item)"
-                      >
+                      <button type="button" *ngIf="isSerialTracked(item)" nz-button nzType="link" class="text-blue-600"
+                        (click)="openCameraScanner(item)">
                         <nz-icon nzType="scan" nzTheme="outline"></nz-icon>
                       </button>
                     </td>
                     <td>{{ item.ProductCode }}</td>
                     <td>{{ item.ProductName }}</td>
                     <td>
-                      <span
-                        class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold"
-                        [ngClass]="
+                      <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold" [ngClass]="
                           isSerialTracked(item)
                             ? 'bg-emerald-100 text-emerald-700'
                             : 'bg-slate-100 text-slate-500'
-                        "
-                      >
+                        ">
                         {{ isSerialTracked(item) ? "Theo SN" : "Theo SL" }}
                       </span>
                     </td>
                     <td>{{ item.Unit | unitText }}</td>
 
                     <!-- Quantity -->
-                    <td
-                      [ngClass]="{
+                    <td [ngClass]="{
                         'text-danger-light dark:text-danger-dark font-bold':
                           item.Quantity <= 0,
                         'text-success-light dark:text-success-dark font-medium':
                           item.Quantity > 0
-                      }"
-                      (click)="startEdit(item)"
-                    >
-                      <ng-container
-                        *ngIf="
+                      }" (click)="startEdit(item)">
+                      <ng-container *ngIf="
                           !isSerialTracked(item) && editingId === item.Id;
                           else displayQuantity
-                        "
-                      >
+                        ">
                         <div class="flex flex-col space-y-1">
                           <!-- Input số lượng -->
                           <div class="flex items-center space-x-2">
-                            <input
-                              type="number"
-                              min="1"
-                              [(ngModel)]="editingQuantity"
-                              [ngModelOptions]="{ standalone: true }"
-                              [max]="item.Available ?? null"
+                            <input type="number" min="1" [(ngModel)]="editingQuantity"
+                              [ngModelOptions]="{ standalone: true }" [max]="item.Available ?? null"
                               [ngClass]="{ 'input-error': inputError }"
-                              class="w-20 px-2 py-1 border border-gray-300 rounded"
-                              (blur)="saveEdit(item)"
-                              (keydown.enter)="saveEdit(item)"
-                            />
+                              class="w-20 px-2 py-1 border border-gray-300 rounded" (blur)="saveEdit(item)"
+                              (keydown.enter)="saveEdit(item)" />
                             <span class="text-xs text-gray-500">
                               ≤ {{ item.Available ?? 0 }}
                             </span>
                           </div>
                           <!-- Nếu lỗi vượt quá số khả dụng -->
-                          <div
-                            *ngIf="
+                          <div *ngIf="
                               editingQuantity !== null &&
                               editingQuantity > (item.Available ?? 0)
-                            "
-                            class="text-red-500 text-xs"
-                          >
+                            " class="text-red-500 text-xs">
                             Không được vượt quá số khả dụng ({{
-                              item.Available ?? 0
+                            item.Available ?? 0
                             }})
                           </div>
                         </div>
@@ -859,37 +574,22 @@
                       <ng-container *ngIf="isSerialTracked(item); else noSerial">
                         <div class="flex flex-col gap-2">
                           <div class="flex flex-wrap gap-1.5">
-                            <span
-                              *ngFor="let sn of getSerialNumbers(item)"
-                              class="inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 text-xs text-slate-700 shadow-sm"
-                            >
+                            <span *ngFor="let sn of getSerialNumbers(item)"
+                              class="inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 text-xs text-slate-700 shadow-sm">
                               {{ sn }}
-                              <button
-                                type="button"
-                                class="text-slate-400 hover:text-red-500"
-                                (click)="removeSerialFromItem(item, sn)"
-                              >
+                              <button type="button" class="text-slate-400 hover:text-red-500"
+                                (click)="removeSerialFromItem(item, sn)">
                                 ×
                               </button>
                             </span>
                           </div>
                           <div class="flex gap-2">
-                            <button
-                              type="button"
-                              nz-button
-                              nzType="default"
-                              class="h-8 rounded-full px-3 text-xs"
-                              (click)="openSerialTextModal(item)"
-                            >
+                            <button type="button" nz-button nzType="default" class="h-8 rounded-full px-3 text-xs"
+                              (click)="openSerialTextModal(item)">
                               Nhập tay
                             </button>
-                            <button
-                              type="button"
-                              nz-button
-                              nzType="primary"
-                              class="h-8 rounded-full px-3 text-xs"
-                              (click)="openCameraScanner(item)"
-                            >
+                            <button type="button" nz-button nzType="primary" class="h-8 rounded-full px-3 text-xs"
+                              (click)="openCameraScanner(item)">
                               <nz-icon nzType="scan" nzTheme="outline"></nz-icon>
                               Quét
                             </button>
@@ -911,9 +611,7 @@
                   </tr>
                 </tbody>
               </nz-table>
-              <div
-                class="text-right text-xl mr-6 font-bold mt-4 text-secondary-light dark:text-secondary-dark"
-              >
+              <div class="text-right text-xl mr-6 font-bold mt-4 text-secondary-light dark:text-secondary-dark">
                 Tổng hóa đơn: {{ totalAmount | price }}
               </div>
             </form>
@@ -924,14 +622,9 @@
 
     <!-- Bottom menu -->
     <bottom-menu class="mt-6"></bottom-menu>
-    <product-popup-search
-      *ngIf="isPopupSearchProducts"
-      [shouldDisableProduct]="true"
-      [existingProducts]="existingProductIds"
-      [ProductQuantity]="false"
-      (closePopup)="closeProductPopup()"
-      (selectProducts)="onSelectedProducts($event)"
-    ></product-popup-search>
+    <product-popup-search *ngIf="isPopupSearchProducts" [shouldDisableProduct]="true"
+      [existingProducts]="existingProductIds" [ProductQuantity]="false" (closePopup)="closeProductPopup()"
+      (selectProducts)="onSelectedProducts($event)"></product-popup-search>
 
     <!-- Nội dung in -->
     <div id="print-section" class="print-only">
@@ -943,14 +636,12 @@
 
       <div style="margin-bottom: 20px">
         <strong>Thông tin khách hàng:</strong>
-        <table
-          style="
+        <table style="
             width: 100%;
             margin-top: 8px;
             border-collapse: collapse;
             font-size: 14px;
-          "
-        >
+          ">
           <tr>
             <td><strong>Tên:</strong> {{ customer.name }}</td>
             <td><strong>SĐT:</strong> {{ customer.phone }}</td>
@@ -994,10 +685,7 @@
   </div>
 </div>
 
-<div
-  *ngIf="isScanning"
-  class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
->
+<div *ngIf="isScanning" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
   <div class="bg-white rounded-3xl p-4 w-full max-w-md shadow-2xl">
     <div class="flex items-start justify-between gap-3 mb-4">
       <div>
@@ -1014,15 +702,12 @@
       </button>
     </div>
 
-    <div
-      id="order-serial-qr-reader"
-      style="
+    <div id="order-serial-qr-reader" style="
         width: 100%;
         min-height: 350px;
         overflow: hidden;
         border-radius: 16px;
-      "
-    ></div>
+      "></div>
 
     <div class="mt-4 flex items-center justify-between gap-3">
       <span class="text-xs text-slate-500">
