@@ -1,17 +1,4 @@
-const browserHost =
-  typeof window !== 'undefined' && window.location.hostname
-    ? window.location.hostname
-    : 'localhost';
-const normalizedHost = browserHost === '0.0.0.0' ? 'localhost' : browserHost;
-const apiHost = normalizedHost.includes(':')
-  ? `[${normalizedHost}]`
-  : normalizedHost;
-const apiProtocol =
-  typeof window !== 'undefined' && window.location.protocol === 'https:'
-    ? 'https'
-    : 'http';
-const apiPort = apiProtocol === 'https' ? '5052' : '5051';
-const apiBaseUrl = `${apiProtocol}://${apiHost}:${apiPort}/v1`;
+const apiBaseUrl = '/v1';
 
 export const ApiUrls = {
   baseUrl: apiBaseUrl,
