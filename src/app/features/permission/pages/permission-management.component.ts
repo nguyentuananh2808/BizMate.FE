@@ -139,13 +139,13 @@ export class PermissionManagementComponent implements OnInit {
     forkJoin({
       permissions: this.permissionApi.getPermissionGroups().pipe(
         catchError(() => {
-          this.toastr.error('Không thể tải danh sách quyền.');
+          this.toastr.error('Không thể tải danh sách quyền. Vui lòng thử lại.');
           return of<PermissionGroup[]>([]);
         })
       ),
       roles: this.roleApi.getRoles().pipe(
         catchError(() => {
-          this.toastr.error('Không thể tải danh sách vai trò.');
+          this.toastr.error('Không thể tải danh sách vai trò. Vui lòng thử lại.');
           return of<UserRoleItem[]>([]);
         })
       ),
@@ -201,7 +201,7 @@ export class PermissionManagementComponent implements OnInit {
           this.users = [];
           this.userTotalCount = 0;
           this.refreshView();
-          this.toastr.error('Không thể tải danh sách nhân viên.');
+          this.toastr.error('Không thể tải danh sách nhân viên. Vui lòng thử lại.');
         },
       });
   }
@@ -221,7 +221,7 @@ export class PermissionManagementComponent implements OnInit {
 
   useCurrentUser(): void {
     if (!this.currentUserId) {
-      this.toastr.warning('Không tìm thấy user hiện tại.');
+      this.toastr.warning('Không tìm thấy tài khoản đang đăng nhập.');
       return;
     }
 
@@ -269,8 +269,10 @@ export class PermissionManagementComponent implements OnInit {
     const fullName = this.newEmployee.fullName.trim();
     const email = this.newEmployee.email.trim().toLowerCase();
     const password = this.newEmployee.password;
+    const selectedRole = this.getSelectedNewEmployeeRole();
+    const selectedRoleId = selectedRole ? this.getRoleId(selectedRole) : '';
 
-    if (!fullName || !email || !password || !this.newEmployee.roleId) {
+    if (!fullName || !email || !password || !selectedRoleId) {
       this.toastr.warning('Vui lòng nhập đầy đủ thông tin nhân viên.');
       return;
     }
@@ -305,10 +307,10 @@ export class PermissionManagementComponent implements OnInit {
         FullName: fullName,
         Email: email,
         Password: password,
-        Phone: this.isTechnicianRoleSelected()
+        Phone: this.isTechnicianRole(selectedRole)
           ? this.newEmployee.phone.trim() || null
           : null,
-        RoleId: this.newEmployee.roleId,
+        RoleId: selectedRoleId,
         PermissionIds: this.newEmployee.permissionIds,
         IsActive: this.newEmployee.isActive,
       })
@@ -329,11 +331,12 @@ export class PermissionManagementComponent implements OnInit {
           this.searchUsers(0);
         },
         error: (error) => {
-          const message =
-            error?.error?.Message ||
-            error?.error?.message ||
-            'Không thể tạo tài khoản nhân viên.';
-          this.toastr.error(message);
+          this.toastr.error(
+            this.toUserMessage(
+              error,
+              'Không thể tạo tài khoản nhân viên. Vui lòng kiểm tra thông tin và thử lại.'
+            )
+          );
         },
       });
   }
@@ -365,7 +368,7 @@ export class PermissionManagementComponent implements OnInit {
           this.overview = this.createEmptyOverview(targetUserId);
           this.syncPermissionState(this.overview);
           this.refreshView();
-          this.toastr.error('Không thể tải quyền hiện tại của nhân viên.');
+          this.toastr.error('Không thể tải quyền hiện tại của nhân viên. Vui lòng thử lại.');
         },
       });
   }
@@ -397,7 +400,13 @@ export class PermissionManagementComponent implements OnInit {
           this.selectedRoleId = '';
           this.loadUserPermissions();
         },
-        error: () => this.toastr.error('Gán vai trò thất bại.'),
+        error: (error) =>
+          this.toastr.error(
+            this.toUserMessage(
+              error,
+              'Không thể gán vai trò cho nhân viên. Vui lòng thử lại.'
+            )
+          ),
       });
   }
 
@@ -417,7 +426,13 @@ export class PermissionManagementComponent implements OnInit {
             this.toastr.success('Đã gỡ vai trò.');
             this.loadUserPermissions();
           },
-          error: () => this.toastr.error('Gỡ vai trò thất bại.'),
+          error: (error) =>
+            this.toastr.error(
+              this.toUserMessage(
+                error,
+                'Không thể gỡ vai trò khỏi nhân viên. Vui lòng thử lại.'
+              )
+            ),
         }),
     });
   }
@@ -467,7 +482,13 @@ export class PermissionManagementComponent implements OnInit {
           );
           this.loadUserPermissions();
         },
-        error: () => this.toastr.error('Cập nhật quyền thất bại.'),
+        error: (error) =>
+          this.toastr.error(
+            this.toUserMessage(
+              error,
+              'Không thể cập nhật quyền nhân viên. Vui lòng thử lại.'
+            )
+          ),
       });
   }
 
@@ -487,7 +508,13 @@ export class PermissionManagementComponent implements OnInit {
             this.toastr.success('Đã xóa toàn bộ quyền riêng.');
             this.loadUserPermissions();
           },
-          error: () => this.toastr.error('Xóa quyền riêng thất bại.'),
+          error: (error) =>
+            this.toastr.error(
+              this.toUserMessage(
+                error,
+                'Không thể xóa quyền riêng. Vui lòng thử lại.'
+              )
+            ),
         }),
     });
   }
@@ -528,10 +555,7 @@ export class PermissionManagementComponent implements OnInit {
   }
 
   isTechnicianRoleSelected(): boolean {
-    const role = this.roles.find(
-      (item) => this.getRoleId(item) === this.newEmployee.roleId
-    );
-    return role?.name?.toLowerCase() === 'technician';
+    return this.isTechnicianRole(this.getSelectedNewEmployeeRole());
   }
 
   getAllPermissions(): PermissionItem[] {
@@ -760,6 +784,29 @@ export class PermissionManagementComponent implements OnInit {
       permissionIds: [],
       isActive: true,
     };
+  }
+
+  private getSelectedNewEmployeeRole(): UserRoleItem | undefined {
+    const selectedRoleId = this.newEmployee.roleId;
+    return this.getAssignableRoles().find(
+      (role) => this.getRoleId(role) === selectedRoleId
+    );
+  }
+
+  private isTechnicianRole(role?: UserRoleItem): boolean {
+    return role?.name?.toLowerCase() === 'technician';
+  }
+
+  private toUserMessage(error: unknown, fallback: string): string {
+    const payload = (error as { error?: { Message?: string; message?: string } })
+      ?.error;
+    const message = payload?.Message || payload?.message || '';
+
+    if (!message || message.startsWith('BACKEND.')) {
+      return fallback;
+    }
+
+    return message;
   }
 
   private refreshView(): void {

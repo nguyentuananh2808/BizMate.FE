@@ -46,10 +46,10 @@ import { Html5Qrcode } from 'html5-qrcode';
     HeaderCommonComponent,
     NzModalModule,
     NzFloatButtonModule,
-  UnitTextPipe,
-  ProductPopupSearchComponent,
-  ProductQrScanButtonComponent,
-  MenuComponent,
+    UnitTextPipe,
+    ProductPopupSearchComponent,
+    ProductQrScanButtonComponent,
+    MenuComponent,
   ],
   templateUrl: './warehouse-receipt-create.component.html',
   styleUrls: ['./warehouse-receipt-create.component.scss'],
@@ -113,12 +113,12 @@ export class WarehouseReceiptCreateComponent {
 
   playSuccessSound(): void {
     this.successSound.currentTime = 0;
-    this.successSound.play().catch((err) => console.log(err));
+    this.successSound.play().catch(() => {});
   }
 
   playErrorSound(): void {
     this.errorSound.currentTime = 0;
-    this.errorSound.play().catch((err) => console.log(err));
+    this.errorSound.play().catch(() => {});
   }
 
   
@@ -279,9 +279,10 @@ export class WarehouseReceiptCreateComponent {
         (decodedText) => this.handleScannedSerial(decodedText),
         () => {}
       );
-    } catch (error) {
-      console.error('Cannot start serial scanner:', error);
-      this.toastr.error('Không thể bật camera quét SN.');
+    } catch {
+      this.toastr.error(
+        'Không thể bật camera quét serial. Vui lòng kiểm tra quyền camera và thử lại.'
+      );
       this.isScanning = false;
     }
   }
@@ -305,8 +306,7 @@ export class WarehouseReceiptCreateComponent {
         await this.scanner.stop();
         await this.scanner.clear();
       }
-    } catch (error) {
-      console.warn('Cannot stop serial scanner:', error);
+    } catch {
     }
 
     this.scanner = undefined;
@@ -368,7 +368,6 @@ export class WarehouseReceiptCreateComponent {
 
     if (this.editingQuantity === null || this.editingQuantity < 1) {
       this.inputError = true;
-      // Tự động bỏ hiệu ứng sau khi shake xong
       setTimeout(() => {
         this.inputError = false;
       }, 300);
@@ -405,8 +404,6 @@ export class WarehouseReceiptCreateComponent {
     if (!this.searchKeyword) {
       this.listOfData = [...this.allData];
     } else {
-      console.log('allData :', this.allData);
-
       this.listOfData = this.allData.filter((item) =>
         Object.values(item).some((value) =>
           String(value).toLowerCase().includes(this.searchKeyword),
@@ -429,7 +426,6 @@ export class WarehouseReceiptCreateComponent {
             ? p.Quantity
             : 1,
     }));
-    console.log('Selected Product:', productList);
     if (!productList || productList.length === 0) {
       this.closeProductPopup();
       return;
@@ -580,11 +576,15 @@ export class WarehouseReceiptCreateComponent {
     this.isSubmitting = true;
     this.receiptService.CreateWarehouseReceipt(payload).subscribe({
       next: () => {
-        this.toastr.success('Tạo phiếu nhập thành công!');
+        this.toastr.success('Tạo phiếu nhập kho thành công.');
         this.router.navigateByUrl('/warehouse-receipt');
       },
       error: (err) => {
-        const userMessage = err.error?.Message || 'Cập nhật thất bại';
+        const apiMessage = err.error?.Message;
+        const userMessage =
+          apiMessage && !apiMessage.startsWith('BACKEND.')
+            ? apiMessage
+            : 'Không thể tạo phiếu nhập kho. Vui lòng kiểm tra dữ liệu và thử lại.';
         this.toastr.error(userMessage);
         this.isSubmitting = false;
       },

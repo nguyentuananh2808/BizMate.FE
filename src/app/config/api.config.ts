@@ -2,7 +2,7 @@
 //   typeof window !== 'undefined' && window.location.hostname
 //     ? window.location.hostname
 //     : 'localhost';
-// const normalizedHost = browserHost === '0.0.0.0' ? 'localhost' : browserHost;
+// const normalizedHost = browserHost === 'https://192.168.5.199' ? 'localhost' : browserHost;
 // const apiHost = normalizedHost.includes(':')
 //   ? `[${normalizedHost}]`
 //   : normalizedHost;
@@ -33,6 +33,10 @@ export const ApiUrls = {
     update: '/product',
     delete: (id: string) => `/product/${id}`,
     readById: (id: string) => `/product/${id}`,
+  },
+
+  inventoryChat: {
+    ask: '/inventory-chat/ask',
   },
 
   status: {
@@ -92,7 +96,6 @@ export const ApiUrls = {
     delete: (id: string) => `/dealer-price/${id}`,
   },
 
-  // ── MỚI THÊM: Quản lý sản phẩm theo serial number ─────────────────────────
   permission: {
     getAll: '/permission',
   },

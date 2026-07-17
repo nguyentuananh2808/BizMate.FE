@@ -79,7 +79,7 @@ export class CustomerPopupCreateComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: () => {
-        this.toastr.error('Không thể load cấp đại lý');
+        this.toastr.error('Không thể tải danh sách cấp đại lý. Vui lòng thử lại.');
       },
     });
   }
@@ -127,17 +127,17 @@ export class CustomerPopupCreateComponent implements OnInit {
       .pipe(finalize(() => (this.isSaving = false)))
       .subscribe({
         next: () => {
-          this.toastr.success('Tạo mới khách hàng thành công');
+          this.toastr.success('Tạo khách hàng thành công.');
           this.create.emit();
           this.close();
         },
         error: (err) => {
           const apiMessage = err.error?.Message;
-          let userMessage = 'Cập nhật thất bại';
+          let userMessage = 'Không thể tạo khách hàng. Vui lòng thử lại.';
 
           if (apiMessage === 'BACKEND.VALIDATION.MESSAGE.ALREADY_EXIST') {
-            userMessage = 'Khách hàng đã tồn tại trong hệ thống';
-          } else if (apiMessage) {
+            userMessage = 'Khách hàng đã tồn tại trong hệ thống.';
+          } else if (apiMessage && !apiMessage.startsWith('BACKEND.')) {
             userMessage = apiMessage;
           }
           this.toastr.error(userMessage);

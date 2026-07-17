@@ -2,7 +2,7 @@ import {
   ApplicationConfig,
   importProvidersFrom,
   provideBrowserGlobalErrorListeners,
-  provideZonelessChangeDetection,
+  provideZoneChangeDetection,
 } from '@angular/core';
 import {
   provideClientHydration,
@@ -31,7 +31,7 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     provideHttpClient(withInterceptorsFromDi()),
     provideBrowserGlobalErrorListeners(),
-    provideZonelessChangeDetection(),
+    provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
     provideToastr({

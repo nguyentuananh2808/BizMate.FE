@@ -558,8 +558,8 @@ export class OrderUpdateComponent implements OnInit {
             this.dealerLevelId = res.DealerLevel.Id;
             this.applyDealerLevelPrices(dealerPrices);
           },
-          error: (err) => {
-            console.error('Load dealer level failed:', err);
+          error: () => {
+            this.toastr.error('Không thể tải bảng giá đại lý. Vui lòng thử lại.');
           },
         });
     }
@@ -599,7 +599,6 @@ export class OrderUpdateComponent implements OnInit {
     this.customerType = 2;
   }
 
-  //đổi tab
   onTabChange(index: number): void {
     if (this.isDescriptionOnlyOrder) {
       this.applyOrderFormState();
@@ -698,14 +697,13 @@ export class OrderUpdateComponent implements OnInit {
           this.orderForm.get('phoneNumber')?.enable();
           this.orderForm.get('deliveryAddress')?.enable();
         }
-        //  gọi thêm API để lấy DealerLevelId từ Customer
         if (this.customerId) {
           this.customerService.ReadByIdCustomer(this.customerId).subscribe({
             next: (cusRes) => {
               this.dealerLevelId = cusRes.Customer.DealerLevelId ?? '';
             },
-            error: (err) => {
-              console.error('Load customer failed:', err);
+            error: () => {
+              this.toastr.error('Không thể tải thông tin khách hàng. Vui lòng thử lại.');
             },
           });
         }
@@ -1488,9 +1486,10 @@ export class OrderUpdateComponent implements OnInit {
         (decodedText) => this.handleScannedSerial(decodedText),
         () => {},
       );
-    } catch (error) {
-      console.error('Cannot start order serial scanner:', error);
-      this.toastr.error('Không thể bật camera quét SN.');
+    } catch {
+      this.toastr.error(
+        'Không thể bật camera quét serial. Vui lòng kiểm tra quyền camera và thử lại.'
+      );
       this.isScanning = false;
     }
   }
@@ -1514,8 +1513,7 @@ export class OrderUpdateComponent implements OnInit {
         await this.scanner.stop();
         await this.scanner.clear();
       }
-    } catch (error) {
-      console.warn('Cannot stop order serial scanner:', error);
+    } catch {
     }
 
     this.scanner = undefined;
@@ -1553,9 +1551,7 @@ export class OrderUpdateComponent implements OnInit {
       description: description,
     };
 
-    // ✅ Sắp xếp theo cụm tên sản phẩm rồi theo thông số
     this.allData = [...this.listOfData].sort((a, b) => {
-      // 1️⃣ Tách phần tên và phần thông số
       const [nameA, ...restA] = a.ProductName.split(' - ').map((s: string) =>
         s.trim(),
       );
@@ -1563,11 +1559,9 @@ export class OrderUpdateComponent implements OnInit {
         s.trim(),
       );
 
-      // 2️⃣ So sánh cụm tên
       const nameCompare = nameA.localeCompare(nameB);
       if (nameCompare !== 0) return nameCompare;
 
-      // 3️⃣ Hàm parse thông số: ví dụ "5H - 3M6" → [5, 3, 6]
       const parseSpecs = (arr: string[]): number[] => {
         const regex = /(\d+)H.*?(\d+)M(\d+)/i;
         const joined = arr.join(' - ');
@@ -1579,13 +1573,11 @@ export class OrderUpdateComponent implements OnInit {
       const [hA, mA, dA] = parseSpecs(restA);
       const [hB, mB, dB] = parseSpecs(restB);
 
-      // 4️⃣ So sánh lần lượt H, M, số sau M
       if (hA !== hB) return hA - hB;
       if (mA !== mB) return mA - mB;
       return dA - dB;
     });
 
-    // ✅ Thực hiện in
     this.showPrint = true;
 
     setTimeout(() => {
@@ -1597,7 +1589,6 @@ export class OrderUpdateComponent implements OnInit {
     }, 0);
   }
 
-  // Hàm tính tổng tiền
   updateTotalAmount() {
     this.totalAmount = this.orderLineItems.reduce(
       (sum, item) => sum + (item.TotalPrice ?? 0),
@@ -1617,7 +1608,6 @@ export class OrderUpdateComponent implements OnInit {
 
     const qty = this.editingQuantity;
 
-    // Kiểm tra hợp lệ
     const isInvalid =
       qty === null ||
       qty < 1 ||
@@ -1698,11 +1688,9 @@ export class OrderUpdateComponent implements OnInit {
       return;
     }
 
-    // Gộp sản phẩm mới vào list
     this.listOfData = [...this.listOfData, ...productList];
     this.updateExistingProductIds();
 
-    // Loại bỏ trùng sản phẩm
     this.listOfData = this.listOfData.filter(
       (item, index, self) =>
         index ===
@@ -1712,7 +1700,6 @@ export class OrderUpdateComponent implements OnInit {
       a.ProductName.localeCompare(b.ProductName),
     );
 
-    // Set giá mặc định (trước khi check DealerLevel)
     this.listOfData = this.listOfData.map((item) => ({
       ...item,
       SerialNumbers: item.SerialNumbers ?? [],
@@ -1731,7 +1718,6 @@ export class OrderUpdateComponent implements OnInit {
             : 1),
     }));
 
-    // ✅ Nếu customerType = 2 (Đại lý) thì lấy bảng giá DealerLevel
     if (this.customerType === 2 && this.dealerLevelId) {
       this.dealerLevelService
         .ReadByIdDealerLevel(this.dealerLevelId)
@@ -1740,17 +1726,16 @@ export class OrderUpdateComponent implements OnInit {
             const dealerPrices =
               res.DealerLevel.DealerPriceForDealerLevel || [];
 
-            this.applyDealerLevelPrices(dealerPrices); // đã có sẵn
+            this.applyDealerLevelPrices(dealerPrices);
             this.allData = [...this.listOfData];
             this.updateTotalAmount();
             this.cdr.detectChanges();
           },
-          error: (err) => {
-            console.error('Load dealer level failed:', err);
+          error: () => {
+            this.toastr.error('Không thể tải bảng giá đại lý. Vui lòng thử lại.');
           },
         });
     } else {
-      // Nếu khách lẻ thì giữ nguyên giá
       this.allData = [...this.listOfData];
       this.updateTotalAmount();
     }

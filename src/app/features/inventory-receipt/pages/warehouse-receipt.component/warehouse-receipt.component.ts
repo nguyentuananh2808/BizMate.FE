@@ -112,9 +112,9 @@ export class WarehouseReceiptComponent implements OnInit {
       next: (res) => {
         this.statusList = res.Statuses;
         this.statuses = this.statusList.map((s) => s.Id);
-        console.log('statuses111:', this.statuses);
       },
-      error: (err) => console.error(err),
+      error: () =>
+        this.toastr.error('Không thể tải trạng thái phiếu nhập kho. Vui lòng thử lại.'),
     });
   }
 
@@ -165,7 +165,6 @@ export class WarehouseReceiptComponent implements OnInit {
     statuses?: string[]
   ): void {
     this.isLoading = true;
-    // Lấy ngày đầu tháng hiện tại (00:00:00.000)
     const fromDate = dateFrom
       ? new Date(dateFrom.setHours(0, 0, 0, 0))
       : new Date(
@@ -178,7 +177,6 @@ export class WarehouseReceiptComponent implements OnInit {
           0
         );
 
-    // Lấy ngày cuối tháng hiện tại (23:59:59.999)
     const toDate = dateTo
       ? new Date(dateTo.setHours(23, 59, 59, 999))
       : new Date(
@@ -202,8 +200,6 @@ export class WarehouseReceiptComponent implements OnInit {
 
     this.WarehouseReceiptService.SearchWarehouseReceipt(request).subscribe({
       next: (res) => {
-        console.log('res:', res.ImportReceipts);
-
         this.originalData = res.ImportReceipts || [];
         this.totalCount = res.TotalCount || 0;
 
@@ -216,7 +212,10 @@ export class WarehouseReceiptComponent implements OnInit {
         this.isLoading = false;
         this.cdr.detectChanges();
       },
-      error: () => (this.isLoading = false),
+      error: () => {
+        this.isLoading = false;
+        this.toastr.error('Không thể tải danh sách phiếu nhập kho. Vui lòng thử lại.');
+      },
     });
   }
 
@@ -304,7 +303,6 @@ export class WarehouseReceiptComponent implements OnInit {
   }
 
   applyDateFilter() {
-    console.log('Áp dụng filter:', this.dateRange);
     this.hideTooltip();
     this.fetchData(
       this.pageIndex,

@@ -401,9 +401,10 @@ export class TechnicianHoldingsComponent implements OnInit {
         },
         error: (err) => {
           this.toastr.error(
-            err.error?.Message ||
-              err.error?.message ||
-              'Gửi đề xuất mượn hàng thất bại.'
+            this.toUserMessage(
+              err.error?.Message || err.error?.message,
+              'Không thể tạo phiếu mượn hàng. Vui lòng kiểm tra dữ liệu và thử lại.'
+            )
           );
         },
       });
@@ -423,9 +424,10 @@ export class TechnicianHoldingsComponent implements OnInit {
           },
           error: (err) => {
             this.toastr.error(
-              err.error?.Message ||
-                err.error?.message ||
-                'Duyệt đề xuất thất bại.'
+              this.toUserMessage(
+                err.error?.Message || err.error?.message,
+                'Không thể duyệt phiếu mượn hàng. Vui lòng thử lại.'
+              )
             );
           },
         });
@@ -446,9 +448,10 @@ export class TechnicianHoldingsComponent implements OnInit {
           },
           error: (err) => {
             this.toastr.error(
-              err.error?.Message ||
-                err.error?.message ||
-                'Từ chối đề xuất thất bại.'
+              this.toUserMessage(
+                err.error?.Message || err.error?.message,
+                'Không thể từ chối phiếu mượn hàng. Vui lòng thử lại.'
+              )
             );
           },
         });
@@ -524,7 +527,10 @@ export class TechnicianHoldingsComponent implements OnInit {
             },
             error: (err) => {
               this.toastr.error(
-                err.error?.Message || err.error?.message || 'Trả hàng thất bại.'
+                this.toUserMessage(
+                  err.error?.Message || err.error?.message,
+                  'Không thể ghi nhận trả hàng. Vui lòng thử lại.'
+                )
               );
             },
           });
@@ -560,9 +566,10 @@ export class TechnicianHoldingsComponent implements OnInit {
             },
             error: (err) => {
               this.toastr.error(
-                err.error?.Message ||
-                  err.error?.message ||
-                  'Ghi nhận sử dụng thất bại.'
+                this.toUserMessage(
+                  err.error?.Message || err.error?.message,
+                  'Không thể ghi nhận sử dụng hàng. Vui lòng thử lại.'
+                )
               );
             },
           });
@@ -586,7 +593,7 @@ export class TechnicianHoldingsComponent implements OnInit {
 
     navigator.clipboard
       ?.writeText(message)
-      .then(() => this.toastr.success('Đã copy nội dung nhắc.'))
+      .then(() => this.toastr.success('Đã sao chép nội dung nhắc.'))
       .catch(() => this.toastr.info(message));
   }
 
@@ -639,5 +646,13 @@ export class TechnicianHoldingsComponent implements OnInit {
 
   private refreshView(): void {
     this.cdr.markForCheck();
+  }
+
+  private toUserMessage(apiMessage: string | undefined, fallback: string): string {
+    if (!apiMessage || apiMessage.startsWith('BACKEND.')) {
+      return fallback;
+    }
+
+    return apiMessage;
   }
 }

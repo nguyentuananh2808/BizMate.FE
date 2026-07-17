@@ -155,14 +155,16 @@ export class DealerLevelComponent implements OnInit {
           CreatedDate: item.CreatedDate ? new Date(item.CreatedDate) : null,
           UpdatedDate: item.UpdatedDate ? new Date(item.UpdatedDate) : null,
         }));
-        console.log('data', this.originalData);
         this.totalCount = res.TotalCount || 0;
 
         this.listOfCurrentPageData = this.originalData;
         this.isLoading = false;
         this.cdr.detectChanges();
       },
-      error: () => (this.isLoading = false),
+      error: () => {
+        this.isLoading = false;
+        this.toastr.error('Không thể tải danh sách cấp đại lý. Vui lòng thử lại.');
+      },
     });
   }
 
@@ -173,27 +175,26 @@ export class DealerLevelComponent implements OnInit {
   }
   deleteDealerLevel(item: DealerLevel): void {
     this.modal.confirm({
-      nzTitle: `Bạn có chắc muốn xóa khách hàng "<b>${item.Name}</b>" này ?`,
-      // nzContent: `<b>${item.Name}</b> sẽ bị xóa khỏi hệ thống.`,
-      nzOkText: 'Xóa',
+      nzTitle: `Bạn có chắc muốn xóa cấp đại lý "<b>${item.Name}</b>" không?`,
+      nzOkText: 'Xóa cấp đại lý',
       nzCancelText: 'Hủy',
       nzOnOk: () => {
         this.DealerLevelService.DeleteDealerLevel(item.Id).subscribe({
           next: () => {
             this.fetchData();
-            this.toastr.success('Đã xóa thành công');
+            this.toastr.success('Đã xóa cấp đại lý.');
           },
           error: (err) => {
             const apiMessage = err.error?.Message;
-            let userMessage = 'Xóa khách hàng thất bại.';
+            let userMessage = 'Không thể xóa cấp đại lý. Vui lòng thử lại.';
 
             if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_NOT_EXIST') {
-              userMessage = 'Đại lý không tồn tại trong hệ thống.';
+              userMessage = 'Cấp đại lý không tồn tại trong hệ thống.';
             } else if (
               apiMessage === 'BACKEND.APP_MESSAGE.EXIST_CUSTOMER_IN_DEALERLEVEL'
             ) {
-              userMessage = 'Đại lý cấp này đang được áp dụng cho khách hàng.';
-            } else if (apiMessage) {
+              userMessage = 'Cấp đại lý này đang được áp dụng cho khách hàng.';
+            } else if (apiMessage && !apiMessage.startsWith('BACKEND.')) {
               userMessage = apiMessage;
             }
             this.toastr.error(userMessage);
@@ -280,7 +281,6 @@ export class DealerLevelComponent implements OnInit {
   }
 
   applyDateFilter() {
-    console.log('Áp dụng filter:', this.dateRange);
     this.hideTooltip();
     this.fetchData(this.pageIndex, this.pageSize);
   }

@@ -61,10 +61,8 @@ export class NotificationComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.fetchNotifications();
 
-    // Polling mỗi 5 giây
     this.pollingSub = interval(5000).subscribe(() => this.fetchNotifications());
 
-    // Optional: xử lý khi navigate cùng URL
     this.routerSub = this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {});
@@ -87,7 +85,6 @@ export class NotificationComponent implements OnInit, OnDestroy {
       next: (res: NotificationResponse) => {
         const data = res.Notifications || [];
 
-        // Map API response sang AppNotificationWithOrder
         const apiNotifications: AppNotificationWithOrder[] = data.map((n) => {
           const parts = n.Message?.split('|') ?? [];
           const orderId = parts[0]?.trim();
@@ -106,12 +103,10 @@ export class NotificationComponent implements OnInit, OnDestroy {
           };
         });
 
-        // Lọc các notification cũ đã bị xoá trên server
         this.notifications = this.notifications.filter((localItem) =>
           apiNotifications.some((apiItem) => apiItem.Id === localItem.Id)
         );
 
-        // Thêm các notification mới, loại bỏ trùng
         const uniqueNewNotifications = apiNotifications.filter(
           (apiItem) =>
             !this.notifications.some((localItem) => localItem.Id === apiItem.Id)
@@ -119,7 +114,6 @@ export class NotificationComponent implements OnInit, OnDestroy {
 
         this.notifications = [...uniqueNewNotifications, ...this.notifications];
 
-        // Cập nhật lastChecked
         const latest = data
           .map((d) => new Date(d.createdAt || new Date()))
           .sort((a, b) => b.getTime() - a.getTime())[0];
@@ -128,14 +122,12 @@ export class NotificationComponent implements OnInit, OnDestroy {
 
         this.loading = false;
       },
-      error: (err) => {
-        console.error('Lỗi fetchNotifications:', err);
+      error: () => {
         this.loading = false;
       },
     });
   }
 
-  // Chuyển trang khi click notification
   viewDetail(item: AppNotificationWithOrder): void {
     if (item.orderId) {
       const targetUrl = `/order-update/${item.orderId}`;
@@ -144,7 +136,6 @@ export class NotificationComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Đánh dấu tất cả đã đọc
   markAllAsRead(): void {
     const allIds = this.notifications.map((n) => n.Id);
     if (allIds.length === 0) return;
@@ -154,13 +145,10 @@ export class NotificationComponent implements OnInit, OnDestroy {
       next: () => {
         this.notifications = [];
       },
-      error: (err) => {
-        console.error('Lỗi markAllAsRead:', err);
-      },
+      error: () => {},
     });
   }
 
-  // Đánh dấu một notification đã đọc
   markAsRead(item: AppNotificationWithOrder): void {
     if (!item.Id) return;
 
@@ -169,9 +157,7 @@ export class NotificationComponent implements OnInit, OnDestroy {
       next: () => {
         this.notifications = this.notifications.filter((n) => n.Id !== item.Id);
       },
-      error: (err) => {
-        console.error('Lỗi markAsRead:', err);
-      },
+      error: () => {},
     });
   }
 }

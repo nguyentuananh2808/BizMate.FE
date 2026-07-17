@@ -28,6 +28,11 @@ import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { MenuComponent } from '../../../shared/menu.component/menu.component';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { ProductCategoryService } from '../../../product-category/services/product-category.service';
+import { ProductCategory } from '../../../product-category/models/product-category-response.model';
+
+type ProductStockFilter = 'all' | 'in-stock' | 'low-stock' | 'out-of-stock';
 
 @Component({
   selector: 'product',
@@ -51,6 +56,7 @@ import { NzPaginationModule } from 'ng-zorro-antd/pagination';
     NzMenuModule,
     MenuComponent,
     NzPaginationModule,
+    NzSelectModule,
   ],
   providers: [DatePipe],
   templateUrl: './product.component.html',
@@ -74,6 +80,16 @@ export class ProductComponent implements OnInit {
   pageIndex = 1;
   pageSize = 10;
   totalCount = 0;
+  categories: ProductCategory[] = [];
+  selectedCategoryId: string | null = null;
+  stockFilter: ProductStockFilter = 'all';
+  readonly lowStockThreshold = 2;
+  readonly stockFilterOptions: { value: ProductStockFilter; label: string }[] = [
+    { value: 'all', label: 'Tất cả tồn kho' },
+    { value: 'in-stock', label: 'Còn tồn kho' },
+    { value: 'low-stock', label: 'Tồn dưới 2' },
+    { value: 'out-of-stock', label: 'Hết hàng' },
+  ];
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
@@ -83,6 +99,7 @@ export class ProductComponent implements OnInit {
 
   constructor(
     private productService: ProductService,
+    private categoryService: ProductCategoryService,
     private cdr: ChangeDetectorRef,
     private modal: NzModalService,
     private toastr: ToastrService,
@@ -100,6 +117,7 @@ export class ProductComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadProductCategories();
     this.fetchData();
   }
 
@@ -143,26 +161,57 @@ export class ProductComponent implements OnInit {
     this.fetchData(this.pageIndex, this.pageSize);
   }
 
+  onFilterChange(): void {
+    this.pageIndex = 1;
+    this.fetchData(1, this.pageSize);
+  }
+
+  resetFilters(): void {
+    this.searchKeyword = '';
+    this.selectedCategoryId = null;
+    this.stockFilter = 'all';
+    this.onFilterChange();
+  }
+
   fetchData(
     pageIndex: number = this.pageIndex,
     pageSize: number = this.pageSize
   ): void {
     this.isLoading = true;
+    this.pageIndex = pageIndex;
+    this.pageSize = pageSize;
+    const stockFilter =
+      this.stockFilter === 'all' ? null : this.stockFilter;
+
     this.productService
-      .SearchProduct(this.searchKeyword || null, pageSize, pageIndex, undefined)
+      .SearchProduct(
+        this.searchKeyword || null,
+        pageSize,
+        pageIndex,
+        undefined,
+        this.selectedCategoryId,
+        stockFilter,
+        stockFilter === 'low-stock' ? this.lowStockThreshold : null
+      )
       .subscribe({
         next: (res) => {
           this.originalData = res.Products || [];
           this.totalCount = res.TotalCount || 0;
+
+          if (!this.originalData.length && this.totalCount > 0 && pageIndex > 1) {
+            this.pageIndex = 1;
+            this.fetchData(1, pageSize);
+            return;
+          }
 
           setTimeout(() => {
             this.listOfData = [...this.originalData].sort((a, b) =>
               a.Code.localeCompare(b.Code)
             );
 
-            if (this.isMobile) {
-              this.listOfCurrentPageData = [...this.listOfData];
-            }
+            this.listOfCurrentPageData = [...this.listOfData];
+            this.setOfCheckedId.clear();
+            this.refreshCheckedStatus();
             this.isLoading = false;
             this.cdr.detectChanges();
           });
@@ -170,9 +219,10 @@ export class ProductComponent implements OnInit {
         error: (err) => {
           this.isLoading = false;
           this.toastr.error(
-            err.error?.Message ||
-              err.error?.message ||
+            this.toUserMessage(
+              err.error?.Message || err.error?.message,
               'Không thể tải danh sách sản phẩm.'
+            )
           );
         },
       });
@@ -180,8 +230,25 @@ export class ProductComponent implements OnInit {
 
   onSearch(): void {
     this.searchKeyword = this.searchKeyword.trim();
-    this.fetchData(this.pageIndex, this.pageSize);
+    this.pageIndex = 1;
+    this.fetchData(1, this.pageSize);
     this.cdr.detectChanges();
+  }
+
+  private loadProductCategories(): void {
+    this.categoryService.GetAll().subscribe({
+      next: (res) => {
+        this.categories = (res.ProductCategories || []).filter(
+          (category) => !category.IsActive
+        );
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.toastr.warning(
+          'Không thể tải bộ lọc loại sản phẩm. Bạn vẫn có thể xem danh sách sản phẩm.'
+        );
+      },
+    });
   }
 
   listOfSelection = [
@@ -307,23 +374,22 @@ export class ProductComponent implements OnInit {
 
   deleteProduct(item: Product): void {
     this.modal.confirm({
-      nzTitle: `Bạn có chắc muốn xóa sản phẩm "<b>${item.Name}</b>" này ?`,
-      // nzContent: `<b>${item.Name}</b> sẽ bị xóa khỏi hệ thống.`,
-      nzOkText: 'Xóa',
+      nzTitle: `Bạn có chắc muốn xóa sản phẩm "<b>${item.Name}</b>" không?`,
+      nzOkText: 'Xóa sản phẩm',
       nzCancelText: 'Hủy',
       nzOnOk: () => {
         this.productService.DeleteProduct(item.Id).subscribe({
           next: () => {
             this.fetchData();
-            this.toastr.success('Đã xóa thành công');
+            this.toastr.success('Đã xóa sản phẩm.');
           },
           error: (err) => {
             const apiMessage = err.error?.Message;
-            let userMessage = 'Xóa sản phẩm thất bại.';
+            let userMessage = 'Không thể xóa sản phẩm. Vui lòng thử lại.';
 
             if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_NOT_EXIST') {
               userMessage = 'Sản phẩm không tồn tại trong hệ thống.';
-            } else if (apiMessage) {
+            } else if (apiMessage && !apiMessage.startsWith('BACKEND.')) {
               userMessage = apiMessage;
             }
             this.toastr.error(userMessage);
@@ -331,5 +397,13 @@ export class ProductComponent implements OnInit {
         });
       },
     });
+  }
+
+  private toUserMessage(apiMessage: string | undefined, fallback: string): string {
+    if (!apiMessage || apiMessage.startsWith('BACKEND.')) {
+      return fallback;
+    }
+
+    return apiMessage;
   }
 }

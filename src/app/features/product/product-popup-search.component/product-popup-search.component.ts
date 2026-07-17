@@ -114,12 +114,11 @@ export class ProductPopupSearchComponent implements OnInit {
     this.isLoading = true;
 
     this.productService
-      .SearchProduct(this.searchKeyword || null, 1000, 1, false) // lấy đủ data
+      .SearchProduct(this.searchKeyword || null, 1000, 1, false)
       .subscribe({
         next: (res) => {
           const existingIds = new Set(this.existingProducts);
 
-          // Bỏ sản phẩm đã có
           let filtered = (res.Products || []).filter(
             (p) => !existingIds.has(p.Id)
           );
@@ -128,10 +127,8 @@ export class ProductPopupSearchComponent implements OnInit {
             filtered = filtered.filter((p) => (p.Available ?? 0) > 0);
           }
 
-          // ✅ Lưu toàn bộ danh sách đã filter để dùng lại khi save
           this.originalData = filtered;
 
-          // Paging ở frontend
           const start = (pageIndex - 1) * pageSize;
           const end = start + pageSize;
           this.listOfData = filtered.slice(start, end);
@@ -190,9 +187,7 @@ export class ProductPopupSearchComponent implements OnInit {
   }
   onAllChecked(val: boolean) {
     this.listOfCurrentPageData.forEach((item) => {
-      //   if (!this.disabledProductIds.has(item.Id)) {
       this.updateCheckedSet(item.Id, val);
-      // }
     });
     this.refreshCheckedStatus();
   }

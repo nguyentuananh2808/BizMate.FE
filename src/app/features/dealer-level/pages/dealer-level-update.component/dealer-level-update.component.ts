@@ -32,7 +32,6 @@ import { DealerLevelService } from '../../services/dealer-level-service';
 import { DealerLevelUpdateRequest } from '../../models/dealer-level-update-request.model';
 import { mapInventoryDetailToDealerPrice } from '../../../../shared/helper/mapInventoryToDealerPrice';
 import { InventoryDetail } from '../../../inventory-receipt/models/warehouse-receipt-detail.model';
-import { pipe } from 'rxjs';
 import { PricePipe } from '../../../../shared/pipes/price-pice';
 import { DealerPriceService } from '../../../dealer-price/services/dealer-price-service';
 import { DealerPriceCreateRequest } from '../../../dealer-price/models/dealer-price-create-request.models';
@@ -127,7 +126,6 @@ export class DealerLevelUpdateComponent implements OnInit {
         this.dealerLevelForm.patchValue({
           dealerLevelName: res.DealerLevel.Name,
         });
-        console.log('dealerPrice:', res.DealerLevel.DealerPriceForDealerLevel);
         this.listOfData = res.DealerLevel.DealerPriceForDealerLevel;
         this.allData = [...this.listOfData];
         this.updateExistingProductIds();
@@ -135,8 +133,8 @@ export class DealerLevelUpdateComponent implements OnInit {
 
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Lỗi khi gọi ReadByIdDealerLevel:', err);
+      error: () => {
+        this.toastr.error('Không thể tải thông tin cấp đại lý. Vui lòng thử lại.');
       },
     });
   }
@@ -149,11 +147,8 @@ export class DealerLevelUpdateComponent implements OnInit {
   }
 
   startEdit(item: DealerPrice): void {
-    console.log('editingId', this.editingId);
-    console.log('ProductId', item.ProductId);
-
     if (!item || !item.ProductId) {
-      console.warn('startEdit called with invalid item:', item);
+      this.toastr.warning('Sản phẩm chưa có mã hợp lệ để cập nhật giá.');
       return;
     }
 
@@ -161,8 +156,8 @@ export class DealerLevelUpdateComponent implements OnInit {
 
     this.editingId = item.ProductId;
     this.editingPrice = item.Price;
-    this.editingOriginalPrice = item.Price; // Lưu lại giá gốc
-    this.isSaveEnabled = false; // Disable save khi mới vào edit
+    this.editingOriginalPrice = item.Price;
+    this.isSaveEnabled = false;
   }
 
   saveEdit(item: DealerPrice): void {
@@ -185,26 +180,26 @@ export class DealerLevelUpdateComponent implements OnInit {
 
   deleteItem(itemToDelete: DealerPrice): void {
     this.modal.confirm({
-      nzTitle: `Bạn có chắc muốn xóa sản phẩm "<b>${itemToDelete.ProductName}</b>" này?`,
-      nzOkText: 'Xóa',
+      nzTitle: `Bạn có chắc muốn xóa giá của sản phẩm "<b>${itemToDelete.ProductName}</b>" khỏi cấp đại lý này không?`,
+      nzOkText: 'Xóa giá',
       nzCancelText: 'Hủy',
       nzOnOk: () => {
         this.dealerPriceService
           .DeleteDealerPrice(itemToDelete.DealerPriceId)
           .subscribe({
             next: () => {
-              this.toastr.success('Xóa sản phẩm thành công!');
+              this.toastr.success('Đã xóa giá sản phẩm khỏi cấp đại lý.');
               this.listOfData = this.listOfData.filter(
                 (item) => item.Id !== itemToDelete.DealerPriceId
               );
-              this.updateExistingProductIds(); // cập nhật lại danh sách ProductId đang tồn tại
+              this.updateExistingProductIds();
               this.getDealerLevelDetail(this.id);
               this.cdr.detectChanges();
             },
             error: (err) => {
               const apiMessage = err.error?.Message;
-              let userMessage = 'Xóa thất bại';
-              if (apiMessage) {
+              let userMessage = 'Không thể xóa giá sản phẩm. Vui lòng thử lại.';
+              if (apiMessage && !apiMessage.startsWith('BACKEND.')) {
                 userMessage = apiMessage;
               }
               this.toastr.error(userMessage);
@@ -238,7 +233,6 @@ export class DealerLevelUpdateComponent implements OnInit {
 
     this.createDealerPrices(productIds);
 
-    // Map từ InventoryDetail sang DealerPrice
     const mappedList: DealerPrice[] =
       mapInventoryDetailToDealerPrice(productList);
 
@@ -278,18 +272,18 @@ export class DealerLevelUpdateComponent implements OnInit {
 
     this.dealerPriceService.CreateDealerPrice(request).subscribe({
       next: (res) => {
-        this.toastr.success('Thêm giá đại lý thành công!');
+        this.toastr.success('Thêm giá cấp đại lý thành công.');
         this.getDealerLevelDetail(this.id);
         this.closeProductPopup();
       },
 
       error: (err) => {
         const apiMessage = err.error?.Message;
-        let userMessage = 'Cập nhật thất bại';
+        let userMessage = 'Không thể thêm giá cấp đại lý. Vui lòng thử lại.';
         this.closeProductPopup();
         if (apiMessage === 'BACKEND.VALIDATION.MESSAGE.ALREADY_EXIST') {
           userMessage = 'Sản phẩm đã tồn tại trong đại lý.';
-        } else if (apiMessage) {
+        } else if (apiMessage && !apiMessage.startsWith('BACKEND.')) {
           userMessage = apiMessage;
         }
         this.toastr.error(userMessage);
@@ -337,20 +331,20 @@ export class DealerLevelUpdateComponent implements OnInit {
     this.dealerLevelService.UpdateDealerLevel(payload).subscribe({
       next: () => {
         this.getDealerLevelDetail(this.id);
-        this.toastr.success('Cập nhật đại lý cấp thành công!');
+        this.toastr.success('Cập nhật cấp đại lý thành công.');
       },
       error: (err) => {
         const apiMessage = err.error?.Message;
-        let userMessage = 'Cập nhật thất bại';
+        let userMessage = 'Không thể cập nhật cấp đại lý. Vui lòng thử lại.';
 
         if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_NOT_EXIST') {
-          userMessage = 'Khách hàng không tồn tại trong hệ thống.';
+          userMessage = 'Cấp đại lý không tồn tại trong hệ thống.';
         } else if (
           apiMessage === 'BACKEND.VALIDATION.MESSAGE.NOT_VALID_ROWVERSION'
         ) {
           userMessage =
             'Dữ liệu đã được cập nhật bởi người dùng khác. Vui lòng tải lại trang để tiếp tục.';
-        } else if (apiMessage) {
+        } else if (apiMessage && !apiMessage.startsWith('BACKEND.')) {
           userMessage = apiMessage;
         }
         this.toastr.error(userMessage);
@@ -369,8 +363,8 @@ export class DealerLevelUpdateComponent implements OnInit {
       .UpdateDealerPrice(dealerPriceUpdateRequest)
       .subscribe({
         next: () => {
-          item.Price = newPrice; // chỉ update khi API ok
-          this.toastr.success('Cập nhật giá thành công!');
+          item.Price = newPrice;
+          this.toastr.success('Cập nhật giá thành công.');
           this.isSaveEnabled = false;
           this.editingId = null;
           this.editingPrice = null;
@@ -378,16 +372,16 @@ export class DealerLevelUpdateComponent implements OnInit {
         },
         error: (err) => {
           const apiMessage = err.error?.Message;
-          let userMessage = 'Cập nhật thất bại';
+          let userMessage = 'Không thể cập nhật giá. Vui lòng thử lại.';
 
-          if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_NOT_EXIST') {
-            userMessage = 'Khách hàng không tồn tại trong hệ thống.';
+        if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_NOT_EXIST') {
+            userMessage = 'Giá sản phẩm không tồn tại trong hệ thống.';
           } else if (
             apiMessage === 'BACKEND.VALIDATION.MESSAGE.NOT_VALID_ROWVERSION'
           ) {
             userMessage =
               'Dữ liệu đã được cập nhật bởi người dùng khác. Vui lòng tải lại trang để tiếp tục.';
-          } else if (apiMessage) {
+          } else if (apiMessage && !apiMessage.startsWith('BACKEND.')) {
             userMessage = apiMessage;
           }
           this.toastr.error(userMessage);

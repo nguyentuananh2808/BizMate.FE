@@ -571,9 +571,10 @@ loadTechnicalEmployees(): void {
         (decodedText) => this.handleScannedSerial(decodedText),
         () => {}
       );
-    } catch (error) {
-      console.error('Cannot start order serial scanner:', error);
-      this.toastr.error('Không thể bật camera quét SN.');
+    } catch {
+      this.toastr.error(
+        'Không thể bật camera quét serial. Vui lòng kiểm tra quyền camera và thử lại.'
+      );
       this.isScanning = false;
     }
   }
@@ -597,8 +598,7 @@ loadTechnicalEmployees(): void {
         await this.scanner.stop();
         await this.scanner.clear();
       }
-    } catch (error) {
-      console.warn('Cannot stop order serial scanner:', error);
+    } catch {
     }
 
     this.scanner = undefined;
@@ -646,15 +646,12 @@ loadTechnicalEmployees(): void {
       return;
     }
 
-    // Tạo danh sách request lấy chi tiết sản phẩm theo Id
     const requests = this.listOfData.map((item) =>
       this.productService.ReadById(item.ProductId ?? item.Id)
     );
 
-    // Gọi tất cả request song song
     forkJoin(requests).subscribe({
       next: (products) => {
-        // Cập nhật lại giá cho từng sản phẩm
         this.listOfData = this.listOfData.map((item, idx) => {
           const product = products[idx];
           const basePrice = product.Product.SalePrice ?? 0;
@@ -667,15 +664,13 @@ loadTechnicalEmployees(): void {
           };
         });
 
-        // Cập nhật data và tổng tiền
         this.allData = [...this.listOfData];
         this.updateTotalAmount();
 
-        // Cập nhật lại UI
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('❌ Lấy giá sản phẩm thất bại:', err);
+      error: () => {
+        this.toastr.error('Không thể tải giá sản phẩm. Vui lòng thử lại.');
       },
     });
   }
@@ -736,18 +731,17 @@ loadTechnicalEmployees(): void {
                   this.updateTotalAmount();
                   this.cdr.detectChanges();
                 },
-                error: (err) => {
-                  console.error('Load dealer level failed:', err);
+                error: () => {
+                  this.toastr.error('Không thể tải bảng giá đại lý. Vui lòng thử lại.');
                 },
               });
           } else {
-            // Khách lẻ thì giữ nguyên giá
             this.allData = [...this.listOfData];
             this.updateTotalAmount();
           }
         },
-        error: (err) => {
-          console.error('Load customer failed:', err);
+        error: () => {
+          this.toastr.error('Không thể tải thông tin khách hàng. Vui lòng thử lại.');
         },
       });
     }
@@ -870,7 +864,6 @@ loadTechnicalEmployees(): void {
           (item) => item.Id !== itemToDelete.Id
         );
 
-        // 👉 Tính lại tổng sau khi xóa
         this.updateTotalAmount();
         this.updateExistingProductIds();
         this.cdr.detectChanges();
@@ -898,26 +891,22 @@ loadTechnicalEmployees(): void {
       return;
     }
 
-    // Gộp sản phẩm mới vào danh sách hiện tại
     this.listOfData = [...this.listOfData, ...productList];
     this.existingProductIds = this.listOfData.map((p) => p.Id);
-    // Loại bỏ trùng theo Id
+
     this.listOfData = this.listOfData.filter(
       (item, index, self) => index === self.findIndex((t) => t.Id === item.Id)
     );
 
-    // Chuẩn hóa dữ liệu: Quantity không vượt quá Available
     this.listOfData = this.listOfData.map((item) => {
       const isSerialTracked = this.isSerialTracked(item);
       const serialNumbers = item.SerialNumbers ?? [];
-      // Quantity mặc định = 1
       let qty = isSerialTracked
         ? serialNumbers.length
         : item.Quantity && item.Quantity > 0
           ? item.Quantity
           : 1;
 
-      // Nếu có Available thì Quantity không được vượt quá
       if (!isSerialTracked && item.Available !== undefined && qty > item.Available) {
         qty = item.Available;
       }
@@ -935,7 +924,6 @@ loadTechnicalEmployees(): void {
         TotalPrice: (item.SalePrice ?? 0) * qty,
       };
     });
-    // Nếu là khách đại lý thì áp giá DealerLevel
     if (this.customerType === 2 && this.dealerLevelId) {
       this.dealerLevelService
         .ReadByIdDealerLevel(this.dealerLevelId)
@@ -949,12 +937,11 @@ loadTechnicalEmployees(): void {
             this.updateTotalAmount();
             this.cdr.detectChanges();
           },
-          error: (err) => {
-            console.error('Load dealer level failed:', err);
+          error: () => {
+            this.toastr.error('Không thể tải bảng giá đại lý. Vui lòng thử lại.');
           },
         });
     } else {
-      // Nếu khách lẻ thì giữ nguyên giá
       this.allData = [...this.listOfData];
       this.updateTotalAmount();
     }
@@ -1048,12 +1035,6 @@ loadTechnicalEmployees(): void {
 
     this.trimOrderTextValues();
     this.applyCustomerValidators();
-
-    // if (this.orderForm.invalid) {
-    //   this.markOrderFormTouched();
-    //   this.toastr.warning('Vui lòng nhập đầy đủ thông tin khách hàng hợp lệ.');
-    //   return;
-    // }
 
     const formValues = this.orderForm.getRawValue();
     const isDealerOrder = this.selectedTabIndex === 1;

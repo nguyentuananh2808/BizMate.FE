@@ -15,13 +15,19 @@ export class ProductService {
     keySearch: string | null,
     pageSize: number,
     pageIndex: number,
-    isActive?: boolean
+    isActive?: boolean,
+    productCategoryId?: string | null,
+    stockFilter?: string | null,
+    lowStockThreshold?: number | null
   ): Observable<ProductResponse> {
     var payload: ProductSearchRequest = {
       keySearch,
       pageIndex,
       pageSize,
       isActive,
+      productCategoryId,
+      stockFilter,
+      lowStockThreshold,
     };
     return this.http.post<ProductResponse>(
       `${ApiUrls.baseUrl}${ApiUrls.product.search}`,

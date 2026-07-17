@@ -52,6 +52,43 @@ nz-float-button {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
+.filter-select {
+  min-width: 220px;
+}
+
+.filter-reset-button {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid rgba(15, 118, 110, 0.25);
+  border-radius: 999px;
+  color: #0f766e;
+  display: inline-flex;
+  font-weight: 700;
+  gap: 8px;
+  height: 38px;
+  padding: 0 16px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(20, 184, 166, 0.12);
+    border-color: rgba(15, 118, 110, 0.45);
+  }
+}
+
+.mobile-filter-row {
+  ::ng-deep .ant-select-selector {
+    border-radius: 18px !important;
+    min-height: 40px;
+  }
+}
+
+@media screen and (max-width: 1024px) {
+  .filter-select {
+    min-width: 180px;
+    flex: 1 1 180px;
+  }
+}
+
 
 ::ng-deep .ant-modal-content {
   background-color: rgba(211, 231, 251, 0.492);

@@ -1,0 +1,129 @@
+<div class="inventory-chat-widget" [class.inventory-chat-widget-open]="isOpen">
+  <button
+    *ngIf="!isOpen"
+    type="button"
+    class="chat-launcher"
+    aria-label="Mở trợ lý kho"
+    (click)="openChat()"
+  >
+    <span class="launcher-bubble">Hỏi Miu Kho</span>
+    <span class="bot-face" aria-hidden="true">
+      <span class="bot-ear bot-ear-left"></span>
+      <span class="bot-ear bot-ear-right"></span>
+      <span class="bot-eye bot-eye-left"></span>
+      <span class="bot-eye bot-eye-right"></span>
+      <span class="bot-smile"></span>
+    </span>
+  </button>
+
+  <section *ngIf="isOpen" class="chat-panel" aria-label="Trợ lý kho">
+    <header class="chat-panel-header">
+      <div class="header-avatar">
+        <span class="bot-face bot-face-small" aria-hidden="true">
+          <span class="bot-eye bot-eye-left"></span>
+          <span class="bot-eye bot-eye-right"></span>
+          <span class="bot-smile"></span>
+        </span>
+      </div>
+
+      <div class="header-copy">
+        <strong>Miu Kho</strong>
+        <span>Trợ lý kho nội bộ</span>
+      </div>
+
+      <button type="button" class="close-button" aria-label="Đóng trợ lý kho" (click)="closeChat()">
+        <nz-icon nzType="close" nzTheme="outline"></nz-icon>
+      </button>
+    </header>
+
+    <div #messageViewport class="message-viewport">
+      <article
+        *ngFor="let message of messages; trackBy: trackMessage"
+        class="message-row"
+        [class.message-row-user]="message.role === 'user'"
+      >
+        <div class="message-avatar" [class.message-avatar-user]="message.role === 'user'">
+          <nz-icon
+            [nzType]="message.role === 'user' ? 'user' : 'robot'"
+            nzTheme="outline"
+          ></nz-icon>
+        </div>
+
+        <div class="message-card" [class.message-card-user]="message.role === 'user'">
+          <div class="message-meta">
+            <span>{{ message.role === 'user' ? 'Bạn' : 'Miu Kho' }}</span>
+            <time>{{ message.createdAt | date : "HH:mm" }}</time>
+          </div>
+
+          <p class="message-text">{{ message.text }}</p>
+
+          <div *ngIf="message.table as table" class="result-table-wrap">
+            <div class="result-table-title">{{ table.Title }}</div>
+            <div class="result-table-scroll">
+              <table class="result-table">
+                <thead>
+                  <tr>
+                    <th *ngFor="let column of table.Columns">
+                      {{ column.Label }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of table.Rows; trackBy: trackRow">
+                    <td *ngFor="let column of table.Columns">
+                      {{ row[column.Key] || "-" }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div
+            *ngIf="message.role === 'bot' && message.suggestions?.length"
+            class="suggestion-row"
+          >
+            <button
+              *ngFor="let suggestion of message.suggestions"
+              type="button"
+              class="suggestion-chip"
+              (click)="askFromSuggestion(suggestion)"
+            >
+              {{ suggestion }}
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <div *ngIf="isLoading" class="message-row">
+        <div class="message-avatar">
+          <nz-icon nzType="robot" nzTheme="outline"></nz-icon>
+        </div>
+        <div class="message-card typing-card">
+          <nz-spin nzSimple></nz-spin>
+          <span>Miu đang lục kho...</span>
+        </div>
+      </div>
+    </div>
+
+    <form class="chat-input-bar" (ngSubmit)="ask()">
+      <textarea
+        name="inventoryQuestion"
+        [(ngModel)]="question"
+        (keydown.enter)="handleEnter($event)"
+        rows="1"
+        placeholder="Hỏi tồn kho, nhập xuất..."
+      ></textarea>
+
+      <button
+        nz-button
+        nzType="primary"
+        type="submit"
+        [disabled]="isLoading || !question.trim()"
+        aria-label="Gửi câu hỏi"
+      >
+        <nz-icon nzType="send" nzTheme="outline"></nz-icon>
+      </button>
+    </form>
+  </section>
+</div>

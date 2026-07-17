@@ -108,7 +108,6 @@ export class ProductQrScanButtonComponent implements OnDestroy {
       this.isStartingQrScanner = false;
       this.cdr.detectChanges();
     } catch (error) {
-      console.error('Cannot start product QR scanner:', error);
       this.scannerErrorMessage = this.getCameraErrorMessage(error);
       this.toastr.error(this.scannerErrorMessage);
       this.isStartingQrScanner = false;
@@ -123,14 +122,12 @@ export class ProductQrScanButtonComponent implements OnDestroy {
       if (this.productQrScanner.isScanning) {
         await this.productQrScanner.stop();
       }
-    } catch (error) {
-      console.warn('Cannot stop product QR scanner:', error);
+    } catch {
     }
 
     try {
       this.productQrScanner.clear();
-    } catch (error) {
-      console.warn('Cannot clear product QR scanner:', error);
+    } catch {
     } finally {
       this.productQrScanner = undefined;
     }

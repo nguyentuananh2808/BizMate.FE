@@ -51,7 +51,7 @@ export class LoginComponent {
         localStorage.setItem('name', decoded.name);
         localStorage.setItem('email', decoded.sub);
         localStorage.setItem('role', decoded.role);
-        this.toastr.success('Đăng nhập thành công');
+        this.toastr.success('Đăng nhập thành công.');
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
@@ -60,24 +60,23 @@ export class LoginComponent {
         const passwordErrors: string[] = err.error?.errors?.Password || [];
         const message = passwordErrors[0];
 
-        let userMessage = 'Cập nhật thất bại';
+        let userMessage = 'Đăng nhập thất bại. Vui lòng kiểm tra lại email và mật khẩu.';
 
         if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_NOT_EXIST') {
-          userMessage = 'Email không tồn tại trong hệ thống';
+          userMessage = 'Email chưa được đăng ký trong hệ thống.';
         } else if (apiMessage === 'BACKEND.APP_MESSAGE.NOT_VALID_PASSWORD') {
-          userMessage = 'Mật khẩu không đúng';
+          userMessage = 'Mật khẩu không đúng. Vui lòng thử lại.';
         } else if (
           message ===
           'BACKEND.VALIDATION.MESSAGE.PASSWORD_MUST_CONTAIN_UPPERCASE'
         ) {
-          userMessage = `Mật khẩu phải có ít nhất 1 ký tự đặc biệt,\n
-                        có ít nhất 1 ký tự viết hoa,\n
-                        có ít nhất 1 số`;
+          userMessage =
+            'Mật khẩu cần có chữ hoa, chữ thường, số và ký tự đặc biệt.';
         } else if (
           message === 'BACKEND.VALIDATION.MESSAGE.MUST_HAVE_MIN_LENGTH'
         ) {
-          userMessage = `Mật khẩu ít nhất 8 ký tự`;
-        } else if (apiMessage) {
+          userMessage = 'Mật khẩu phải có ít nhất 8 ký tự.';
+        } else if (apiMessage && !apiMessage.startsWith('BACKEND.')) {
           userMessage = apiMessage;
         }
 

@@ -77,7 +77,7 @@ export class ProductPopupCreateComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: () => {
-        this.toastr.error('Không thể load loại sản phẩm');
+        this.toastr.error('Không thể tải danh sách loại sản phẩm. Vui lòng thử lại.');
       },
     });
   }
@@ -119,7 +119,7 @@ export class ProductPopupCreateComponent implements OnInit {
     if (this.isSaving) return;
 
     if (!this.productCategoryId) {
-      this.toastr.warning('Vui lòng chọn loại sản phẩm');
+      this.toastr.warning('Vui lòng chọn loại sản phẩm.');
       return;
     }
 
@@ -137,17 +137,17 @@ export class ProductPopupCreateComponent implements OnInit {
       .pipe(finalize(() => (this.isSaving = false)))
       .subscribe({
         next: () => {
-          this.toastr.success('Tạo mới sản phẩm thành công');
+          this.toastr.success('Tạo sản phẩm thành công.');
           this.create.emit();
           this.close();
         },
         error: (err) => {
           const apiMessage = err.error?.Message;
-          let userMessage = 'Cập nhật thất bại';
+          let userMessage = 'Không thể tạo sản phẩm. Vui lòng thử lại.';
 
           if (apiMessage === 'BACKEND.VALIDATION.MESSAGE.ALREADY_EXIST') {
-            userMessage = 'Sản phẩm đã tồn tại trong hệ thống';
-          } else if (apiMessage) {
+            userMessage = 'Sản phẩm đã tồn tại trong hệ thống.';
+          } else if (apiMessage && !apiMessage.startsWith('BACKEND.')) {
             userMessage = apiMessage;
           }
           this.toastr.error(userMessage);

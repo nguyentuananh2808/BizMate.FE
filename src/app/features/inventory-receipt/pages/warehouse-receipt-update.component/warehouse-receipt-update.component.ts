@@ -55,10 +55,10 @@ import { finalize } from 'rxjs';
     HeaderCommonComponent,
     NzModalModule,
     NzFloatButtonModule,
-  UnitTextPipe,
-  ProductPopupSearchComponent,
-  ProductQrScanButtonComponent,
-  MenuComponent,
+    UnitTextPipe,
+    ProductPopupSearchComponent,
+    ProductQrScanButtonComponent,
+    MenuComponent,
   ],
   templateUrl: './warehouse-receipt-update.component.html',
   styleUrls: ['./warehouse-receipt-update.component.scss'],
@@ -163,13 +163,12 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
     };
     this.receiptService.UpdateStatusWarehouseReceipt(payload).subscribe({
       next: () => {
-        this.toastr.success('Cập nhật trạng thái đơn hàng thành công!');
+        this.toastr.success('Đã duyệt phiếu nhập kho.');
         this.cdr.detectChanges();
         this.getWarehouseReceiptDetail(this.id);
       },
-      error: (err) => {
-        console.error('Lỗi khi gọi ReadByIdWarehouseReceipt:', err);
-        this.toastr.error('Cập nhật trạng thái đơn hàng thất bại!');
+      error: () => {
+        this.toastr.error('Không thể duyệt phiếu nhập kho. Vui lòng thử lại.');
       },
     });
   }
@@ -192,7 +191,6 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
         this.statusName = res.ImportReceipt.ImportReceipt.StatusName;
         this.applyReceiptFormState();
         this.importCode = res.ImportReceipt.ImportReceipt.Code;
-        // Gán dữ liệu sản phẩm
         this.listOfData = res.ImportReceipt.ImportReceipt.Details || [];
         this.listOfData = (res.ImportReceipt.ImportReceipt.Details || []).map(
           (d: any) => ({
@@ -204,13 +202,12 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
         this.allData = [...this.listOfData];
         this.rowVersion = res.ImportReceipt.ImportReceipt.RowVersion;
 
-        // Gán ngày
         this.dateToday =
           res.ImportReceipt.ImportReceipt.CreatedDate || new Date();
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Lỗi khi gọi ReadByIdWarehouseReceipt:', err);
+      error: () => {
+        this.toastr.error('Không thể tải thông tin phiếu nhập kho. Vui lòng thử lại.');
       },
     });
   }
@@ -263,7 +260,6 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
 
     if (this.editingQuantity === null || this.editingQuantity < 1) {
       this.inputError = true;
-      // Tự động bỏ hiệu ứng sau khi shake xong
       setTimeout(() => {
         this.inputError = false;
       }, 300);
@@ -286,7 +282,6 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
       this.listOfData = [...this.allData];
       this.updateExistingProductIds();
     } else {
-      console.log('allData :', this.allData);
       this.listOfData = this.allData.filter((item) =>
         Object.values(item).some((value) =>
           String(value).toLowerCase().includes(this.searchKeyword)
@@ -311,7 +306,6 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
         this.listOfData = this.listOfData.filter(
           (item) => item.ProductId !== itemToDelete.ProductId
         );
-        console.log('Sau khi xóa:', this.listOfData);
         this.updateExistingProductIds();
         this.cdr.detectChanges();
       },
@@ -354,8 +348,6 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
     this.allData = [...this.listOfData];
 
     this.details.clear();
-    console.log('this.listOfData:', this.listOfData);
-
     for (const item of this.listOfData) {
       this.details.push(
         this.fb.group({
@@ -481,15 +473,18 @@ export class WarehouseReceiptUpdateComponent implements OnInit {
       .UpdateWarehouseReceipt(payload)
       .pipe(finalize(() => (this.isSubmitting = false)))
       .subscribe({
-      next: () => {
-        this.toastr.success('Câp nhật phiếu nhập thành công!');
-        // this.router.navigateByUrl('/warehouse-receipt');
-        this.getWarehouseReceiptDetail(this.id);
-      },
-      error: (err) => {
-        const userMessage = err.error?.Message || 'Cập nhật thất bại';
-        this.toastr.error(userMessage);
-      },
-    });
+        next: () => {
+          this.toastr.success('Cập nhật phiếu nhập kho thành công.');
+          this.getWarehouseReceiptDetail(this.id);
+        },
+        error: (err) => {
+          const apiMessage = err.error?.Message;
+          const userMessage =
+            apiMessage && !apiMessage.startsWith('BACKEND.')
+              ? apiMessage
+              : 'Không thể cập nhật phiếu nhập kho. Vui lòng thử lại.';
+          this.toastr.error(userMessage);
+        },
+      });
   }
 }

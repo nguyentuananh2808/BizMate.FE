@@ -46,12 +46,12 @@ export class VerifyOtpComponent {
         this.router.navigate(['/login']);
       },
       error: (err) => {
-         const apiMessage = err.error?.Message;
-        let userMessage = 'Cập nhật thất bại';
+        const apiMessage = err.error?.Message;
+        let userMessage = 'Xác thực OTP thất bại. Vui lòng kiểm tra mã và thử lại.';
 
         if (apiMessage === 'BACKEND.VALIDATION.MESSAGE.ALREADY_EXIST') {
-          userMessage = 'Email đã tồn tại trong hệ thống';
-        } else if (apiMessage) {
+          userMessage = 'Email đã tồn tại trong hệ thống.';
+        } else if (apiMessage && !apiMessage.startsWith('BACKEND.')) {
           userMessage = apiMessage;
         }
         this.toastr.error(userMessage);

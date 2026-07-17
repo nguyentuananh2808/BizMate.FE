@@ -74,7 +74,6 @@ export class CustomerPopupUpdateComponent implements OnInit {
         this.dealerLevels = res.DealerLevels || [];
         this.filteredDealerLevels = [...this.dealerLevels];
 
-        // 👉 Set giá trị mặc định khi mở popup
         if (this.data.DealerLevelId) {
           const selected = this.dealerLevels.find(
             (dl) => dl.Id === this.data.DealerLevelId
@@ -88,7 +87,7 @@ export class CustomerPopupUpdateComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: () => {
-        this.toastr.error('Không thể load cấp đại lý');
+        this.toastr.error('Không thể tải danh sách cấp đại lý. Vui lòng thử lại.');
       },
     });
   }
@@ -158,13 +157,13 @@ export class CustomerPopupUpdateComponent implements OnInit {
       )
       .subscribe({
         next: () => {
-          this.toastr.success('Cập nhật thành công');
+          this.toastr.success('Cập nhật khách hàng thành công.');
           this.update.emit();
           this.close();
         },
         error: (err) => {
           const apiMessage = err.error?.Message;
-          let userMessage = 'Cập nhật thất bại';
+          let userMessage = 'Không thể cập nhật khách hàng. Vui lòng thử lại.';
 
           if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_NOT_EXIST') {
             userMessage = 'Khách hàng không tồn tại trong hệ thống.';
@@ -175,7 +174,7 @@ export class CustomerPopupUpdateComponent implements OnInit {
               'Dữ liệu đã được cập nhật bởi người dùng khác. Vui lòng tải lại trang để tiếp tục.';
           } else if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_DUPLICATE') {
             userMessage = 'Tên khách hàng đã tồn tại.';
-          } else if (apiMessage) {
+          } else if (apiMessage && !apiMessage.startsWith('BACKEND.')) {
             userMessage = apiMessage;
           }
           this.toastr.error(userMessage);

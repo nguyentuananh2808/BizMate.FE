@@ -136,12 +136,12 @@ export class ProductCategoryComponent implements OnInit {
         this.originalData = res.ProductCategories ?? [];
         this.listOfData = [...this.originalData];
         this.isLoading = false;
-        console.log('data:', this.listOfData);
 
         this.cdr.detectChanges();
       },
       error: () => {
         this.isLoading = false;
+        this.toastr.error('Không thể tải danh sách loại sản phẩm. Vui lòng thử lại.');
         this.cdr.detectChanges();
       },
     });

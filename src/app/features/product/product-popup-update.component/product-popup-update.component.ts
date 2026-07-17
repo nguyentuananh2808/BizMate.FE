@@ -75,7 +75,7 @@ export class ProductPopupUpdateComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: () => {
-        this.toastr.error('Không thể load loại sản phẩm');
+        this.toastr.error('Không thể tải danh sách loại sản phẩm. Vui lòng thử lại.');
       },
     });
   }
@@ -152,13 +152,13 @@ export class ProductPopupUpdateComponent implements OnInit {
       )
       .subscribe({
         next: () => {
-          this.toastr.success('Cập nhật thành công');
+          this.toastr.success('Cập nhật sản phẩm thành công.');
           this.update.emit();
           this.close();
         },
         error: (err) => {
           const apiMessage = err.error?.Message;
-          let userMessage = 'Cập nhật thất bại';
+          let userMessage = 'Không thể cập nhật sản phẩm. Vui lòng thử lại.';
 
           if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_NOT_EXIST') {
             userMessage = 'Sản phẩm không tồn tại trong hệ thống.';
@@ -169,7 +169,7 @@ export class ProductPopupUpdateComponent implements OnInit {
               'Dữ liệu đã được cập nhật bởi người dùng khác. Vui lòng tải lại trang để tiếp tục.';
           } else if (apiMessage === 'BACKEND.APP_MESSAGE.DATA_DUPLICATE') {
             userMessage = 'Tên sản phẩm đã tồn tại.';
-          } else if (apiMessage) {
+          } else if (apiMessage && !apiMessage.startsWith('BACKEND.')) {
             userMessage = apiMessage;
           }
           this.toastr.error(userMessage);
