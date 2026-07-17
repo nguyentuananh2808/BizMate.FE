@@ -33,16 +33,18 @@
   align-items: center;
   background: linear-gradient(135deg, #2dd4bf 0%, #38bdf8 52%, #fb7185 100%);
   border: 0;
-  border-radius: 999px;
+  border-radius: 50%;
   box-shadow: 0 18px 38px rgba(14, 116, 144, 0.28);
   cursor: grab;
   display: inline-flex;
-  gap: 10px;
-  padding: 8px 10px 8px 16px;
+  height: 68px;
+  justify-content: center;
+  padding: 6px;
   pointer-events: auto;
   position: relative;
   touch-action: none;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  width: 68px;
 
   &:hover {
     box-shadow: 0 20px 42px rgba(14, 116, 144, 0.34);
@@ -60,12 +62,7 @@
 }
 
 .launcher-bubble {
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 900;
-  letter-spacing: 0;
-  text-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
-  white-space: nowrap;
+  display: none;
 }
 
 .bot-face {
@@ -455,11 +452,9 @@
   }
 
   .chat-launcher {
-    padding-left: 12px;
-  }
-
-  .launcher-bubble {
-    font-size: 13px;
+    height: 62px;
+    padding: 6px;
+    width: 62px;
   }
 
   .bot-face {
