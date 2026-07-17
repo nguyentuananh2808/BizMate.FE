@@ -1,10 +1,19 @@
-<div class="inventory-chat-widget" [class.inventory-chat-widget-open]="isOpen">
+<div
+  #widgetRoot
+  class="inventory-chat-widget"
+  [class.inventory-chat-widget-open]="isOpen"
+  [class.inventory-chat-widget-positioned]="isPositionReady"
+  [class.inventory-chat-widget-dragging]="isDragging"
+  [style.left.px]="isPositionReady ? widgetPosition.left : null"
+  [style.top.px]="isPositionReady ? widgetPosition.top : null"
+>
   <button
     *ngIf="!isOpen"
     type="button"
     class="chat-launcher"
     aria-label="Mở trợ lý kho"
-    (click)="openChat()"
+    (pointerdown)="startLauncherDrag($event)"
+    (click)="handleLauncherClick($event)"
   >
     <span class="launcher-bubble">Hỏi Miu Kho</span>
     <span class="bot-face" aria-hidden="true">
@@ -17,7 +26,7 @@
   </button>
 
   <section *ngIf="isOpen" class="chat-panel" aria-label="Trợ lý kho">
-    <header class="chat-panel-header">
+    <header class="chat-panel-header" (pointerdown)="startPanelDrag($event)">
       <div class="header-avatar">
         <span class="bot-face bot-face-small" aria-hidden="true">
           <span class="bot-eye bot-eye-left"></span>
