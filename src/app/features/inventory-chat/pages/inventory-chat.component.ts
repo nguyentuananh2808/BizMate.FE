@@ -74,6 +74,13 @@ export class InventoryChatComponent implements AfterViewInit, AfterViewChecked, 
   private readonly dragThreshold = 4;
 
   readonly quickQuestions = [
+    'Tổng quan kho hiện tại',
+    'Sản phẩm nào hết hàng?',
+    'Sản phẩm nào đang bị giữ?',
+    'Sản phẩm nào quản lý serial?',
+    'Tuần trước có xuất kho sản phẩm nào?',
+    'Tháng trước có nhập kho sản phẩm nào?',
+    '7 ngày qua có nhập kho sản phẩm nào?',
     'camera H5AE còn bao nhiêu?',
     'sản phẩm nào còn tồn dưới 2?',
     'kỹ thuật Tuấn Anh đang giữ hàng gì?',

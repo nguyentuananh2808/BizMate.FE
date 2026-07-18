@@ -1,7 +1,7 @@
 <!-- ========== Desktop Layout ========== -->
 <div
   *ngIf="!isMobile"
-  class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[2147483000] transition-opacity duration-500 p-4"
+  class="product-search-overlay fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[2147483000] transition-opacity duration-500 p-4"
   [ngClass]="{ 'opacity-100': !isClosing, 'opacity-0': isClosing }"
 >
   <div
@@ -49,16 +49,18 @@
     </div>
 
     <div
-      class="min-h-0 flex-1 overflow-hidden rounded-2xl bg-background-light p-3 shadow-sm dark:bg-background-dark"
+      class="product-search-content min-h-0 flex flex-1 flex-col overflow-hidden rounded-2xl bg-background-light p-3 shadow-sm dark:bg-background-dark"
       [ngClass]="{ 'dark:bg-gray-900': isDark }"
     >
       <nz-table
+        class="product-search-table"
         [nzData]="listOfData"
         [nzScroll]="{ x: '980px', y: '46vh' }"
         [nzTotal]="totalCount"
         [nzPageSize]="pageSize"
         [nzPageIndex]="pageIndex"
         [nzFrontPagination]="false"
+        [nzShowPagination]="false"
         [nzLoading]="isLoading"
         (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
         (nzPageIndexChange)="onPageChange($event)"
@@ -150,7 +152,20 @@
           </tr>
         </tbody>
       </nz-table>
-      <div class="mt-4 flex shrink-0 justify-end gap-3">
+
+      <div class="product-search-pagination flex shrink-0 justify-center">
+        <nz-pagination
+          *ngIf="totalCount > pageSize"
+          [nzPageIndex]="pageIndex"
+          [nzTotal]="totalCount"
+          [nzPageSize]="pageSize"
+          [nzShowQuickJumper]="false"
+          [nzShowSizeChanger]="false"
+          (nzPageIndexChange)="onPageChange($event)"
+        ></nz-pagination>
+      </div>
+
+      <div class="product-search-actions flex shrink-0 justify-end gap-3">
         <button
           class="bg-gray-400 text-white px-4 py-2 rounded-full hover:bg-gray-500 transition"
           (click)="close()"
@@ -171,7 +186,7 @@
 <!-- ========== Mobile Layout ========== -->
 <div
   *ngIf="isMobile"
-  class="fixed inset-0 bg-black/40 backdrop-blur-sm flex flex-col z-[2147483000] transition-opacity duration-500"
+  class="product-search-overlay fixed inset-0 bg-black/40 backdrop-blur-sm flex flex-col z-[2147483000] transition-opacity duration-500"
   [ngClass]="{ 'opacity-100': !isClosing, 'opacity-0': isClosing }"
 >
   <div

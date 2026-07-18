@@ -13,10 +13,41 @@
     z-index: 2147483001;
 }
 
+.product-search-overlay {
+    z-index: 2200;
+}
+
 .ant-pagination-item:hover a {
     color: #f0f0f0 !important;
 }
 
 :host ::ng-deep .ant-table-wrapper {
     min-width: 0;
+}
+
+.product-search-content {
+    gap: 14px;
+}
+
+.product-search-table {
+    min-height: 0;
+}
+
+.product-search-pagination {
+    min-height: 40px;
+}
+
+.product-search-actions {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), #ffffff);
+    border-top: 1px solid rgba(148, 163, 184, 0.22);
+    margin: 0 -12px -12px;
+    padding: 14px 16px;
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+}
+
+:host-context(.dark) .product-search-actions {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), #0f172a);
+    border-top-color: rgba(51, 65, 85, 0.9);
 }
