@@ -49,6 +49,14 @@ export class ProductPopupUpdateComponent implements OnInit {
   showDropdown: boolean = false;
   isClosing = false;
   isSaving = false;
+  unitOptions = [
+    { value: 1, label: 'Cái' },
+    { value: 2, label: 'Hộp' },
+    { value: 3, label: 'Thùng' },
+    { value: 4, label: 'Kg' },
+    { value: 5, label: 'Lít' },
+    { value: 6, label: 'Cây' },
+  ];
 
   constructor(
     private productService: ProductService,
@@ -69,7 +77,7 @@ export class ProductPopupUpdateComponent implements OnInit {
     this.categoryService.GetAll().subscribe({
       next: (res) => {
         this.categories = (res.ProductCategories || []).filter(
-          (cat) => cat.IsActive
+          (cat) => cat.IsActive == false || cat.Id === this.data?.ProductCategoryId
         );
         this.filteredCategories = [...this.categories];
         this.cdr.detectChanges();

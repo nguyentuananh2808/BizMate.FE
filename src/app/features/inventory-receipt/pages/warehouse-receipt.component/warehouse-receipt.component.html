@@ -251,7 +251,7 @@
               routerLink="/warehouse-receipt-create"
             >
               <nz-icon nzType="plus-circle" nzTheme="outline"></nz-icon>
-              Tạo mới
+              Nhập kho
             </button>
 
             <button
@@ -366,8 +366,10 @@
             [nzPageSize]="pageSize"
             [nzSize]="'small'"
             [nzShowQuickJumper]="false"
-            [nzShowSizeChanger]="false"
+            [nzShowSizeChanger]="true"
+            [nzPageSizeOptions]="pageSizeOptions"
             (nzPageIndexChange)="onPageChange($event)"
+            (nzPageSizeChange)="onPageSizeChange($event)"
           >
           </nz-pagination>
         </div>
@@ -393,10 +395,13 @@
             [nzPageSize]="pageSize"
             [nzTotal]="totalCount"
             [nzPageIndex]="pageIndex"
+            [nzShowSizeChanger]="true"
+            [nzPageSizeOptions]="pageSizeOptions"
             [nzLoading]="isLoading"
             [nzFrontPagination]="false"
             [nzScroll]="{ x: '980px' }"
             (nzPageIndexChange)="onPageChange($event)"
+            (nzPageSizeChange)="onPageSizeChange($event)"
             (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
           >
             <thead>

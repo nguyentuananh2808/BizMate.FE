@@ -278,8 +278,10 @@
             [nzPageSize]="pageSize"
             [nzSize]="'small'"
             [nzShowQuickJumper]="false"
-            [nzShowSizeChanger]="false"
+            [nzShowSizeChanger]="true"
+            [nzPageSizeOptions]="pageSizeOptions"
             (nzPageIndexChange)="onPageChange($event)"
+            (nzPageSizeChange)="onPageSizeChange($event)"
           ></nz-pagination>
         </div>
 
@@ -303,9 +305,12 @@
             [nzTotal]="totalCount"
             [nzPageIndex]="pageIndex"
             [nzLoading]="isLoading"
+            [nzShowSizeChanger]="true"
+            [nzPageSizeOptions]="pageSizeOptions"
             [nzFrontPagination]="false"
             [nzScroll]="{ x: '640px' }"
             (nzPageIndexChange)="onPageChange($event)"
+            (nzPageSizeChange)="onPageSizeChange($event)"
             (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
           >
             <thead>

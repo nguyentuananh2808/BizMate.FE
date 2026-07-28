@@ -79,6 +79,7 @@ export class ProductComponent implements OnInit {
   showPopupCreate = false;
   pageIndex = 1;
   pageSize = 10;
+  readonly pageSizeOptions = [10, 20, 50];
   totalCount = 0;
   categories: ProductCategory[] = [];
   selectedCategoryId: string | null = null;
@@ -161,6 +162,12 @@ export class ProductComponent implements OnInit {
     this.fetchData(this.pageIndex, this.pageSize);
   }
 
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.pageIndex = 1;
+    this.fetchData(1, this.pageSize);
+  }
+
   onFilterChange(): void {
     this.pageIndex = 1;
     this.fetchData(1, this.pageSize);
@@ -205,9 +212,13 @@ export class ProductComponent implements OnInit {
           }
 
           setTimeout(() => {
-            this.listOfData = [...this.originalData].sort((a, b) =>
-              a.Code.localeCompare(b.Code)
-            );
+            this.listOfData = [...this.originalData].sort((a, b) => {
+              const createdDiff =
+                new Date(b.CreatedDate || 0).getTime() -
+                new Date(a.CreatedDate || 0).getTime();
+
+              return createdDiff || b.Code.localeCompare(a.Code);
+            });
 
             this.listOfCurrentPageData = [...this.listOfData];
             this.setOfCheckedId.clear();

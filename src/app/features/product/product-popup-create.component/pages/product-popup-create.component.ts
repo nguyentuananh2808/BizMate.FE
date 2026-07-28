@@ -40,6 +40,14 @@ export class ProductPopupCreateComponent implements OnInit {
   name: string = '';
   productCategoryId: string = '';
   unit: number = 6;
+  unitOptions = [
+    { value: 1, label: 'Cái' },
+    { value: 2, label: 'Hộp' },
+    { value: 3, label: 'Thùng' },
+    { value: 4, label: 'Kg' },
+    { value: 5, label: 'Lít' },
+    { value: 6, label: 'Cây' },
+  ];
   salePrice: number = 0;
   imageUrl: string = '';
   description: string = '';

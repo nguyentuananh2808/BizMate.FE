@@ -73,6 +73,7 @@ export class OrderComponent implements OnInit {
   isCollapsed = true;
   pageSize = 10;
   pageIndex = 1;
+  readonly pageSizeOptions = [10, 20, 50];
   totalCount = 0;
   statuses: string[] = [];
   showTooltip = false;
@@ -193,8 +194,27 @@ loadTechnicalEmployees(): void {
   }
   onPageChange(page: number): void {
     this.pageIndex = page;
-    this.fetchData(this.pageIndex, this.pageSize);
+    this.fetchData(
+      this.pageIndex,
+      this.pageSize,
+      this.dateRange?.[0],
+      this.dateRange?.[1],
+      this.selectedStatuses,
+    );
   }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.pageIndex = 1;
+    this.fetchData(
+      1,
+      this.pageSize,
+      this.dateRange?.[0],
+      this.dateRange?.[1],
+      this.selectedStatuses,
+    );
+  }
+
   fetchData(
     pageIndex: number = this.pageIndex,
     pageSize: number = this.pageSize,
@@ -262,9 +282,13 @@ loadTechnicalEmployees(): void {
         }));
         this.totalCount = res.TotalCount || 0;
 
-        this.listOfData = [...this.originalData].sort((a, b) =>
-          b.Code.localeCompare(a.Code),
-        );
+        this.listOfData = [...this.originalData].sort((a, b) => {
+          const createdDiff =
+            new Date(b.CreatedDate || 0).getTime() -
+            new Date(a.CreatedDate || 0).getTime();
+
+          return createdDiff || b.Code.localeCompare(a.Code);
+        });
 
         this.listOfCurrentPageData = this.listOfData;
         this.isLoading = false;

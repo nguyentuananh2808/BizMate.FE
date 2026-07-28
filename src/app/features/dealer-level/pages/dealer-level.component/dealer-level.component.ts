@@ -67,6 +67,7 @@ export class DealerLevelComponent implements OnInit {
   isCollapsed = true;
   pageSize = 10;
   pageIndex = 1;
+  readonly pageSizeOptions = [10, 20, 50];
   totalCount = 0;
   showTooltip = false;
   filterPopoverTop = 280;
@@ -136,6 +137,13 @@ export class DealerLevelComponent implements OnInit {
     this.pageIndex = page;
     this.fetchData(this.pageIndex, this.pageSize);
   }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.pageIndex = 1;
+    this.fetchData(1, this.pageSize);
+  }
+
   fetchData(
     pageIndex: number = this.pageIndex,
     pageSize: number = this.pageSize

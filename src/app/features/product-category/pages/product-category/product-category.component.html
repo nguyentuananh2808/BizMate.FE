@@ -56,7 +56,7 @@
       <!-- 📱 Mobile layout -->
       <div *ngIf="isMobile" class="mt-36">
         <div
-          *ngFor="let item of listOfData; trackBy: trackById"
+          *ngFor="let item of paginatedList; trackBy: trackById"
           class="mobile-list-card rounded-[16px] bg-[rgb(255,255,255)] dark:bg-gray-900 shadow-md p-4 flex flex-col gap-2 mb-2"
         >
           <div class="flex items-center justify-between">
@@ -116,6 +116,21 @@
           class="text-center text-secondary-light dark:text-secondary-dark py-8"
         >
           Không có dữ liệu
+        </div>
+
+        <div class="flex justify-center mt-4">
+          <nz-pagination
+            *ngIf="totalCount > 0"
+            [nzPageIndex]="pageIndex"
+            [nzTotal]="totalCount"
+            [nzPageSize]="pageSize"
+            [nzSize]="'small'"
+            [nzShowQuickJumper]="false"
+            [nzShowSizeChanger]="true"
+            [nzPageSizeOptions]="pageSizeOptions"
+            (nzPageIndexChange)="onPageChange($event)"
+            (nzPageSizeChange)="onPageSizeChange($event)"
+          ></nz-pagination>
         </div>
       </div>
 
@@ -191,9 +206,14 @@
           <nz-table
             [nzData]="listOfData"
             [nzScroll]="{ x: '1160px', y: '400px' }"
-            [nzPageSize]="10"
+            [nzPageSize]="pageSize"
+            [nzPageIndex]="pageIndex"
+            [nzShowSizeChanger]="true"
+            [nzPageSizeOptions]="pageSizeOptions"
             [nzFrontPagination]="true"
             [nzLoading]="isLoading"
+            (nzPageIndexChange)="onPageChange($event)"
+            (nzPageSizeChange)="onPageSizeChange($event)"
             (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
           >
             <thead>

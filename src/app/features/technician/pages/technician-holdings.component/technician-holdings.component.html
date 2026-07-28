@@ -203,7 +203,7 @@
 
         <nz-spin [nzSpinning]="isLoadingRequests">
           <div *ngIf="borrowRequests.length; else emptyBorrowRequests" class="borrow-request-list">
-            <article *ngFor="let request of borrowRequests; trackBy: trackRequest" class="borrow-request-card">
+            <article *ngFor="let request of pagedBorrowRequests; trackBy: trackRequest" class="borrow-request-card">
               <div>
                 <strong>{{ request.Code }}</strong>
                 <p>
@@ -243,6 +243,17 @@
                 </button>
               </div>
             </article>
+
+            <nz-pagination
+              class="mt-4 flex justify-center"
+              [nzPageIndex]="requestPageIndex"
+              [nzTotal]="borrowRequests.length"
+              [nzPageSize]="requestPageSize"
+              [nzShowSizeChanger]="true"
+              [nzPageSizeOptions]="pageSizeOptions"
+              (nzPageIndexChange)="onRequestPageChange($event)"
+              (nzPageSizeChange)="onRequestPageSizeChange($event)"
+            ></nz-pagination>
           </div>
         </nz-spin>
 
@@ -253,7 +264,7 @@
 
       <nz-spin *ngIf="!isTechnicianUser" [nzSpinning]="isLoading">
         <section *ngIf="holdings.length; else emptyHoldings" class="holding-list">
-          <article *ngFor="let group of holdings; trackBy: trackGroup" class="holding-card">
+          <article *ngFor="let group of pagedHoldings; trackBy: trackGroup" class="holding-card">
             <div class="holding-card__head">
               <div>
                 <h2>{{ group.TechnicianName || "Chưa rõ nhân viên" }}</h2>
@@ -311,6 +322,17 @@
               </div>
             </div>
           </article>
+
+          <nz-pagination
+            class="mt-4 flex justify-center"
+            [nzPageIndex]="holdingPageIndex"
+            [nzTotal]="holdings.length"
+            [nzPageSize]="holdingPageSize"
+            [nzShowSizeChanger]="true"
+            [nzPageSizeOptions]="pageSizeOptions"
+            (nzPageIndexChange)="onHoldingPageChange($event)"
+            (nzPageSizeChange)="onHoldingPageSizeChange($event)"
+          ></nz-pagination>
         </section>
       </nz-spin>
 

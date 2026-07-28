@@ -17,6 +17,7 @@ import { HeaderCommonComponent } from '../../../shared/header-common.component/h
 import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { ToastrService } from 'ngx-toastr';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -42,6 +43,7 @@ import { MenuComponent } from '../../../shared/menu.component/menu.component';
     HeaderCommonComponent,
     NzModalModule,
     NzFloatButtonModule,
+    NzPaginationModule,
     MenuComponent,
   ],
   providers: [DatePipe],
@@ -60,6 +62,7 @@ export class ProductCategoryComponent implements OnInit {
   selectedItem!: ProductCategory;
   pageSize = 10;
   pageIndex = 1;
+  readonly pageSizeOptions = [10, 20, 50];
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {
@@ -82,6 +85,10 @@ export class ProductCategoryComponent implements OnInit {
   get paginatedList(): ProductCategory[] {
     const start = (this.pageIndex - 1) * this.pageSize;
     return this.listOfData.slice(start, start + this.pageSize);
+  }
+
+  get totalCount(): number {
+    return this.listOfData.length;
   }
 
   toggleDarkMode(): void {
@@ -134,7 +141,13 @@ export class ProductCategoryComponent implements OnInit {
     this.productService.GetAll().subscribe({
       next: (res) => {
         this.originalData = res.ProductCategories ?? [];
-        this.listOfData = [...this.originalData];
+        this.listOfData = [...this.originalData].sort((a, b) => {
+          const createdDiff =
+            new Date(b.CreatedDate || 0).getTime() -
+            new Date(a.CreatedDate || 0).getTime();
+
+          return createdDiff || b.Id.localeCompare(a.Id);
+        });
         this.isLoading = false;
 
         this.cdr.detectChanges();
@@ -154,6 +167,16 @@ export class ProductCategoryComponent implements OnInit {
         item.Code.toLowerCase().includes(keyword) ||
         item.Name.toLowerCase().includes(keyword)
     );
+    this.pageIndex = 1;
+  }
+
+  onPageChange(page: number): void {
+    this.pageIndex = page;
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.pageIndex = 1;
   }
 
   listOfSelection = [

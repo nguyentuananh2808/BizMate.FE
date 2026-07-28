@@ -44,6 +44,7 @@ export class ProductItemListComponent implements OnInit, OnDestroy {
   status: number | null = null;
   pageIndex = 1;
   pageSize = 20;
+  readonly pageSizeOptions = [10, 20, 50];
   totalCount = 0;
   products: Product[] = [];
   selectedProduct: Product | null = null;
@@ -150,6 +151,12 @@ export class ProductItemListComponent implements OnInit, OnDestroy {
 
   onPageChange(page: number): void {
     this.pageIndex = page;
+    this.fetchProductItems();
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.pageIndex = 1;
     this.fetchProductItems();
   }
 

@@ -141,13 +141,15 @@
           </div>
 
           <nz-pagination
-            *ngIf="totalCount > pageSize"
+            *ngIf="totalCount > 0"
             class="serial-pagination"
             [nzPageIndex]="pageIndex"
             [nzTotal]="totalCount"
             [nzPageSize]="pageSize"
-            [nzShowSizeChanger]="false"
+            [nzShowSizeChanger]="true"
+            [nzPageSizeOptions]="pageSizeOptions"
             (nzPageIndexChange)="onPageChange($event)"
+            (nzPageSizeChange)="onPageSizeChange($event)"
           ></nz-pagination>
         </div>
       </section>

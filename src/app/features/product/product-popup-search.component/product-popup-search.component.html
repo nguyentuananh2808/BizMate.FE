@@ -155,13 +155,15 @@
 
       <div class="product-search-pagination flex shrink-0 justify-center">
         <nz-pagination
-          *ngIf="totalCount > pageSize"
+          *ngIf="totalCount > 0"
           [nzPageIndex]="pageIndex"
           [nzTotal]="totalCount"
           [nzPageSize]="pageSize"
           [nzShowQuickJumper]="false"
-          [nzShowSizeChanger]="false"
+          [nzShowSizeChanger]="true"
+          [nzPageSizeOptions]="pageSizeOptions"
           (nzPageIndexChange)="onPageChange($event)"
+          (nzPageSizeChange)="onPageSizeChange($event)"
         ></nz-pagination>
       </div>
 
@@ -300,15 +302,17 @@
     <!-- Pagination -->
     <div class="flex justify-center mt-4">
       <nz-pagination
-        *ngIf="totalCount > pageSize"
+        *ngIf="totalCount > 0"
         class="mt-4 justify-center"
         [nzPageIndex]="pageIndex"
         [nzTotal]="totalCount"
         [nzPageSize]="pageSize"
         [nzSize]="'small'"
         [nzShowQuickJumper]="false"
-        [nzShowSizeChanger]="false"
+        [nzShowSizeChanger]="true"
+        [nzPageSizeOptions]="pageSizeOptions"
         (nzPageIndexChange)="onPageChange($event)"
+        (nzPageSizeChange)="onPageSizeChange($event)"
       ></nz-pagination>
     </div>
 

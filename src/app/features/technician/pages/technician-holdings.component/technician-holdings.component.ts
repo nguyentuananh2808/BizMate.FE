@@ -8,6 +8,7 @@ import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { BottomMenuComponent } from '../../../shared/bottom-menu.component/bottom-menu.component';
@@ -42,6 +43,7 @@ type HoldingViewMode = 'all' | 'overdue';
     NzIconModule,
     NzInputModule,
     NzModalModule,
+    NzPaginationModule,
     NzSpinModule,
     NzTagModule,
     MenuComponent,
@@ -75,6 +77,11 @@ export class TechnicianHoldingsComponent implements OnInit {
   returnQuantities: Record<string, number> = {};
   requestStatusFilter: TechnicianBorrowRequestStatus | null =
     TechnicianBorrowRequestStatus.Pending;
+  readonly pageSizeOptions = [10, 20, 50];
+  requestPageIndex = 1;
+  requestPageSize = 10;
+  holdingPageIndex = 1;
+  holdingPageSize = 10;
   readonly requestStatus = TechnicianBorrowRequestStatus;
   readonly borrowTypeEnum = TechnicianBorrowType;
   readonly borrowTypes = [
@@ -144,6 +151,16 @@ export class TechnicianHoldingsComponent implements OnInit {
     ).length;
   }
 
+  get pagedBorrowRequests(): TechnicianBorrowRequest[] {
+    const start = (this.requestPageIndex - 1) * this.requestPageSize;
+    return this.borrowRequests.slice(start, start + this.requestPageSize);
+  }
+
+  get pagedHoldings(): TechnicianHoldingGroup[] {
+    const start = (this.holdingPageIndex - 1) * this.holdingPageSize;
+    return this.holdings.slice(start, start + this.holdingPageSize);
+  }
+
   get selectedBorrowProductIds(): string[] {
     return this.borrowItems.map((item) => item.ProductId);
   }
@@ -207,6 +224,7 @@ export class TechnicianHoldingsComponent implements OnInit {
 
   changeMode(mode: HoldingViewMode): void {
     this.mode = mode;
+    this.holdingPageIndex = 1;
     this.loadHoldings();
   }
 
@@ -228,6 +246,11 @@ export class TechnicianHoldingsComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.holdings = response.Technicians || [];
+          this.holdingPageIndex = this.clampPageIndex(
+            this.holdingPageIndex,
+            this.holdingPageSize,
+            this.holdings.length
+          );
           this.seedReturnQuantities();
         },
         error: () => {
@@ -271,7 +294,26 @@ export class TechnicianHoldingsComponent implements OnInit {
       : this.allBorrowRequests.filter(
           (item) => item.RequestStatus === this.requestStatusFilter
         );
+    this.requestPageIndex = 1;
     this.refreshView();
+  }
+
+  onRequestPageChange(page: number): void {
+    this.requestPageIndex = page;
+  }
+
+  onRequestPageSizeChange(size: number): void {
+    this.requestPageSize = size;
+    this.requestPageIndex = 1;
+  }
+
+  onHoldingPageChange(page: number): void {
+    this.holdingPageIndex = page;
+  }
+
+  onHoldingPageSizeChange(size: number): void {
+    this.holdingPageSize = size;
+    this.holdingPageIndex = 1;
   }
 
   onTechnicianFilterChange(): void {
@@ -279,6 +321,8 @@ export class TechnicianHoldingsComponent implements OnInit {
       this.mode = 'all';
     }
 
+    this.holdingPageIndex = 1;
+    this.requestPageIndex = 1;
     this.loadHoldings();
     this.loadBorrowRequests();
   }
@@ -646,6 +690,15 @@ export class TechnicianHoldingsComponent implements OnInit {
 
   private refreshView(): void {
     this.cdr.markForCheck();
+  }
+
+  private clampPageIndex(
+    currentPage: number,
+    pageSize: number,
+    totalCount: number
+  ): number {
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    return Math.min(Math.max(1, currentPage), totalPages);
   }
 
   private toUserMessage(apiMessage: string | undefined, fallback: string): string {

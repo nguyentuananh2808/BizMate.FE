@@ -50,6 +50,7 @@ export class ProductPopupSearchComponent implements OnInit {
   indeterminate = false;
   pageIndex = 1;
   pageSize = 10;
+  readonly pageSizeOptions = [10, 20, 50];
   totalCount = 0;
   searchKeyword = '';
   isLoading = false;
@@ -105,6 +106,12 @@ export class ProductPopupSearchComponent implements OnInit {
   onPageChange(page: number): void {
     this.pageIndex = page;
     this.fetchData(this.pageIndex, this.pageSize);
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.pageIndex = 1;
+    this.fetchData(1, this.pageSize);
   }
 
   fetchData(

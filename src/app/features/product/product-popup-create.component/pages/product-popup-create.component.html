@@ -85,18 +85,19 @@
         >
           Đơn vị
         </label>
-        <select
+        <nz-select
           name="unit"
           [(ngModel)]="unit"
-          class="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
+          nzSize="large"
+          nzPlaceHolder="Chọn đơn vị"
+          class="w-full"
         >
-          <option [value]="1">Cái</option>
-          <option [value]="2">Hộp</option>
-          <option [value]="3">Thùng</option>
-          <option [value]="4">Kg</option>
-          <option [value]="5">Lít</option>
-          <option [value]="6">Cây</option>
-        </select>
+          <nz-option
+            *ngFor="let option of unitOptions"
+            [nzValue]="option.value"
+            [nzLabel]="option.label"
+          ></nz-option>
+        </nz-select>
       </div>
 
       <div
