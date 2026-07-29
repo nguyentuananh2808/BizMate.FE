@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, Input } from '@angular/core';
+import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,6 +7,8 @@ import { ProductCategoryService } from '../../services/product-category.service'
 import { finalize } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { NzSelectModule } from 'ng-zorro-antd/select';
+import { CategoryGroup } from '../../../category-group/models/category-group.model';
+import { CategoryGroupService } from '../../../category-group/services/category-group.service';
 
 @Component({
   selector: 'product-category-detail-popup',
@@ -29,17 +31,23 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
     ]),
   ],
 })
-export class ProductCategoryDetailPopup {
+export class ProductCategoryDetailPopup implements OnInit {
   @Input() data!: ProductCategory;
   @Output() closePopup = new EventEmitter<void>();
   @Output() updated = new EventEmitter<void>();
   isClosing = false;
   isSaving = false;
+  categoryGroups: CategoryGroup[] = [];
 
   constructor(
     private productCategoryService: ProductCategoryService,
+    private categoryGroupService: CategoryGroupService,
     private toastr: ToastrService
   ) {}
+
+  ngOnInit(): void {
+    this.loadCategoryGroups();
+  }
 
   close() {
     this.isClosing = true;
@@ -57,7 +65,8 @@ export class ProductCategoryDetailPopup {
         this.data.Name.trim(),
         this.data.RowVersion,
         this.data.IsActive,
-        this.data.Description.trim() || ''
+        this.data.Description.trim() || '',
+        this.data.CategoryGroupId || null
       )
       .pipe(finalize(() => (this.isSaving = false)))
       .subscribe({
@@ -82,5 +91,18 @@ export class ProductCategoryDetailPopup {
           this.toastr.error(userMessage);
         },
       });
+  }
+
+  private loadCategoryGroups(): void {
+    this.categoryGroupService.getAll().subscribe({
+      next: (res) => {
+        this.categoryGroups = (res.CategoryGroups || []).filter(
+          (group) => !group.IsActive || group.Id === this.data?.CategoryGroupId
+        );
+      },
+      error: () => {
+        this.toastr.warning('Không thể tải danh sách nhóm loại sản phẩm.');
+      },
+    });
   }
 }

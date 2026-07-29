@@ -31,8 +31,17 @@ import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { ProductCategoryService } from '../../../product-category/services/product-category.service';
 import { ProductCategory } from '../../../product-category/models/product-category-response.model';
+import { CategoryGroup } from '../../../category-group/models/category-group.model';
+import { CategoryGroupService } from '../../../category-group/services/category-group.service';
+import {
+  InventoryOverview,
+  InventoryOverviewProduct,
+  InventoryOverviewProductCategory,
+} from '../../inventory-overview/models/inventory-overview.model';
+import { InventoryOverviewService } from '../../inventory-overview/services/inventory-overview.service';
 
 type ProductStockFilter = 'all' | 'in-stock' | 'low-stock' | 'out-of-stock';
+type ProductPageTab = 'products' | 'overview';
 
 @Component({
   selector: 'product',
@@ -82,8 +91,19 @@ export class ProductComponent implements OnInit {
   readonly pageSizeOptions = [10, 20, 50];
   totalCount = 0;
   categories: ProductCategory[] = [];
+  categoryGroups: CategoryGroup[] = [];
+  selectedCategoryGroupId: string | null = null;
   selectedCategoryId: string | null = null;
   stockFilter: ProductStockFilter = 'all';
+  activeProductTab: ProductPageTab = 'products';
+  overviewKeyword = '';
+  overviewSelectedCategoryGroupId: string | null = null;
+  overviewLoading = false;
+  overviewError = '';
+  inventoryOverview: InventoryOverview | null = null;
+  hasLoadedInventoryOverview = false;
+  expandedOverviewCategories = new Set<string>();
+  readonly overviewSkeletonRows = Array.from({ length: 4 });
   readonly lowStockThreshold = 2;
   readonly stockFilterOptions: { value: ProductStockFilter; label: string }[] = [
     { value: 'all', label: 'Tất cả tồn kho' },
@@ -100,7 +120,9 @@ export class ProductComponent implements OnInit {
 
   constructor(
     private productService: ProductService,
+    private inventoryOverviewService: InventoryOverviewService,
     private categoryService: ProductCategoryService,
+    private categoryGroupService: CategoryGroupService,
     private cdr: ChangeDetectorRef,
     private modal: NzModalService,
     private toastr: ToastrService,
@@ -118,6 +140,7 @@ export class ProductComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadCategoryGroups();
     this.loadProductCategories();
     this.fetchData();
   }
@@ -175,8 +198,142 @@ export class ProductComponent implements OnInit {
 
   resetFilters(): void {
     this.searchKeyword = '';
+    this.selectedCategoryGroupId = null;
     this.selectedCategoryId = null;
     this.stockFilter = 'all';
+    this.onFilterChange();
+  }
+
+  switchProductTab(tab: ProductPageTab): void {
+    this.activeProductTab = tab;
+
+    if (tab === 'overview' && !this.hasLoadedInventoryOverview) {
+      this.loadInventoryOverview();
+    }
+  }
+
+  loadInventoryOverview(): void {
+    this.overviewLoading = true;
+    this.overviewError = '';
+
+    this.inventoryOverviewService
+      .getOverview({
+        categoryGroupId: this.overviewSelectedCategoryGroupId,
+        keyword: this.overviewKeyword,
+      })
+      .subscribe({
+        next: (res) => {
+          this.inventoryOverview = res.Overview;
+          this.hasLoadedInventoryOverview = true;
+          this.overviewLoading = false;
+          this.expandAllOverviewCategories();
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.overviewLoading = false;
+          this.inventoryOverview = null;
+          this.overviewError = this.toUserMessage(
+            err.error?.Message || err.error?.message,
+            'Không thể tải tổng quan tồn kho. Vui lòng thử lại.'
+          );
+          this.toastr.error(this.overviewError);
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  onOverviewSearch(): void {
+    this.overviewKeyword = this.overviewKeyword.trim();
+    this.loadInventoryOverview();
+  }
+
+  onOverviewFilterChange(): void {
+    this.loadInventoryOverview();
+  }
+
+  resetOverviewFilters(): void {
+    this.overviewKeyword = '';
+    this.overviewSelectedCategoryGroupId = null;
+    this.loadInventoryOverview();
+  }
+
+  expandAllOverviewCategories(): void {
+    const keys =
+      this.inventoryOverview?.CategoryGroups.flatMap((group) =>
+        group.Categories.map((category) => category.CategoryKey)
+      ) || [];
+
+    this.expandedOverviewCategories = new Set(keys);
+  }
+
+  collapseAllOverviewCategories(): void {
+    this.expandedOverviewCategories.clear();
+  }
+
+  toggleOverviewCategory(category: InventoryOverviewProductCategory): void {
+    if (this.expandedOverviewCategories.has(category.CategoryKey)) {
+      this.expandedOverviewCategories.delete(category.CategoryKey);
+    } else {
+      this.expandedOverviewCategories.add(category.CategoryKey);
+    }
+  }
+
+  isOverviewCategoryExpanded(category: InventoryOverviewProductCategory): boolean {
+    return this.expandedOverviewCategories.has(category.CategoryKey);
+  }
+
+  openOverviewProduct(product: InventoryOverviewProduct): void {
+    this.productService.ReadById(product.ProductId).subscribe({
+      next: (res) => {
+        this.selectedItem = res.Product;
+        this.showPopup = true;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.toastr.error(
+          this.toUserMessage(
+            err.error?.Message || err.error?.message,
+            'Không thể tải chi tiết sản phẩm. Vui lòng thử lại.'
+          )
+        );
+      },
+    });
+  }
+
+  getOverviewStockStatusLabel(status: string): string {
+    return status === 'OUT_OF_STOCK' ? 'Hết hàng' : 'Còn hàng';
+  }
+
+  trackOverviewGroup(index: number, item: { CategoryGroupKey: string }): string {
+    return item.CategoryGroupKey;
+  }
+
+  trackOverviewCategory(index: number, item: InventoryOverviewProductCategory): string {
+    return item.CategoryKey;
+  }
+
+  trackOverviewProduct(index: number, item: InventoryOverviewProduct): string {
+    return item.ProductId;
+  }
+
+  get filteredCategories(): ProductCategory[] {
+    if (!this.selectedCategoryGroupId) {
+      return this.categories;
+    }
+
+    return this.categories.filter(
+      (category) => category.CategoryGroupId === this.selectedCategoryGroupId
+    );
+  }
+
+  onCategoryGroupChange(): void {
+    if (
+      this.selectedCategoryId &&
+      !this.filteredCategories.some((category) => category.Id === this.selectedCategoryId)
+    ) {
+      this.selectedCategoryId = null;
+    }
+
     this.onFilterChange();
   }
 
@@ -197,6 +354,7 @@ export class ProductComponent implements OnInit {
         pageIndex,
         undefined,
         this.selectedCategoryId,
+        this.selectedCategoryGroupId,
         stockFilter,
         stockFilter === 'low-stock' ? this.lowStockThreshold : null
       )
@@ -257,6 +415,20 @@ export class ProductComponent implements OnInit {
       error: () => {
         this.toastr.warning(
           'Không thể tải bộ lọc loại sản phẩm. Bạn vẫn có thể xem danh sách sản phẩm.'
+        );
+      },
+    });
+  }
+
+  private loadCategoryGroups(): void {
+    this.categoryGroupService.getAll().subscribe({
+      next: (res) => {
+        this.categoryGroups = (res.CategoryGroups || []).filter((group) => !group.IsActive);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.toastr.warning(
+          'Không thể tải bộ lọc nhóm loại sản phẩm. Bạn vẫn có thể xem danh sách sản phẩm.'
         );
       },
     });
@@ -378,6 +550,8 @@ export class ProductComponent implements OnInit {
         return 'Lít';
       case 6:
         return 'Cây';
+      case 7:
+        return 'Met';
       default:
         return 'Khác';
     }

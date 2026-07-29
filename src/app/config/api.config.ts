@@ -2,7 +2,7 @@
 //   typeof window !== 'undefined' && window.location.hostname
 //     ? window.location.hostname
 //     : 'localhost';
-// const normalizedHost = browserHost === 'https://192.168.5.199' ? 'localhost' : browserHost;
+// const normalizedHost = browserHost === 'https://192.168.1.204' ? 'localhost' : browserHost;
 // const apiHost = normalizedHost.includes(':')
 //   ? `[${normalizedHost}]`
 //   : normalizedHost;
@@ -10,7 +10,7 @@
 //   typeof window !== 'undefined' && window.location.protocol === 'https:'
 //     ? 'https'
 //     : 'http';
-// const apiPort = apiProtocol === 'https' ? '5052' : '5051';
+// const apiPort = apiProtocol === 'https' ? '5051' : '5052';
 // const apiBaseUrl = `${apiProtocol}://${apiHost}:${apiPort}/v1`;
 
 
@@ -27,6 +27,16 @@ export const ApiUrls = {
     delete: (id: string) => `/product-category/${id}`,
   },
 
+  categoryGroup: {
+    search: '/category-group/search',
+    getAll: '/category-group/GetAll',
+    getById: (id: string) => `/category-group/${id}`,
+    create: '/category-group',
+    update: '/category-group',
+    assignCategories: (id: string) => `/category-group/${id}/categories`,
+    delete: (id: string) => `/category-group/${id}`,
+  },
+
   product: {
     search: '/product/search',
     create: '/product',
@@ -37,6 +47,10 @@ export const ApiUrls = {
 
   inventoryChat: {
     ask: '/inventory-chat/ask',
+  },
+
+  inventory: {
+    overview: '/inventory/overview',
   },
 
   status: {

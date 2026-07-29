@@ -285,6 +285,7 @@ export class ProductCategoryComponent implements OnInit {
 
     // 1. Thêm hàng tiêu đề (header) với định dạng đẹp
     const header = [
+      'Nhóm loại',
       'Mã loại',
       'Tên loại',
       'Mô tả',
@@ -296,6 +297,7 @@ export class ProductCategoryComponent implements OnInit {
 
     // 2. Thêm dữ liệu
     const data = this.listOfData.map((item) => [
+      item.CategoryGroupName || '',
       item.Code,
       item.Name,
       item.Description,

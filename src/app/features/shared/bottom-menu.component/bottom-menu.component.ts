@@ -38,7 +38,7 @@ export class BottomMenuComponent implements OnDestroy {
       label: 'Sản phẩm',
       icon: 'appstore',
       url: '/product',
-      activePaths: ['/product', '/product-items', '/product-category'],
+      activePaths: ['/product', '/product-items', '/product-category', '/category-groups'],
     },
     {
       id: 'create-order',

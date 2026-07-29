@@ -19,6 +19,8 @@ export class UnitTextPipe implements PipeTransform {
         return 'Lít';
       case 6:
         return 'Cây';
+      case 7:
+        return 'Met';
       default:
         return 'Khác';
     }

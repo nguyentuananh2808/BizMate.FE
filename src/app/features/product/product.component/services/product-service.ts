@@ -17,6 +17,7 @@ export class ProductService {
     pageIndex: number,
     isActive?: boolean,
     productCategoryId?: string | null,
+    categoryGroupId?: string | null,
     stockFilter?: string | null,
     lowStockThreshold?: number | null
   ): Observable<ProductResponse> {
@@ -26,6 +27,7 @@ export class ProductService {
       pageSize,
       isActive,
       productCategoryId,
+      categoryGroupId,
       stockFilter,
       lowStockThreshold,
     };

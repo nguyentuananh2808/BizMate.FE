@@ -4,6 +4,8 @@ export interface ProductCategory {
   Name: string;
   RowVersion: string;
   Description: string;
+  CategoryGroupId?: string | null;
+  CategoryGroupName?: string | null;
   IsActive: boolean;
   CreatedDate: Date;
   UpdatedDate: Date;

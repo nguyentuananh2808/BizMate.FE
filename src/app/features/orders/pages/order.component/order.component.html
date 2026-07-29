@@ -350,11 +350,19 @@
                 </div>
                 <div>
                   <strong>Ngày tạo:</strong>
-                  {{ item.CreatedDate | date : "dd/MM/yyyy" }}
+                  {{
+                    item.CreatedDate
+                      ? (item.CreatedDate | date : "dd/MM/yyyy HH:mm")
+                      : "-"
+                  }}
                 </div>
                 <div>
                   <strong>Ngày cập nhật:</strong>
-                  {{ item.UpdatedDate | date : "dd/MM/yyyy" : "UTC" }}
+                  {{
+                    item.UpdatedDate
+                      ? (item.UpdatedDate | date : "dd/MM/yyyy HH:mm")
+                      : "-"
+                  }}
                 </div>
               </div>
             </div>
@@ -401,7 +409,7 @@
             [nzPageSizeOptions]="pageSizeOptions"
             [nzLoading]="isLoading"
             [nzFrontPagination]="false"
-            [nzScroll]="{ x: '1160px' }"
+            [nzScroll]="{ x: '1280px' }"
             (nzPageIndexChange)="onPageChange($event)"
             (nzPageSizeChange)="onPageSizeChange($event)"
             (nzCurrentPageDataChange)="onCurrentPageDataChange($event)"
@@ -419,8 +427,8 @@
                 <th [nzWidth]="'220px'">Địa chỉ</th>
                 <th [nzWidth]="'180px'">Trạng thái</th>
                 <th [nzWidth]="'240px'">Mô tả</th>
-                <th [nzWidth]="'120px'">Ngày tạo</th>
-                <!-- <th [nzWidth]="'120px'">Ngày cập nhật</th> -->
+                <th [nzWidth]="'150px'">Ngày tạo</th>
+                <th [nzWidth]="'150px'">Ngày cập nhật</th>
               </tr>
             </thead>
 
@@ -480,8 +488,20 @@
                       : item.Description
                   }}
                 </td>
-                <td>{{ item.CreatedDate | date : "dd/MM/yyyy" }}</td>
-                <!-- <td>{{ item.UpdatedDate | date : "dd/MM/yyyy" }}</td> -->
+                <td>
+                  {{
+                    item.CreatedDate
+                      ? (item.CreatedDate | date : "dd/MM/yyyy HH:mm")
+                      : "-"
+                  }}
+                </td>
+                <td>
+                  {{
+                    item.UpdatedDate
+                      ? (item.UpdatedDate | date : "dd/MM/yyyy HH:mm")
+                      : "-"
+                  }}
+                </td>
               </tr>
             </tbody>
           </nz-table>
