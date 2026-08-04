@@ -41,6 +41,27 @@
         />
       </div>
 
+      <div>
+        <label
+          class="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-1"
+        >
+          Nhóm loại sản phẩm
+        </label>
+        <nz-select
+          class="w-full"
+          nzPlaceHolder="Chọn nhóm loại sản phẩm"
+          [(ngModel)]="categoryGroupId"
+          name="categoryGroupId"
+          [nzAllowClear]="true"
+        >
+          <nz-option
+            *ngFor="let group of categoryGroups"
+            [nzValue]="group.Id"
+            [nzLabel]="group.Name"
+          ></nz-option>
+        </nz-select>
+      </div>
+
       <!-- Mô tả -->
       <div>
         <label

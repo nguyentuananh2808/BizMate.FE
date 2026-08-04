@@ -34,6 +34,15 @@ export const routes: Routes = [
     data: { permissions: [AppPermission.productCategory.view] },
   },
   {
+    path: 'category-groups',
+    loadComponent: () =>
+      import('./features/category-group/pages/category-group.component').then(
+        (m) => m.CategoryGroupComponent
+      ),
+    canActivate: [AuthGuard, PermissionGuard],
+    data: { permissions: [AppPermission.productCategory.view] },
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('../app/features/auth/pages/login/login.component').then(

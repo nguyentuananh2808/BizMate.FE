@@ -9,6 +9,8 @@ export interface Product {
   SupplierName: string;
   ProductCategoryId: string;
   ProductCategoryName: string;
+  CategoryGroupId?: string | null;
+  CategoryGroupName?: string | null;
   RowVersion: string;
   Description: string;
   IsActive: boolean;

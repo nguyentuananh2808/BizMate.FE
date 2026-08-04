@@ -178,6 +178,12 @@ export class MenuComponent implements OnInit, OnDestroy {
               icon: 'shopping',
               route: '/product-category',
             },
+            {
+              key: 'category-groups',
+              label: 'Nhóm loại sản phẩm',
+              icon: 'tags',
+              route: '/category-groups',
+            },
           ],
         },
         {

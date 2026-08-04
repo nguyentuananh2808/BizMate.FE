@@ -14,8 +14,32 @@
         <!-- Header -->
         <header-common></header-common>
 
+        <div class="product-tab-switch mt-3">
+          <button
+            type="button"
+            [class.active]="activeProductTab === 'products'"
+            (click)="switchProductTab('products')"
+             [ngClass]="{
+              'dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600':
+                isDark
+            }"
+          >
+            Sản phẩm
+          </button>
+          <button
+            type="button"
+            [class.active]="activeProductTab === 'overview'"
+            (click)="switchProductTab('overview')"
+          >
+            Tổng quan tồn kho
+          </button>
+        </div>
+
         <!-- Mobile header bar -->
-        <div *ngIf="isMobile" class="flex items-center justify-between gap-3">
+        <div
+          *ngIf="isMobile && activeProductTab === 'products'"
+          class="flex items-center justify-between gap-3"
+        >
           <!-- Nút Quay lại -->
           <button
             type="button"
@@ -72,7 +96,24 @@
           </button>
         </div>
 
-        <div class="mobile-filter-row mt-3 grid grid-cols-2 gap-2">
+        <div
+          *ngIf="activeProductTab === 'products'"
+          class="mobile-filter-row mt-3 grid grid-cols-2 gap-2"
+        >
+          <nz-select
+            class="w-full"
+            nzPlaceHolder="Nhóm loại"
+            [(ngModel)]="selectedCategoryGroupId"
+            (ngModelChange)="onCategoryGroupChange()"
+            [nzAllowClear]="true"
+          >
+            <nz-option
+              *ngFor="let group of categoryGroups"
+              [nzValue]="group.Id"
+              [nzLabel]="group.Name"
+            ></nz-option>
+          </nz-select>
+
           <nz-select
             class="w-full"
             nzPlaceHolder="Loại sản phẩm"
@@ -81,7 +122,7 @@
             [nzAllowClear]="true"
           >
             <nz-option
-              *ngFor="let category of categories"
+              *ngFor="let category of filteredCategories"
               [nzValue]="category.Id"
               [nzLabel]="category.Name"
             ></nz-option>
@@ -99,10 +140,54 @@
             ></nz-option>
           </nz-select>
         </div>
+
+        <div
+          *ngIf="activeProductTab === 'overview'"
+          class="mobile-filter-row mt-3 grid grid-cols-1 gap-2"
+        >
+          <input
+            type="text"
+            class="w-full border border-gray-300 rounded-[20px] px-4 py-2"
+            [(ngModel)]="overviewKeyword"
+            (keyup.enter)="onOverviewSearch()"
+            placeholder="Tìm mã hoặc tên sản phẩm..."
+          />
+
+          <nz-select
+            class="w-full"
+            nzPlaceHolder="Tất cả nhóm"
+            [(ngModel)]="overviewSelectedCategoryGroupId"
+            (ngModelChange)="onOverviewFilterChange()"
+            [nzAllowClear]="true"
+          >
+            <nz-option
+              *ngFor="let group of categoryGroups"
+              [nzValue]="group.Id"
+              [nzLabel]="group.Name"
+            ></nz-option>
+          </nz-select>
+
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              class="overview-secondary-button justify-center"
+              (click)="resetOverviewFilters()"
+            >
+              Xóa lọc
+            </button>
+            <button
+              type="button"
+              class="overview-primary-button justify-center"
+              (click)="onOverviewSearch()"
+            >
+              Tìm kiếm
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Mobile Table -->
-      <div *ngIf="isMobile" class="mt-56">
+      <div *ngIf="isMobile && activeProductTab === 'products'" class="mt-56">
         <div class="space-y-4">
           <div
             *ngFor="let item of listOfCurrentPageData; trackBy: trackById"
@@ -280,14 +365,43 @@
 
         <div class="mb-4 flex items-center justify-between gap-4">
           <!-- page name -->
-          <h1
+          <h1 *ngIf="activeProductTab === 'products'"
             class="text-secondary-light dark:text-secondary-dark text-2xl font-bold"
           >
             Sản phẩm
           </h1>
 
+          <div class="flex min-w-[260px] flex-col gap-2">
+            <h1
+              *ngIf="activeProductTab === 'overview'"
+              class="text-secondary-light dark:text-secondary-dark text-2xl font-bold"
+            >
+              Tổng quan tồn kho
+            </h1>
+
+            <div class="product-tab-switch">
+              <button
+                type="button"
+                [class.active]="activeProductTab === 'products'"
+                (click)="switchProductTab('products')"
+              >
+                Sản phẩm
+              </button>
+              <button
+                type="button"
+                [class.active]="activeProductTab === 'overview'"
+                (click)="switchProductTab('overview')"
+              >
+                Tổng quan tồn kho
+              </button>
+            </div>
+          </div>
+
           <!-- Ô tìm kiếm căn giữa -->
-          <div class="relative flex-1 mx-2">
+          <div
+            *ngIf="activeProductTab === 'products'"
+            class="relative flex-1 mx-2"
+          >
             <input
               type="text"
               class="border border-gray-300 rounded-[24px] px-3 py-2 w-[100%] mx-auto"
@@ -320,7 +434,7 @@
           </div>
 
           <!-- Nhóm nút -->
-          <div class="flex gap-3">
+          <div *ngIf="activeProductTab === 'products'" class="flex gap-3">
             <button
               nz-button
               nzType="primary"
@@ -354,11 +468,70 @@
               <nz-icon nzType="arrow-right" nzTheme="outline"></nz-icon>
             </button>
           </div>
+
+          <div
+            *ngIf="activeProductTab === 'overview'"
+            class="overview-toolbar flex flex-1 flex-wrap items-center justify-end gap-3"
+          >
+            <div class="relative min-w-[280px] flex-1">
+              <input
+                type="text"
+                class="border border-gray-300 rounded-[24px] px-3 py-2 w-full"
+                [(ngModel)]="overviewKeyword"
+                (keyup.enter)="onOverviewSearch()"
+                placeholder="Tìm mã hoặc tên sản phẩm..."
+              />
+              <button
+                (click)="onOverviewSearch()"
+                class="absolute inset-y-0 right-3 flex items-center text-gray-500"
+              >
+                <nz-icon nzType="search" nzTheme="outline"></nz-icon>
+              </button>
+            </div>
+
+            <nz-select
+              class="filter-select"
+              nzPlaceHolder="Tất cả nhóm"
+              [(ngModel)]="overviewSelectedCategoryGroupId"
+              (ngModelChange)="onOverviewFilterChange()"
+              [nzAllowClear]="true"
+            >
+              <nz-option
+                *ngFor="let group of categoryGroups"
+                [nzValue]="group.Id"
+                [nzLabel]="group.Name"
+              ></nz-option>
+            </nz-select>
+
+            <button
+              type="button"
+              class="overview-secondary-button"
+              (click)="resetOverviewFilters()"
+            >
+              <nz-icon nzType="reload" nzTheme="outline"></nz-icon>
+              Xóa lọc
+            </button>
+          </div>
         </div>
 
         <div
+          *ngIf="activeProductTab === 'products'"
           class="product-filter-panel mb-4 flex flex-wrap items-center gap-3 rounded-[18px] border border-cyan-900/20 bg-white/70 p-3 shadow-sm dark:border-cyan-400/20 dark:bg-slate-900/70"
         >
+          <nz-select
+            class="filter-select"
+            nzPlaceHolder="Tất cả nhóm loại"
+            [(ngModel)]="selectedCategoryGroupId"
+            (ngModelChange)="onCategoryGroupChange()"
+            [nzAllowClear]="true"
+          >
+            <nz-option
+              *ngFor="let group of categoryGroups"
+              [nzValue]="group.Id"
+              [nzLabel]="group.Name"
+            ></nz-option>
+          </nz-select>
+
           <nz-select
             class="filter-select"
             nzPlaceHolder="Tất cả loại sản phẩm"
@@ -367,7 +540,7 @@
             [nzAllowClear]="true"
           >
             <nz-option
-              *ngFor="let category of categories"
+              *ngFor="let category of filteredCategories"
               [nzValue]="category.Id"
               [nzLabel]="category.Name"
             ></nz-option>
@@ -402,8 +575,185 @@
         </div>
       </div>
 
+      <div
+        *ngIf="activeProductTab === 'overview'"
+        class="inventory-overview-panel"
+        [class.mt-80]="isMobile"
+      >
+        <div *ngIf="overviewLoading" class="overview-skeleton-grid">
+          <div *ngFor="let item of overviewSkeletonRows" class="overview-skeleton-card">
+            <div class="overview-skeleton-line w-24"></div>
+            <div class="overview-skeleton-line mt-4 w-16 h-8"></div>
+          </div>
+          <div class="overview-skeleton-list">
+            <div class="overview-skeleton-line w-56"></div>
+            <div class="overview-skeleton-line mt-5 w-full"></div>
+            <div class="overview-skeleton-line mt-3 w-10/12"></div>
+            <div class="overview-skeleton-line mt-3 w-8/12"></div>
+          </div>
+        </div>
+
+        <div *ngIf="!overviewLoading && overviewError" class="overview-state-card">
+          <nz-icon nzType="warning" nzTheme="outline"></nz-icon>
+          <div>
+            <h3>Không thể tải tổng quan tồn kho</h3>
+            <p>{{ overviewError }}</p>
+          </div>
+          <button type="button" class="overview-primary-button" (click)="loadInventoryOverview()">
+            Thử lại
+          </button>
+        </div>
+
+        <ng-container *ngIf="!overviewLoading && !overviewError && inventoryOverview as overview">
+          <div class="overview-summary-grid">
+            <div class="overview-summary-card">
+              <span>Tổng sản phẩm</span>
+              <strong>{{ overview.TotalProducts | number }}</strong>
+            </div>
+            <div class="overview-summary-card">
+              <span>Tổng tồn kho</span>
+              <strong>{{ overview.TotalStockQuantity | number }}</strong>
+            </div>
+            <div class="overview-summary-card">
+              <span>Đang giữ</span>
+              <strong>{{ overview.TotalReservedQuantity | number }}</strong>
+            </div>
+            <div class="overview-summary-card">
+              <span>Khả dụng</span>
+              <strong>{{ overview.TotalAvailableQuantity | number }}</strong>
+            </div>
+            <div class="overview-summary-card danger">
+              <span>Hết hàng</span>
+              <strong>{{ overview.OutOfStockProductCount | number }}</strong>
+            </div>
+          </div>
+
+          <div *ngIf="overview.TotalProducts === 0" class="overview-empty-card">
+            <nz-icon nzType="inbox" nzTheme="outline"></nz-icon>
+            <h3>Không có sản phẩm phù hợp</h3>
+            <p>Thử đổi nhóm loại hoặc từ khóa tìm kiếm để xem dữ liệu tồn kho.</p>
+          </div>
+
+          <div *ngIf="overview.TotalProducts > 0" class="overview-list-shell">
+            <div class="overview-list-toolbar">
+              <div>
+                <p class="overview-eyebrow">Tổng quan theo nhóm</p>
+                <h2>{{ overview.CategoryGroups.length }} nhóm đang hiển thị</h2>
+              </div>
+
+              <div class="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  class="overview-secondary-button"
+                  (click)="collapseAllOverviewCategories()"
+                >
+                  Thu gọn tất cả
+                </button>
+                <button
+                  type="button"
+                  class="overview-primary-button"
+                  (click)="expandAllOverviewCategories()"
+                >
+                  Mở rộng tất cả
+                </button>
+              </div>
+            </div>
+
+            <section
+              *ngFor="let group of overview.CategoryGroups; trackBy: trackOverviewGroup"
+              class="overview-group-section"
+              [class.has-alert]="group.OutOfStockProductCount > 0"
+            >
+              <div class="overview-group-header">
+                <div>
+                  <p class="overview-eyebrow">Nhóm loại</p>
+                  <h3>{{ group.CategoryGroupName }}</h3>
+                </div>
+                <div class="overview-group-stats">
+                  <span>{{ group.ProductCount | number }} SP</span>
+                  <span>Tồn {{ group.TotalStockQuantity | number }}</span>
+                  <span>Khả dụng {{ group.TotalAvailableQuantity | number }}</span>
+                  <span class="danger">Hết {{ group.OutOfStockProductCount | number }}</span>
+                </div>
+              </div>
+
+              <div
+                *ngFor="let category of group.Categories; trackBy: trackOverviewCategory"
+                class="overview-category-section"
+                [class.has-alert]="category.OutOfStockProductCount > 0"
+              >
+                <button
+                  type="button"
+                  class="overview-category-header"
+                  (click)="toggleOverviewCategory(category)"
+                >
+                  <div>
+                    <h4>{{ category.ProductCategoryName }}</h4>
+                    <p>
+                      {{ category.ProductCount | number }} sản phẩm |
+                      Tổng tồn: {{ category.TotalStockQuantity | number }} |
+                      Khả dụng: {{ category.TotalAvailableQuantity | number }} |
+                      Hết hàng: {{ category.OutOfStockProductCount | number }}
+                    </p>
+                  </div>
+                  <nz-icon
+                    [nzType]="isOverviewCategoryExpanded(category) ? 'up' : 'down'"
+                    nzTheme="outline"
+                  ></nz-icon>
+                </button>
+
+                <div
+                  *ngIf="isOverviewCategoryExpanded(category)"
+                  class="overview-product-list"
+                >
+                  <div class="overview-product-header">
+                    <span>Mã</span>
+                    <span>Tên sản phẩm</span>
+                    <span>Đơn vị</span>
+                    <span>Tồn</span>
+                    <span>Đã giữ</span>
+                    <span>Khả dụng</span>
+                    <span>Trạng thái</span>
+                    <span>Cập nhật</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    *ngFor="let product of category.Products; trackBy: trackOverviewProduct"
+                    class="overview-product-row w-full"
+                    [class.out-of-stock]="product.StockStatus === 'OUT_OF_STOCK'"
+                    (click)="openOverviewProduct(product)"
+                  >
+                    <span class="font-semibold">{{ product.ProductCode }}</span>
+                    <span>{{ product.ProductName }}</span>
+                    <span>{{ product.UnitName ? product.UnitName : (product.Unit | unitText) }}</span>
+                    <span>{{ product.StockQuantity | number }}</span>
+                    <span>{{ product.ReservedQuantity | number }}</span>
+                    <span
+                      [class.text-red-600]="product.AvailableQuantity <= 0"
+                      [class.text-emerald-600]="product.AvailableQuantity > 0"
+                    >
+                      {{ product.AvailableQuantity | number }}
+                    </span>
+                    <span>
+                      <span
+                        class="overview-stock-badge"
+                        [class.danger]="product.StockStatus === 'OUT_OF_STOCK'"
+                      >
+                        {{ getOverviewStockStatusLabel(product.StockStatus) }}
+                      </span>
+                    </span>
+                    <span>{{ product.UpdatedDate | date : "dd/MM/yyyy HH:mm" }}</span>
+                  </button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </ng-container>
+      </div>
+
       <!-- 💻 Desktop layout -->
-      <div *ngIf="!isMobile">
+      <div *ngIf="!isMobile && activeProductTab === 'products'">
         <div
           class="bg-background-lightblue dark:bg-background-dark shadow-lg rounded-[24px] overflow-hidden p-2"
           [ngClass]="{ 'dark:bg-gray-900': isDark }"
@@ -571,7 +921,7 @@
       </div>
 
       <!-- Mobile Float Button -->
-      <div *ngIf="isMobile" class="type">
+      <div *ngIf="isMobile && activeProductTab === 'products'" class="type">
         <nz-float-button
           nzType="primary"
           style="right: 24px"

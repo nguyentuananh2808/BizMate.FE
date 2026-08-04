@@ -47,6 +47,7 @@ export class ProductPopupCreateComponent implements OnInit {
     { value: 4, label: 'Kg' },
     { value: 5, label: 'Lít' },
     { value: 6, label: 'Cây' },
+    { value: 7, label: 'Met' },
   ];
   salePrice: number = 0;
   imageUrl: string = '';

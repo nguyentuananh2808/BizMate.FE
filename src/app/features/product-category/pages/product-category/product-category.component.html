@@ -77,6 +77,10 @@
             }}
           </div>
 
+          <div class="text-sm text-gray-600 dark:text-gray-300">
+            Nhóm loại: {{ item.CategoryGroupName || 'Chưa gán nhóm' }}
+          </div>
+
           <div
             class="flex justify-between text-sm text-gray-500 dark:text-gray-400"
           >
@@ -205,7 +209,7 @@
         >
           <nz-table
             [nzData]="listOfData"
-            [nzScroll]="{ x: '1160px', y: '400px' }"
+            [nzScroll]="{ x: '1320px', y: '400px' }"
             [nzPageSize]="pageSize"
             [nzPageIndex]="pageIndex"
             [nzShowSizeChanger]="true"
@@ -230,6 +234,7 @@
                 ></th> -->
                 <th [nzWidth]="'50px'" class="text-center">STT</th>
                 <th [nzWidth]="'40px'"></th>
+                <th [nzWidth]="'200px'">Nhóm loại</th>
                 <th [nzWidth]="'120px'">Mã</th>
                 <th [nzWidth]="'240px'">Tên loại</th>
                 <th [nzWidth]="'120px'">Ngày tạo</th>
@@ -274,6 +279,7 @@
                     </div>
                   </div>
                 </td>
+                <td>{{ item.CategoryGroupName || '-' }}</td>
                 <td>{{ item.Code }}</td>
                 <td>{{ item.Name }}</td>
                 <td>{{ item.CreatedDate | date : "dd/MM/yyyy" }}</td>

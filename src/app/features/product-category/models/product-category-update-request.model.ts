@@ -4,5 +4,6 @@ export interface ProductCategoryUpdateRequest {
   Name: string;
   RowVersion: string;
   Description: string;
+  CategoryGroupId?: string | null;
   IsActive: boolean;
 }

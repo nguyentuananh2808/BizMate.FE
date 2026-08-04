@@ -153,7 +153,10 @@
         </tbody>
       </nz-table>
 
-      <div class="product-search-pagination flex shrink-0 justify-center">
+      
+
+      <div class="product-search-actions flex shrink-0 justify-end gap-3">
+        <div class="product-search-pagination flex shrink-0 justify-center">
         <nz-pagination
           *ngIf="totalCount > 0"
           [nzPageIndex]="pageIndex"
@@ -166,8 +169,6 @@
           (nzPageSizeChange)="onPageSizeChange($event)"
         ></nz-pagination>
       </div>
-
-      <div class="product-search-actions flex shrink-0 justify-end gap-3">
         <button
           class="bg-gray-400 text-white px-4 py-2 rounded-full hover:bg-gray-500 transition"
           (click)="close()"

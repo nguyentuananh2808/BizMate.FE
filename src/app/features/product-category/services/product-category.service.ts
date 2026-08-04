@@ -23,7 +23,8 @@ export class ProductCategoryService {
     Name: string,
     RowVersion: string,
     IsActive: boolean,
-    Description: string
+    Description: string,
+    CategoryGroupId?: string | null
   ): Observable<ProductCategory> {
     const body: ProductCategoryUpdateRequest = {
       Id,
@@ -32,6 +33,7 @@ export class ProductCategoryService {
       RowVersion,
       IsActive,
       Description,
+      CategoryGroupId,
     };
     return this.http.put<ProductCategory>(
       `${ApiUrls.baseUrl}${ApiUrls.productCategory.update}`,
@@ -39,10 +41,11 @@ export class ProductCategoryService {
     );
   }
 
-  CreateProductCategory(name: string, description: string): Observable<any> {
+  CreateProductCategory(name: string, description: string, categoryGroupId?: string | null): Observable<any> {
     const body: CreateProductCategoryRequest = {
       name,
       description,
+      categoryGroupId,
     };
     return this.http.post<any>(
       `${ApiUrls.baseUrl}${ApiUrls.productCategory.create}`,

@@ -1,14 +1,17 @@
 import { trigger, transition, style, animate } from '@angular/animations';
-import { Component, Output, EventEmitter, Input } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { ProductCategoryService } from '../../services/product-category.service';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { CategoryGroup } from '../../../category-group/models/category-group.model';
+import { CategoryGroupService } from '../../../category-group/services/category-group.service';
 
 @Component({
   selector: 'product-category-popup-create',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NzSelectModule],
   templateUrl: './product-category-popup-create.component.html',
   styleUrl: './product-category-popup-create.component.scss',
   animations: [
@@ -26,9 +29,11 @@ import { ProductCategoryService } from '../../services/product-category.service'
     ]),
   ],
 })
-export class ProductCategoryPopupCreateComponent {
+export class ProductCategoryPopupCreateComponent implements OnInit {
   name: string = '';
   description: string = '';
+  categoryGroupId: string | null = null;
+  categoryGroups: CategoryGroup[] = [];
 
   @Output() closePopupCreate = new EventEmitter<void>();
   @Output() create = new EventEmitter<void>();
@@ -37,8 +42,13 @@ export class ProductCategoryPopupCreateComponent {
 
   constructor(
     private productCategoryService: ProductCategoryService,
+    private categoryGroupService: CategoryGroupService,
     private toastr: ToastrService
   ) {}
+
+  ngOnInit(): void {
+    this.loadCategoryGroups();
+  }
 
   close() {
     this.closePopupCreate.emit();
@@ -49,7 +59,7 @@ export class ProductCategoryPopupCreateComponent {
     this.isSaving = true;
 
     this.productCategoryService
-      .CreateProductCategory(this.name, this.description || '')
+      .CreateProductCategory(this.name, this.description || '', this.categoryGroupId)
       .pipe(finalize(() => (this.isSaving = false)))
       .subscribe({
         next: () => {
@@ -69,5 +79,16 @@ export class ProductCategoryPopupCreateComponent {
           this.toastr.error(userMessage);
         },
       });
+  }
+
+  private loadCategoryGroups(): void {
+    this.categoryGroupService.getAll().subscribe({
+      next: (res) => {
+        this.categoryGroups = (res.CategoryGroups || []).filter((group) => !group.IsActive);
+      },
+      error: () => {
+        this.toastr.warning('Không thể tải danh sách nhóm loại sản phẩm.');
+      },
+    });
   }
 }
